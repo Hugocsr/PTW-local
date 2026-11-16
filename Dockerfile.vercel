@@ -19,12 +19,15 @@ FROM caddy:2.10-alpine AS proxy
 FROM node:24-bookworm-slim
 ENV NODE_ENV=production PORT=3000
 WORKDIR /app
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends slapd openssl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 COPY --from=proxy /usr/bin/caddy /usr/local/bin/caddy
 COPY --from=api /app/dist ./dist
 COPY --from=api /app/node_modules ./node_modules
 COPY --from=api /app/package.json /app/openapi.yaml ./
 COPY --from=web /src/ptw-mockup-v2/dist /srv
-COPY deploy/Caddyfile deploy/start.mjs ./deploy/
+COPY deploy/Caddyfile deploy/start.mjs deploy/ldap-preview.mjs ./deploy/
 USER node
 EXPOSE 3000
 CMD ["node", "deploy/start.mjs"]

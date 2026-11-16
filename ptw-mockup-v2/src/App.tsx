@@ -123,7 +123,7 @@ function Shell() {
             {route.view === "auditoria" && !canAudit ? <Page><PageHeader title="Acesso não disponível" /><p className="type-body">Sua conta não tem acesso à Auditoria.</p><a href="#minha-area" className="type-body underline underline-offset-2">Voltar para Minha área</a></Page> : route.newPermit ? <NewPermitView /> : route.permitId ? <PermitDetailView id={route.permitId} tab={route.tab ?? "etapas"} /> : route.recordId ? (route.view === "ativos" ? <AssetDetailView id={route.recordId} /> : route.view === "pessoas" ? <PersonDetailView id={route.recordId} /> : <LocationDetailView id={route.recordId} />) : route.view === "minha-area" ? <MinhaAreaView tab={route.tab} /> : route.view === "auditoria" ? <AuditView key={route.tab ?? ""} permitFilter={route.tab?.slice(3)} /> : <View />}
           </Suspense>
         </main>
-        <ResourceFooter />
+        {!demo && <ResourceFooter />}
       </SidebarInset>
       {/* On a phone the bottom edge holds the sheet actions and the Minha área tab bar. */}
       <Toaster position={mobile ? "top-center" : "bottom-right"} />

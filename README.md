@@ -14,6 +14,8 @@ npm.cmd run dev:demo
 
 Abra [a demonstração local](http://127.0.0.1:5176/). O cenário fictício de celulose abre em **Minha área**. Use **Quadro de PTs** para navegar pelos registros ou **Nova PT** para experimentar o rascunho. A demonstração roda em memória e volta ao cenário inicial ao recarregar.
 
+Para gerar uma demonstração estática hospedável, rode `npm exec -- vite build --mode demo-public` no frontend. Ela usa o cenário genérico fictício do projeto e abre diretamente em **Minha área**. Use um projeto Vercel separado para publicar essa demonstração. O build normal continua usando a API.
+
 ## Ambiente integrado
 
 O frontend normal usa a API do PTW. O servidor, o PostgreSQL e o armazenamento de arquivos estão em `ptw-server`. Consulte o [guia de operação](ptw-server/OPERACAO.md) para subir o laboratório com Docker. Os dados do laboratório são separados do cenário em memória.
@@ -41,5 +43,7 @@ Para conferir o frontend, rode `npm.cmd run check` e `npm.cmd run build` em `ptw
 | `PTW_LOGIN_LIMIT` | Ative com `1` se os limites do aplicativo fizerem parte da política de autenticação |
 
 Para construir localmente, execute `docker build -f Dockerfile.vercel -t ptw-sgi .` na raiz. O contêiner usa `PORT` (padrão 3000). Para testar o login dessa imagem, sirva-o atrás de HTTPS com certificado confiável. A imagem requer os serviços externos e recusa `PTW_DEV_LOGIN=1`.
+
+Para homologar sem um diretório externo, configure `PTW_LDAP_MODE=preview` e uma senha de pelo menos 20 caracteres em `PTW_PREVIEW_LOGIN_PASSWORD` como segredo do Preview. Cadastre `marina.costa` na unidade de homologação no banco. A imagem inicia um OpenLDAP de teste em loopback, com TLS, e o login passa pela mesma API usada com LDAP externo. O contêiner recusa esse modo fora do ambiente Preview da Vercel.
 
 Antes de publicar no Git, confira `git status --short` e revise o primeiro commit. Os segredos, arquivos de ambiente e certificados gerados no laboratório ficam fora do repositório. Configure manutenção, backups e verificação da auditoria no ambiente de operação conforme o [guia](ptw-server/OPERACAO.md).

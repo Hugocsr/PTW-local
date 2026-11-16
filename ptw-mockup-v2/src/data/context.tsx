@@ -9,6 +9,13 @@ export function dataMode(): DataMode { return "api" }
 const Ctx = createContext<DataPort | null>(null)
 
 async function openPort(): Promise<DataPort> {
+  if (import.meta.env.MODE === "demo-public") {
+    const [{ createMemoryPort }, { exemplo }] = await Promise.all([
+      import("./memory"),
+      import("../demo/exemplo"),
+    ])
+    return createMemoryPort(exemplo)
+  }
   if (import.meta.env.DEV && import.meta.env.MODE === "demo") {
     const [{ createMemoryPort }, { buildCelulose }] = await Promise.all([
       import("./memory"),
@@ -19,7 +26,7 @@ async function openPort(): Promise<DataPort> {
   return createApiPort()
 }
 
-/** Opens the configured data source. Demo data is available only in Vite development mode. */
+/** Opens the configured data source. Only explicit demo modes use fictional data. */
 export function DataProvider({ children }: { children: ReactNode }) {
   const [port, setPort] = useState<DataPort | null>(null)
   const [error, setError] = useState(false)

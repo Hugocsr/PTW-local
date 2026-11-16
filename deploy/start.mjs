@@ -2,11 +2,16 @@ import { spawn } from "node:child_process"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { preparePreviewDirectory } from "./ldap-preview.mjs"
 
 const env = { ...process.env }
+const previewLdap = env.PTW_LDAP_MODE === "preview"
+if (previewLdap && env.VERCEL_ENV !== "preview") {
+  throw new Error("O LDAP de homologação só pode ser usado em Preview")
+}
 for (const name of [
   "PTW_UNIT", "PTW_DB_HOST", "PTW_DB_PASSWORD", "PTW_S3_URL", "PTW_S3_KEY",
-  "PTW_S3_SECRET", "PTW_LDAP_CONFIG_JSON", "PTW_LDAP_BIND_PASSWORD",
+  "PTW_S3_SECRET", ...(previewLdap ? ["PTW_PREVIEW_LOGIN_PASSWORD"] : ["PTW_LDAP_CONFIG_JSON", "PTW_LDAP_BIND_PASSWORD"]),
 ]) {
   if (!env[name]?.trim()) throw new Error(`Variável obrigatória ausente: ${name}`)
 }
@@ -14,10 +19,6 @@ if (new URL(env.PTW_S3_URL).protocol !== "https:") {
   throw new Error("PTW_S3_URL deve usar HTTPS")
 }
 if (env.PTW_DEV_LOGIN === "1") throw new Error("Login de demonstração não é permitido nesta imagem")
-let ldap
-try { ldap = JSON.parse(env.PTW_LDAP_CONFIG_JSON) } catch {
-  throw new Error("PTW_LDAP_CONFIG_JSON deve conter JSON válido")
-}
 const dir = mkdtempSync(join(tmpdir(), "ptw-"))
 process.on("exit", () => rmSync(dir, { recursive: true, force: true }))
 function save(name, value) {
@@ -25,16 +26,22 @@ function save(name, value) {
   writeFileSync(file, value, { mode: 0o600 })
   return file
 }
+const directory = previewLdap ? preparePreviewDirectory(dir, env.PTW_PREVIEW_LOGIN_PASSWORD) : null
+let ldap
+try { ldap = directory?.config ?? JSON.parse(env.PTW_LDAP_CONFIG_JSON) } catch {
+  throw new Error("PTW_LDAP_CONFIG_JSON deve conter JSON válido")
+}
 delete ldap.caFile
-ldap.passwordFile = save("ldap-bind", env.PTW_LDAP_BIND_PASSWORD)
-if (env.PTW_LDAP_CA_PEM) ldap.caFile = save("ldap-ca", env.PTW_LDAP_CA_PEM)
+ldap.passwordFile = save("ldap-bind", directory?.password ?? env.PTW_LDAP_BIND_PASSWORD)
+if (directory) ldap.caFile = directory.caFile
+else if (env.PTW_LDAP_CA_PEM) ldap.caFile = save("ldap-ca", env.PTW_LDAP_CA_PEM)
 env.PTW_LDAP_CONFIG_FILE = save("ldap.json", JSON.stringify(ldap))
 env.PTW_S3_KEY_FILE = save("s3-key", env.PTW_S3_KEY)
 env.PTW_S3_SECRET_FILE = save("s3-secret", env.PTW_S3_SECRET)
 env.PTW_DB_TLS = "1"
 env.PTW_API_HOST = "127.0.0.1"
 env.PTW_API_PORT = "3300"
-for (const name of ["PTW_LDAP_CONFIG_JSON", "PTW_LDAP_BIND_PASSWORD", "PTW_LDAP_CA_PEM", "PTW_S3_KEY", "PTW_S3_SECRET"]) {
+for (const name of ["PTW_LDAP_CONFIG_JSON", "PTW_LDAP_BIND_PASSWORD", "PTW_LDAP_CA_PEM", "PTW_PREVIEW_LOGIN_PASSWORD", "PTW_S3_KEY", "PTW_S3_SECRET"]) {
   delete env[name]
 }
 
@@ -52,6 +59,7 @@ function stop(code) {
 }
 
 for (const [command, args, childEnv] of [
+  ...(directory ? [directory.command] : []),
   [process.execPath, ["dist/server.js"], env],
   ["/usr/local/bin/caddy", ["run", "--config", "deploy/Caddyfile", "--adapter", "caddyfile"], { PORT: env.PORT ?? "3000", HOME: tmpdir() }],
 ]) {
