@@ -36,6 +36,7 @@ Para conferir o frontend, rode `npm.cmd run check` e `npm.cmd run build` em `ptw
 | `PTW_UNIT` | Código da unidade já cadastrada, como `UN-01` |
 | `PTW_DB_HOST`, `PTW_DB_PASSWORD` | Host PostgreSQL e senha do papel da aplicação |
 | `PTW_DB_PORT`, `PTW_DB_NAME`, `PTW_DB_USER`, `PTW_DB_POOL` | Opcionais. Padrões `5432`, `ptw`, `ptw_api` e `10` |
+| `PTW_DB_CA_PEM` | Certificado da CA do PostgreSQL em PEM quando a CA não faz parte da lista padrão do Node |
 | `PTW_S3_URL`, `PTW_S3_KEY`, `PTW_S3_SECRET` | URL HTTPS do endpoint S3 e credenciais do bucket |
 | `PTW_S3_REGION` | Região de assinatura do S3. Padrão `us-east-1` |
 | `PTW_LDAP_CONFIG_JSON`, `PTW_LDAP_BIND_PASSWORD` | JSON com URL, DN, atributos e grupos conforme o [guia LDAP](ptw-server/OPERACAO.md), e senha da conta de busca em variável separada. A imagem prepara o arquivo de senha |
@@ -43,6 +44,8 @@ Para conferir o frontend, rode `npm.cmd run check` e `npm.cmd run build` em `ptw
 | `PTW_LOGIN_LIMIT` | Ative com `1` se os limites do aplicativo fizerem parte da política de autenticação |
 
 Para construir localmente, execute `docker build -f Dockerfile.vercel -t ptw-sgi .` na raiz. O contêiner usa `PORT` (padrão 3000). Para testar o login dessa imagem, sirva-o atrás de HTTPS com certificado confiável. A imagem requer os serviços externos e recusa `PTW_DEV_LOGIN=1`.
+
+Para usar Supabase a partir de uma rede IPv4, use o **Session pooler**, na porta `5432`. Configure `PTW_DB_HOST` com o host exibido no painel **Connect**, `PTW_DB_USER` com o nome do papel seguido de um ponto e da referência do projeto, e `PTW_DB_NAME` com o nome do banco provisionado. Baixe a CA em **Database Settings → SSL Configuration** e cole o PEM em `PTW_DB_CA_PEM`.
 
 Para homologar sem um diretório externo, configure `PTW_LDAP_MODE=preview` e uma senha de pelo menos 20 caracteres em `PTW_PREVIEW_LOGIN_PASSWORD` como segredo do Preview. Cadastre `marina.costa` na unidade de homologação no banco. A imagem inicia um OpenLDAP de teste em loopback, com TLS, e o login passa pela mesma API usada com LDAP externo. O contêiner recusa esse modo fora do ambiente Preview da Vercel.
 

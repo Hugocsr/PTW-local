@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process"
+import { X509Certificate } from "node:crypto"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -19,6 +20,8 @@ if (new URL(env.PTW_S3_URL).protocol !== "https:") {
   throw new Error("PTW_S3_URL deve usar HTTPS")
 }
 if (env.PTW_DEV_LOGIN === "1") throw new Error("Login de demonstração não é permitido nesta imagem")
+const dbCa = env.PTW_DB_CA_PEM?.trim()
+if (dbCa) new X509Certificate(dbCa)
 const dir = mkdtempSync(join(tmpdir(), "ptw-"))
 process.on("exit", () => rmSync(dir, { recursive: true, force: true }))
 function save(name, value) {
@@ -39,6 +42,8 @@ env.PTW_LDAP_CONFIG_FILE = save("ldap.json", JSON.stringify(ldap))
 env.PTW_S3_KEY_FILE = save("s3-key", env.PTW_S3_KEY)
 env.PTW_S3_SECRET_FILE = save("s3-secret", env.PTW_S3_SECRET)
 env.PTW_DB_TLS = "1"
+if (dbCa) env.NODE_EXTRA_CA_CERTS = save("db-ca.pem", dbCa + "\n")
+delete env.PTW_DB_CA_PEM
 env.PTW_API_HOST = "127.0.0.1"
 env.PTW_API_PORT = "3300"
 for (const name of ["PTW_LDAP_CONFIG_JSON", "PTW_LDAP_BIND_PASSWORD", "PTW_LDAP_CA_PEM", "PTW_PREVIEW_LOGIN_PASSWORD", "PTW_S3_KEY", "PTW_S3_SECRET"]) {
