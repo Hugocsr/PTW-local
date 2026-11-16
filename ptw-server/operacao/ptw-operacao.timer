@@ -1,0 +1,10 @@
+[Unit]
+Description=Conferir operacao do PTW a cada minuto
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

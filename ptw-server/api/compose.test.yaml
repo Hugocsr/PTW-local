@@ -1,0 +1,40 @@
+# Bateria da API contra um PostgreSQL de verdade (A23). O banco não publica porta, então os testes
+# rodam num contêiner na rede "interna". Uso, a partir de ptw-server/ (com o `db` no ar):
+#
+#   docker compose -f compose.yaml -f api/compose.test.yaml run --rm --build api-test
+#
+# Os caminhos abaixo são relativos a ptw-server/ (a pasta do primeiro -f).
+# Cada arquivo de teste cria o seu banco descartável (ptw_api_<pacote>) a partir de db/schema, como
+# dono, e fala com ele como ptw_api. O banco "ptw" não é tocado.
+services:
+  api-test:
+    build:
+      context: ./api
+      target: test
+    image: ptw-api-test:local
+    profiles: [test]                     # nunca sobe com `docker compose up`
+    user: "1000:1000"
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    init: true
+    environment:
+      PTW_TEST_DB: "1"                   # liga os testes que precisam do banco
+      PTW_TEST_STORAGE: "1"
+      PTW_CONTRACT_FULL: "1"
+      PTW_DB_HOST: db
+      PTW_TEST_SCHEMA: /ptw/schema
+      PTW_TEST_OWNER_PASSWORD_FILE: /run/secrets/db_owner
+      PTW_DB_PASSWORD_FILE: /run/secrets/db_api
+      PTW_TEST_CACHE: /tmp/vitest
+    secrets: [db_owner, db_api, s3_api_key, s3_api_secret]
+    volumes:
+      - ./db/schema:/ptw/schema:ro
+      - ./tools:/ptw/tools:ro
+    tmpfs: ["/tmp:uid=1000,gid=1000,mode=1777"]
+    networks: [interna]
+    depends_on:
+      db: { condition: service_healthy }
+      storage: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 384M, pids: 200 }

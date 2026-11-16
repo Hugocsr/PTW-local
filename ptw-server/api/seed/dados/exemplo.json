@@ -1,0 +1,2667 @@
+{
+  "units": [
+    {
+      "id": "019a0001-0000-7000-8000-000000000001",
+      "code": "UN-01",
+      "name": "Unidade piloto (exemplo)",
+      "timezone": "America/Sao_Paulo"
+    }
+  ],
+  "locationTypes": [
+    {
+      "id": "019a0002-0000-7000-8000-000000000001",
+      "label": "Prédio",
+      "icon": "predio",
+      "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000002",
+      "label": "Área",
+      "icon": "area",
+      "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000003",
+      "label": "Linha",
+      "icon": "linha",
+      "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000004",
+      "label": "Sala",
+      "icon": "sala",
+      "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000005",
+      "label": "Zona",
+      "icon": "zona",
+      "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000006",
+      "label": "Ponto de trabalho",
+      "icon": "ponto",
+      "active": true
+    }
+  ],
+  "roleTypes": [
+    {
+      "id": "019a0004-0000-7000-8000-000000000001",
+      "label": "Líder de equipe",
+      "active": true
+    },
+    {
+      "id": "019a0004-0000-7000-8000-000000000002",
+      "label": "Executante",
+      "active": true
+    },
+    {
+      "id": "019a0004-0000-7000-8000-000000000003",
+      "label": "Técnico de manutenção",
+      "active": true
+    },
+    {
+      "id": "019a0004-0000-7000-8000-000000000004",
+      "label": "Supervisora de área",
+      "active": true
+    }
+  ],
+  "assetTypes": [
+    {
+      "id": "019a0003-0000-7000-8000-000000000001",
+      "label": "Painel / CCM",
+      "icon": "eletrico",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000002",
+      "label": "Módulo / gaveta",
+      "icon": "eletrico",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000003",
+      "label": "Alimentador",
+      "icon": "cabo",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000004",
+      "label": "Motor",
+      "icon": "motor",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000005",
+      "label": "Tubulação",
+      "icon": "tubulacao",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000006",
+      "label": "Válvula",
+      "icon": "tubulacao",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000007",
+      "label": "Caldeira",
+      "icon": "caldeira",
+      "active": true
+    }
+  ],
+  "relationKinds": [
+    {
+      "id": "019a0005-0000-7000-8000-000000000001",
+      "label": "alimenta",
+      "active": true
+    },
+    {
+      "id": "019a0005-0000-7000-8000-000000000002",
+      "label": "isola",
+      "active": true
+    },
+    {
+      "id": "019a0005-0000-7000-8000-000000000003",
+      "label": "abastece",
+      "active": true
+    },
+    {
+      "id": "019a0005-0000-7000-8000-000000000004",
+      "label": "é parte de",
+      "systemKey": "parte_de",
+      "active": true
+    }
+  ],
+  "locations": [
+    {
+      "id": "019a0010-0000-7000-8000-000000000001",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": null,
+      "typeId": "019a0002-0000-7000-8000-000000000001",
+      "code": "PRD-01",
+      "name": "Prédio de Produção",
+      "aliases": [
+        "Galpão 1"
+      ]
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000002",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000001",
+      "typeId": "019a0002-0000-7000-8000-000000000003",
+      "code": "L02",
+      "name": "Linha 02",
+      "aliases": [
+        "Linha dois"
+      ]
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000003",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000002",
+      "typeId": "019a0002-0000-7000-8000-000000000004",
+      "code": "L02-SE",
+      "name": "Sala CCM Linha 02",
+      "aliases": [
+        "Sala elétrica L2"
+      ]
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000004",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000003",
+      "typeId": "019a0002-0000-7000-8000-000000000006",
+      "code": "L02-SE-C03",
+      "name": "Coluna C03 do CCM",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000005",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000002",
+      "typeId": "019a0002-0000-7000-8000-000000000005",
+      "code": "L02-ENV",
+      "name": "Zona de envase",
+      "aliases": [
+        "Envase"
+      ]
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000006",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "csv",
+      "status": "em_revisao",
+      "parentId": "019a0010-0000-7000-8000-000000000002",
+      "typeId": "019a0002-0000-7000-8000-000000000005",
+      "code": "L02-COB",
+      "name": "Cobertura da Linha 02",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000007",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": null,
+      "typeId": "019a0002-0000-7000-8000-000000000002",
+      "code": "UTL",
+      "name": "Utilidades",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000008",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000007",
+      "typeId": "019a0002-0000-7000-8000-000000000004",
+      "code": "UTL-CAL",
+      "name": "Casa de caldeira",
+      "aliases": [
+        "Caldeiraria"
+      ]
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000009",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000008",
+      "typeId": "019a0002-0000-7000-8000-000000000006",
+      "code": "UTL-CAL-VB",
+      "name": "Trecho B da linha de vapor",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-00000000000a",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": null,
+      "typeId": "019a0002-0000-7000-8000-000000000001",
+      "code": "ELC",
+      "name": "Eletrocentro",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-00000000000b",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "inativo",
+      "parentId": "019a0010-0000-7000-8000-00000000000a",
+      "typeId": "019a0002-0000-7000-8000-000000000004",
+      "code": "ELC-MT",
+      "name": "Sala de painéis MT (desativada)",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-00000000000c",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-00000000000a",
+      "typeId": "019a0002-0000-7000-8000-000000000004",
+      "code": "ELC-BT",
+      "name": "Sala de painéis BT",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-00000000000d",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000003",
+      "typeId": "019a0002-0000-7000-8000-000000000006",
+      "code": "L02-SE-K01",
+      "name": "Coluna K01 do CCM-L2-02",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-00000000000e",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000003",
+      "typeId": "019a0002-0000-7000-8000-000000000006",
+      "code": "L02-SE-K02",
+      "name": "Coluna K02 do CCM-L2-02",
+      "aliases": []
+    },
+    {
+      "id": "019a0010-0000-7000-8000-00000000000f",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000005",
+      "typeId": "019a0002-0000-7000-8000-000000000004",
+      "code": "L02-ENV-QF",
+      "name": "Sala do quadro de força do envase",
+      "aliases": [
+        "Salinha do envase"
+      ]
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000010",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000008",
+      "typeId": "019a0002-0000-7000-8000-000000000006",
+      "code": "UTL-CAL-VA",
+      "name": "Trecho A da linha de vapor",
+      "aliases": [
+        "Linha de vapor da lavadora"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "019a0011-0000-7000-8000-000000000001",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000001",
+      "code": "CCM-L2-01",
+      "name": "CCM da Linha 02",
+      "aliases": [
+        "CCM2",
+        "Painel 14"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000003"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000002",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000002",
+      "code": "CCM-L2-01.C03",
+      "name": "Gaveta C03 – partida do M-201",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000004"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000003",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000003",
+      "code": "DJ-QGBT-14",
+      "name": "Disjuntor de alimentação do CCM2",
+      "aliases": [
+        "Disjuntor geral CCM2"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-00000000000c"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000004",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "csv",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000004",
+      "code": "M-201",
+      "name": "Motor da transportadora de envase",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000005"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000005",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000005",
+      "code": "VAP-3B",
+      "name": "Tubulação de vapor 3\" – trecho B",
+      "aliases": [
+        "Linha vapor B"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000009",
+        "019a0010-0000-7000-8000-000000000005"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000006",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "sugerida",
+      "status": "em_revisao",
+      "typeId": "019a0003-0000-7000-8000-000000000006",
+      "code": "XV-312",
+      "name": "Válvula de bloqueio do vapor",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000009"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000007",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000007",
+      "code": "CALD-01",
+      "name": "Caldeira 1",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000008"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000008",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000001",
+      "code": "CCM-L2-02",
+      "name": "CCM 2 da Linha 02 (utilidades)",
+      "aliases": [
+        "CCM utilidades L2",
+        "Painel 15"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000003"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000009",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000002",
+      "code": "CCM-L2-02.K01",
+      "name": "Gaveta K01 – partida da bomba P-202",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-00000000000d"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-00000000000a",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000002",
+      "code": "CCM-L2-02.K02",
+      "name": "Gaveta K02 – partida do exaustor EX-205",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-00000000000e"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-00000000000b",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "csv",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000004",
+      "code": "P-202",
+      "name": "Bomba de água gelada do envase",
+      "aliases": [
+        "Bomba 202"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000005"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-00000000000c",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000001",
+      "code": "QF-ENV-01",
+      "name": "Quadro de força do envase",
+      "aliases": [
+        "QF envase"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-00000000000f"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-00000000000d",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000001",
+      "code": "QD-L2-ILU",
+      "name": "Quadro de iluminação da Linha 02",
+      "aliases": [
+        "QDL L2"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000003"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-00000000000e",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000005",
+      "code": "VAP-4A",
+      "name": "Tubulação de vapor 4\" – trecho A",
+      "aliases": [
+        "Linha vapor A"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000010"
+      ]
+    },
+    {
+      "id": "019a0011-0000-7000-8000-00000000000f",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000006",
+      "code": "XV-410",
+      "name": "Válvula de bloqueio do trecho A",
+      "aliases": [
+        "Válvula da lavadora"
+      ],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000010"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "019a0012-0000-7000-8000-000000000001",
+      "fromId": "019a0011-0000-7000-8000-000000000003",
+      "toId": "019a0011-0000-7000-8000-000000000001",
+      "kindId": "019a0005-0000-7000-8000-000000000001"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000002",
+      "fromId": "019a0011-0000-7000-8000-000000000002",
+      "toId": "019a0011-0000-7000-8000-000000000001",
+      "kindId": "019a0005-0000-7000-8000-000000000004"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000003",
+      "fromId": "019a0011-0000-7000-8000-000000000002",
+      "toId": "019a0011-0000-7000-8000-000000000004",
+      "kindId": "019a0005-0000-7000-8000-000000000001"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000004",
+      "fromId": "019a0011-0000-7000-8000-000000000006",
+      "toId": "019a0011-0000-7000-8000-000000000005",
+      "kindId": "019a0005-0000-7000-8000-000000000002"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000005",
+      "fromId": "019a0011-0000-7000-8000-000000000007",
+      "toId": "019a0011-0000-7000-8000-000000000005",
+      "kindId": "019a0005-0000-7000-8000-000000000003"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000006",
+      "fromId": "019a0011-0000-7000-8000-000000000009",
+      "toId": "019a0011-0000-7000-8000-000000000008",
+      "kindId": "019a0005-0000-7000-8000-000000000004"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000007",
+      "fromId": "019a0011-0000-7000-8000-00000000000a",
+      "toId": "019a0011-0000-7000-8000-000000000008",
+      "kindId": "019a0005-0000-7000-8000-000000000004"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000008",
+      "fromId": "019a0011-0000-7000-8000-000000000009",
+      "toId": "019a0011-0000-7000-8000-00000000000b",
+      "kindId": "019a0005-0000-7000-8000-000000000001"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-000000000009",
+      "fromId": "019a0011-0000-7000-8000-00000000000f",
+      "toId": "019a0011-0000-7000-8000-00000000000e",
+      "kindId": "019a0005-0000-7000-8000-000000000002"
+    },
+    {
+      "id": "019a0012-0000-7000-8000-00000000000a",
+      "fromId": "019a0011-0000-7000-8000-000000000007",
+      "toId": "019a0011-0000-7000-8000-00000000000e",
+      "kindId": "019a0005-0000-7000-8000-000000000003"
+    }
+  ],
+  "people": [
+    {
+      "id": "019a0020-0000-7000-8000-000000000001",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "ad",
+      "status": "ativo",
+      "name": "Marina Costa",
+      "company": "Fábrica Piloto",
+      "employeeId": "E-1001",
+      "login": "marina.costa",
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000101",
+          "roleId": "019a0004-0000-7000-8000-000000000004",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "validUntil": "2027-06-30"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000002",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "ad",
+      "status": "ativo",
+      "name": "Rafael Nunes",
+      "company": "Fábrica Piloto",
+      "employeeId": "E-1002",
+      "login": "rafael.nunes",
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000201",
+          "roleId": "019a0004-0000-7000-8000-000000000003",
+          "scopeLocationId": null,
+          "validUntil": "2027-06-30"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000003",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "ad",
+      "status": "ativo",
+      "name": "Paulo Lima",
+      "company": "Elétrica Exemplo",
+      "employeeId": "C-2001",
+      "login": "paulo.lima",
+      "enabled": true,
+      "accountExpires": "2027-01-01T00:00:00-03:00",
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000301",
+          "roleId": "019a0004-0000-7000-8000-000000000001",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "validUntil": "2026-12-31"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000004",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "csv",
+      "status": "em_revisao",
+      "name": "Ana Prado",
+      "company": "Elétrica Exemplo",
+      "employeeId": "C-2002",
+      "login": null,
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000401",
+          "roleId": "019a0004-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "validUntil": "2026-12-31"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000005",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "name": "Carlos Mota",
+      "company": "Soldagem Exemplo",
+      "employeeId": "C-3001",
+      "login": null,
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000501",
+          "roleId": "019a0004-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000007",
+          "validUntil": "2026-12-31"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000006",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "ad",
+      "status": "ativo",
+      "name": "Beatriz Souza",
+      "company": "Fábrica Piloto",
+      "employeeId": "E-1006",
+      "login": "beatriz.souza",
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000601",
+          "roleId": "019a0004-0000-7000-8000-000000000001",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000007",
+          "validUntil": "2027-06-30"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000007",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "ad",
+      "status": "ativo",
+      "name": "Joana Reis",
+      "company": "Fábrica Piloto",
+      "employeeId": "E-1007",
+      "login": "joana.reis",
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000701",
+          "roleId": "019a0004-0000-7000-8000-000000000004",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000007",
+          "validUntil": "2027-06-30"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000008",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "csv",
+      "status": "ativo",
+      "name": "Diego Alves",
+      "company": "Elétrica Exemplo",
+      "employeeId": "C-2003",
+      "login": null,
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000801",
+          "roleId": "019a0004-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "validUntil": "2026-12-31"
+        }
+      ]
+    },
+    {
+      "id": "019a0020-0000-7000-8000-000000000009",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "name": "Luís Ferraz",
+      "company": "Fábrica Piloto",
+      "employeeId": "E-1009",
+      "login": "luis.ferraz",
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": []
+    },
+    {
+      "id": "019a0020-0000-7000-8000-00000000000a",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "ad",
+      "status": "ativo",
+      "name": "Sérgio Dias",
+      "company": "Fábrica Piloto",
+      "employeeId": "E-1010",
+      "login": "sergio.dias",
+      "enabled": true,
+      "accountExpires": null,
+      "adObjectGuid": null,
+      "roles": [
+        {
+          "id": "019a0021-0000-7000-8000-000000000a01",
+          "roleId": "019a0004-0000-7000-8000-000000000003",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "validUntil": "2027-06-30"
+        },
+        {
+          "id": "019a0021-0000-7000-8000-000000000a02",
+          "roleId": "019a0004-0000-7000-8000-000000000001",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "validUntil": "2027-06-30"
+        }
+      ]
+    }
+  ],
+  "optionLists": [
+    {
+      "id": "019a0030-0000-7000-8000-000000000001",
+      "name": "EPI",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "items": [
+        {
+          "id": "019a0031-0000-7000-8000-000000000001",
+          "label": "Capacete",
+          "active": true
+        },
+        {
+          "id": "019a0031-0000-7000-8000-000000000002",
+          "label": "Protetor facial",
+          "active": true
+        },
+        {
+          "id": "019a0031-0000-7000-8000-000000000003",
+          "label": "Proteção respiratória",
+          "active": true
+        },
+        {
+          "id": "019a0031-0000-7000-8000-000000000004",
+          "label": "Calçado de segurança",
+          "active": true
+        },
+        {
+          "id": "019a0031-0000-7000-8000-000000000005",
+          "label": "Óculos de segurança",
+          "active": true
+        },
+        {
+          "id": "019a0031-0000-7000-8000-000000000006",
+          "label": "Protetor auricular",
+          "active": true
+        },
+        {
+          "id": "019a0031-0000-7000-8000-000000000007",
+          "label": "Luvas",
+          "active": true
+        },
+        {
+          "id": "019a0031-0000-7000-8000-000000000008",
+          "label": "Cinto de segurança",
+          "active": true
+        }
+      ]
+    },
+    {
+      "id": "019a0030-0000-7000-8000-000000000002",
+      "name": "Perigos",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "items": [
+        {
+          "id": "019a0032-0000-7000-8000-000000000001",
+          "label": "Queda de altura",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000002",
+          "label": "Queda de objetos",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000003",
+          "label": "Ruído",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000004",
+          "label": "Calor",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000005",
+          "label": "Vibração",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000006",
+          "label": "Partículas",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000007",
+          "label": "Tropeço ou escorregão",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000008",
+          "label": "Iluminação deficiente",
+          "active": true
+        },
+        {
+          "id": "019a0032-0000-7000-8000-000000000009",
+          "label": "Veículos em movimento",
+          "active": true
+        }
+      ]
+    },
+    {
+      "id": "019a0030-0000-7000-8000-000000000003",
+      "name": "Documentos com a PT",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "items": [
+        {
+          "id": "019a0033-0000-7000-8000-000000000001",
+          "label": "Análise de risco",
+          "active": true
+        },
+        {
+          "id": "019a0033-0000-7000-8000-000000000002",
+          "label": "PT de trabalho a quente",
+          "active": true
+        },
+        {
+          "id": "019a0033-0000-7000-8000-000000000003",
+          "label": "Plano de içamento",
+          "active": true
+        },
+        {
+          "id": "019a0033-0000-7000-8000-000000000004",
+          "label": "Alta tensão",
+          "active": true
+        },
+        {
+          "id": "019a0033-0000-7000-8000-000000000005",
+          "label": "PT de espaço confinado",
+          "active": true
+        },
+        {
+          "id": "019a0033-0000-7000-8000-000000000006",
+          "label": "Procedimento de trabalho",
+          "active": true
+        }
+      ]
+    },
+    {
+      "id": "019a0030-0000-7000-8000-000000000004",
+      "name": "Tipos de trabalho",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "items": [
+        {
+          "id": "019a0034-0000-7000-8000-000000000001",
+          "label": "Elétrico",
+          "active": true
+        },
+        {
+          "id": "019a0034-0000-7000-8000-000000000002",
+          "label": "Em altura",
+          "active": true
+        },
+        {
+          "id": "019a0034-0000-7000-8000-000000000003",
+          "label": "Espaço confinado",
+          "active": true
+        },
+        {
+          "id": "019a0034-0000-7000-8000-000000000004",
+          "label": "Trabalho a quente",
+          "active": true
+        },
+        {
+          "id": "019a0034-0000-7000-8000-000000000005",
+          "label": "Material perigoso",
+          "active": true
+        }
+      ]
+    },
+    {
+      "id": "019a0030-0000-7000-8000-000000000005",
+      "name": "SIM / N.A.",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "items": [
+        {
+          "id": "019a0035-0000-7000-8000-000000000001",
+          "label": "SIM",
+          "active": true
+        },
+        {
+          "id": "019a0035-0000-7000-8000-000000000002",
+          "label": "N.A.",
+          "active": true
+        }
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "id": "019a0040-0000-7000-8000-000000000001",
+      "name": "Intervenção desenergizada em painel",
+      "retentionClass": "pt",
+      "revision": 1,
+      "updatedAt": "2026-11-05T09:00:00-03:00",
+      "versions": [
+        {
+          "id": "019a0041-0000-7000-8000-000000000001",
+          "number": 1,
+          "status": "arquivada",
+          "createdAt": "2026-03-04T09:00:00-03:00",
+          "activatedAt": "2026-03-10T09:00:00-03:00",
+          "note": "Primeira versão em uso",
+          "origin": "manual",
+          "sourceSha256": null,
+          "holdsEquipment": true,
+          "maxWindowHours": null,
+          "locationTypeIds": [
+            "019a0002-0000-7000-8000-000000000004",
+            "019a0002-0000-7000-8000-000000000006"
+          ],
+          "assetTypeIds": [
+            "019a0003-0000-7000-8000-000000000001",
+            "019a0003-0000-7000-8000-000000000002"
+          ],
+          "form": {
+            "sections": [
+              {
+                "id": "fs_dados",
+                "title": "Dados do serviço",
+                "stageId": "019a0050-0000-7000-8000-000000000001",
+                "items": [
+                  {
+                    "id": "fi_ordem_de_servico",
+                    "kind": "texto",
+                    "label": "Ordem de serviço",
+                    "required": true,
+                    "long": false
+                  }
+                ]
+              }
+            ]
+          },
+          "stages": [
+            {
+              "id": "019a0050-0000-7000-8000-000000000001",
+              "name": "Solicitação",
+              "kind": "solicitacao",
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000001",
+                  "meaning": "Solicita a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0050-0000-7000-8000-000000000002",
+              "name": "Preparação",
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000002",
+                  "meaning": "Registra o isolamento",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                },
+                {
+                  "id": "019a0060-0000-7000-8000-000000000003",
+                  "meaning": "Verifica o isolamento",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0050-0000-7000-8000-000000000003",
+              "name": "Emissão",
+              "kind": "emissao",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000006",
+                  "meaning": "Emite a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0050-0000-7000-8000-000000000004",
+              "name": "Aceite no campo",
+              "kind": "aceite_campo",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000007",
+                  "meaning": "Aceita no campo",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0050-0000-7000-8000-000000000005",
+              "name": "Entrega",
+              "kind": "entrega",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000008",
+                  "meaning": "Entrega a área",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0050-0000-7000-8000-000000000006",
+              "name": "Aceite da área",
+              "kind": "aceite_area",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000009",
+                  "meaning": "Encerra a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            }
+          ],
+          "separation": [
+            {
+              "slotA": "019a0060-0000-7000-8000-000000000006",
+              "slotB": "019a0060-0000-7000-8000-000000000007",
+              "locked": true
+            },
+            {
+              "slotA": "019a0060-0000-7000-8000-000000000002",
+              "slotB": "019a0060-0000-7000-8000-000000000003",
+              "locked": false
+            }
+          ]
+        },
+        {
+          "id": "019a0041-0000-7000-8000-000000000002",
+          "number": 2,
+          "status": "ativa",
+          "createdAt": "2026-08-20T09:00:00-03:00",
+          "activatedAt": "2026-09-01T09:00:00-03:00",
+          "note": "Inclui limite do circuito e janela de trabalho",
+          "origin": "manual",
+          "sourceSha256": null,
+          "holdsEquipment": true,
+          "maxWindowHours": 12,
+          "locationTypeIds": [
+            "019a0002-0000-7000-8000-000000000004",
+            "019a0002-0000-7000-8000-000000000006"
+          ],
+          "assetTypeIds": [
+            "019a0003-0000-7000-8000-000000000001",
+            "019a0003-0000-7000-8000-000000000002"
+          ],
+          "form": {
+            "sections": [
+              {
+                "id": "fs_dados",
+                "title": "Dados do serviço",
+                "stageId": "019a0051-0000-7000-8000-000000000001",
+                "items": [
+                  {
+                    "id": "fi_ordem_de_servico",
+                    "kind": "texto",
+                    "label": "Ordem de serviço",
+                    "required": true,
+                    "long": false
+                  },
+                  {
+                    "id": "fi_limite_do_circuito",
+                    "kind": "texto",
+                    "label": "Limite do circuito",
+                    "required": true,
+                    "long": false
+                  }
+                ]
+              },
+              {
+                "id": "fs_emi_local",
+                "title": "Conferência no local",
+                "stageId": "019a0051-0000-7000-8000-000000000003",
+                "items": [
+                  {
+                    "id": "fi_emi_conf",
+                    "kind": "verificacao",
+                    "label": "Antes de emitir",
+                    "required": true,
+                    "answers": "confirmo",
+                    "lines": [
+                      {
+                        "id": "fl_emi_etiq",
+                        "label": "Cadeado e etiqueta conferidos no ponto de bloqueio",
+                        "blockOn": [],
+                        "noteOn": []
+                      },
+                      {
+                        "id": "fl_emi_tensao",
+                        "label": "Ausência de tensão testada no ponto de trabalho",
+                        "blockOn": [],
+                        "noteOn": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_emi_tensao_v",
+                    "kind": "numero",
+                    "label": "Tensão medida após o bloqueio",
+                    "required": true,
+                    "unit": "V",
+                    "decimals": 1,
+                    "negative": false,
+                    "min": 0,
+                    "max": 0
+                  },
+                  {
+                    "id": "fi_emi_hora",
+                    "kind": "horario",
+                    "label": "Hora do bloqueio",
+                    "required": false,
+                    "seconds": true
+                  },
+                  {
+                    "id": "fi_emi_foto",
+                    "kind": "anexo",
+                    "label": "Foto do ponto de bloqueio",
+                    "required": true,
+                    "accept": [
+                      "foto"
+                    ],
+                    "min": 1,
+                    "hint": "Mostre o cadeado e a etiqueta no disjuntor."
+                  }
+                ]
+              },
+              {
+                "id": "fs_campo_inicio",
+                "title": "Antes de começar",
+                "stageId": "019a0051-0000-7000-8000-000000000004",
+                "items": [
+                  {
+                    "id": "fi_campo_check",
+                    "kind": "verificacao",
+                    "label": "Equipe e área",
+                    "required": true,
+                    "answers": "sim_nao_na",
+                    "lines": [
+                      {
+                        "id": "fl_campo_dds",
+                        "label": "Equipe orientada sobre os riscos desta PT",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_campo_epi",
+                        "label": "EPI conferido em toda a equipe",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_campo_isol",
+                        "label": "Área isolada e sinalizada",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_campo_foto",
+                    "kind": "anexo",
+                    "label": "Foto da área de trabalho",
+                    "required": true,
+                    "accept": [
+                      "foto"
+                    ],
+                    "min": 1,
+                    "hint": "A área isolada, antes de iniciar."
+                  }
+                ]
+              },
+              {
+                "id": "fs_ent_area",
+                "title": "Área devolvida",
+                "stageId": "019a0051-0000-7000-8000-000000000005",
+                "items": [
+                  {
+                    "id": "fi_ent_conf",
+                    "kind": "verificacao",
+                    "label": "Antes de entregar",
+                    "required": true,
+                    "answers": "confirmo",
+                    "lines": [
+                      {
+                        "id": "fl_ent_pessoas",
+                        "label": "Pessoas e ferramentas retiradas",
+                        "blockOn": [],
+                        "noteOn": []
+                      },
+                      {
+                        "id": "fl_ent_prot",
+                        "label": "Proteções e tampas recolocadas",
+                        "blockOn": [],
+                        "noteOn": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_ent_foto",
+                    "kind": "anexo",
+                    "label": "Foto ou vídeo da área limpa",
+                    "required": true,
+                    "accept": [
+                      "foto",
+                      "video"
+                    ],
+                    "min": 1,
+                    "hint": ""
+                  },
+                  {
+                    "id": "fi_ent_obs",
+                    "kind": "texto",
+                    "label": "Observações da entrega",
+                    "required": false,
+                    "long": true
+                  }
+                ]
+              }
+            ]
+          },
+          "stages": [
+            {
+              "id": "019a0051-0000-7000-8000-000000000001",
+              "name": "Solicitação",
+              "kind": "solicitacao",
+              "slots": [
+                {
+                  "id": "019a0061-0000-7000-8000-000000000001",
+                  "meaning": "Solicita a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0051-0000-7000-8000-000000000002",
+              "name": "Preparação",
+              "slots": [
+                {
+                  "id": "019a0061-0000-7000-8000-000000000002",
+                  "meaning": "Registra o isolamento",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                },
+                {
+                  "id": "019a0061-0000-7000-8000-000000000003",
+                  "meaning": "Verifica o isolamento",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0051-0000-7000-8000-000000000003",
+              "name": "Emissão",
+              "kind": "emissao",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0061-0000-7000-8000-000000000006",
+                  "meaning": "Emite a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0051-0000-7000-8000-000000000004",
+              "name": "Aceite no campo",
+              "kind": "aceite_campo",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0061-0000-7000-8000-000000000007",
+                  "meaning": "Aceita no campo",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0051-0000-7000-8000-000000000005",
+              "name": "Entrega",
+              "kind": "entrega",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0061-0000-7000-8000-000000000008",
+                  "meaning": "Entrega a área",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0051-0000-7000-8000-000000000006",
+              "name": "Aceite da área",
+              "kind": "aceite_area",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0061-0000-7000-8000-000000000009",
+                  "meaning": "Encerra a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            }
+          ],
+          "separation": [
+            {
+              "slotA": "019a0061-0000-7000-8000-000000000006",
+              "slotB": "019a0061-0000-7000-8000-000000000007",
+              "locked": true
+            },
+            {
+              "slotA": "019a0061-0000-7000-8000-000000000002",
+              "slotB": "019a0061-0000-7000-8000-000000000003",
+              "locked": false
+            }
+          ]
+        },
+        {
+          "id": "019a0041-0000-7000-8000-000000000003",
+          "number": 3,
+          "status": "rascunho",
+          "createdAt": "2026-11-05T09:00:00-03:00",
+          "activatedAt": null,
+          "note": "Acrescenta o ponto de aterramento",
+          "origin": "manual",
+          "sourceSha256": null,
+          "holdsEquipment": true,
+          "maxWindowHours": 12,
+          "locationTypeIds": [
+            "019a0002-0000-7000-8000-000000000004",
+            "019a0002-0000-7000-8000-000000000006"
+          ],
+          "assetTypeIds": [
+            "019a0003-0000-7000-8000-000000000001",
+            "019a0003-0000-7000-8000-000000000002"
+          ],
+          "form": {
+            "sections": [
+              {
+                "id": "fs_dados",
+                "title": "Dados do serviço",
+                "stageId": "019a0052-0000-7000-8000-000000000001",
+                "items": [
+                  {
+                    "id": "fi_ordem_de_servico",
+                    "kind": "texto",
+                    "label": "Ordem de serviço",
+                    "required": true,
+                    "long": false
+                  },
+                  {
+                    "id": "fi_limite_do_circuito",
+                    "kind": "texto",
+                    "label": "Limite do circuito",
+                    "required": true,
+                    "long": false
+                  },
+                  {
+                    "id": "fi_ponto_de_aterramento",
+                    "kind": "texto",
+                    "label": "Ponto de aterramento",
+                    "required": true,
+                    "long": false
+                  }
+                ]
+              },
+              {
+                "id": "fs_emi_local",
+                "title": "Conferência no local",
+                "stageId": "019a0052-0000-7000-8000-000000000003",
+                "items": [
+                  {
+                    "id": "fi_emi_conf",
+                    "kind": "verificacao",
+                    "label": "Antes de emitir",
+                    "required": true,
+                    "answers": "confirmo",
+                    "lines": [
+                      {
+                        "id": "fl_emi_etiq",
+                        "label": "Cadeado e etiqueta conferidos no ponto de bloqueio",
+                        "blockOn": [],
+                        "noteOn": []
+                      },
+                      {
+                        "id": "fl_emi_tensao",
+                        "label": "Ausência de tensão testada no ponto de trabalho",
+                        "blockOn": [],
+                        "noteOn": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_emi_tensao_v",
+                    "kind": "numero",
+                    "label": "Tensão medida após o bloqueio",
+                    "required": true,
+                    "unit": "V",
+                    "decimals": 1,
+                    "negative": false,
+                    "min": 0,
+                    "max": 0
+                  },
+                  {
+                    "id": "fi_emi_hora",
+                    "kind": "horario",
+                    "label": "Hora do bloqueio",
+                    "required": false,
+                    "seconds": true
+                  },
+                  {
+                    "id": "fi_emi_foto",
+                    "kind": "anexo",
+                    "label": "Foto do ponto de bloqueio",
+                    "required": true,
+                    "accept": [
+                      "foto"
+                    ],
+                    "min": 1,
+                    "hint": "Mostre o cadeado e a etiqueta no disjuntor."
+                  }
+                ]
+              },
+              {
+                "id": "fs_campo_inicio",
+                "title": "Antes de começar",
+                "stageId": "019a0052-0000-7000-8000-000000000004",
+                "items": [
+                  {
+                    "id": "fi_campo_check",
+                    "kind": "verificacao",
+                    "label": "Equipe e área",
+                    "required": true,
+                    "answers": "sim_nao_na",
+                    "lines": [
+                      {
+                        "id": "fl_campo_dds",
+                        "label": "Equipe orientada sobre os riscos desta PT",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_campo_epi",
+                        "label": "EPI conferido em toda a equipe",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_campo_isol",
+                        "label": "Área isolada e sinalizada",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_campo_foto",
+                    "kind": "anexo",
+                    "label": "Foto da área de trabalho",
+                    "required": true,
+                    "accept": [
+                      "foto"
+                    ],
+                    "min": 1,
+                    "hint": "A área isolada, antes de iniciar."
+                  }
+                ]
+              },
+              {
+                "id": "fs_ent_area",
+                "title": "Área devolvida",
+                "stageId": "019a0052-0000-7000-8000-000000000005",
+                "items": [
+                  {
+                    "id": "fi_ent_conf",
+                    "kind": "verificacao",
+                    "label": "Antes de entregar",
+                    "required": true,
+                    "answers": "confirmo",
+                    "lines": [
+                      {
+                        "id": "fl_ent_pessoas",
+                        "label": "Pessoas e ferramentas retiradas",
+                        "blockOn": [],
+                        "noteOn": []
+                      },
+                      {
+                        "id": "fl_ent_prot",
+                        "label": "Proteções e tampas recolocadas",
+                        "blockOn": [],
+                        "noteOn": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_ent_foto",
+                    "kind": "anexo",
+                    "label": "Foto ou vídeo da área limpa",
+                    "required": true,
+                    "accept": [
+                      "foto",
+                      "video"
+                    ],
+                    "min": 1,
+                    "hint": ""
+                  },
+                  {
+                    "id": "fi_ent_obs",
+                    "kind": "texto",
+                    "label": "Observações da entrega",
+                    "required": false,
+                    "long": true
+                  }
+                ]
+              }
+            ]
+          },
+          "stages": [
+            {
+              "id": "019a0052-0000-7000-8000-000000000001",
+              "name": "Solicitação",
+              "kind": "solicitacao",
+              "slots": [
+                {
+                  "id": "019a0062-0000-7000-8000-000000000001",
+                  "meaning": "Solicita a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0052-0000-7000-8000-000000000002",
+              "name": "Preparação",
+              "slots": [
+                {
+                  "id": "019a0062-0000-7000-8000-000000000002",
+                  "meaning": "Registra o isolamento",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                },
+                {
+                  "id": "019a0062-0000-7000-8000-000000000003",
+                  "meaning": "Verifica o isolamento",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0052-0000-7000-8000-000000000003",
+              "name": "Emissão",
+              "kind": "emissao",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0062-0000-7000-8000-000000000006",
+                  "meaning": "Emite a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0052-0000-7000-8000-000000000004",
+              "name": "Aceite no campo",
+              "kind": "aceite_campo",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0062-0000-7000-8000-000000000007",
+                  "meaning": "Aceita no campo",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0052-0000-7000-8000-000000000005",
+              "name": "Entrega",
+              "kind": "entrega",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0062-0000-7000-8000-000000000008",
+                  "meaning": "Entrega a área",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0052-0000-7000-8000-000000000006",
+              "name": "Aceite da área",
+              "kind": "aceite_area",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0062-0000-7000-8000-000000000009",
+                  "meaning": "Encerra a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            }
+          ],
+          "separation": [
+            {
+              "slotA": "019a0062-0000-7000-8000-000000000006",
+              "slotB": "019a0062-0000-7000-8000-000000000007",
+              "locked": true
+            },
+            {
+              "slotA": "019a0062-0000-7000-8000-000000000002",
+              "slotB": "019a0062-0000-7000-8000-000000000003",
+              "locked": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "019a0040-0000-7000-8000-000000000002",
+      "name": "Soldagem em tubulação de vapor",
+      "retentionClass": "pt",
+      "revision": 1,
+      "updatedAt": "2026-09-20T09:00:00-03:00",
+      "versions": [
+        {
+          "id": "019a0041-0000-7000-8000-000000000004",
+          "number": 1,
+          "status": "ativa",
+          "createdAt": "2026-09-15T09:00:00-03:00",
+          "activatedAt": "2026-09-20T09:00:00-03:00",
+          "note": "Primeira versão em uso",
+          "origin": "manual",
+          "sourceSha256": null,
+          "holdsEquipment": true,
+          "maxWindowHours": null,
+          "locationTypeIds": [
+            "019a0002-0000-7000-8000-000000000006"
+          ],
+          "assetTypeIds": [
+            "019a0003-0000-7000-8000-000000000005",
+            "019a0003-0000-7000-8000-000000000006"
+          ],
+          "form": {
+            "sections": [
+              {
+                "id": "fs_dados",
+                "title": "Dados do serviço",
+                "stageId": "019a0053-0000-7000-8000-000000000001",
+                "items": [
+                  {
+                    "id": "fi_metodo_de_soldagem",
+                    "kind": "texto",
+                    "label": "Método de soldagem",
+                    "required": true,
+                    "long": false
+                  },
+                  {
+                    "id": "fi_controle_de_faiscas",
+                    "kind": "texto",
+                    "label": "Controle de faíscas",
+                    "required": true,
+                    "long": false
+                  },
+                  {
+                    "id": "fi_observacoes_do_trecho",
+                    "kind": "texto",
+                    "label": "Observações do trecho",
+                    "required": true,
+                    "long": false
+                  }
+                ]
+              }
+            ]
+          },
+          "stages": [
+            {
+              "id": "019a0053-0000-7000-8000-000000000001",
+              "name": "Solicitação",
+              "kind": "solicitacao",
+              "slots": [
+                {
+                  "id": "019a0063-0000-7000-8000-000000000001",
+                  "meaning": "Solicita a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0053-0000-7000-8000-000000000002",
+              "name": "Preparação",
+              "slots": [
+                {
+                  "id": "019a0063-0000-7000-8000-000000000002",
+                  "meaning": "Confirma bloqueio e despressurização",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                },
+                {
+                  "id": "019a0063-0000-7000-8000-000000000004",
+                  "meaning": "Confere controles de incêndio",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": false
+                }
+              ]
+            },
+            {
+              "id": "019a0053-0000-7000-8000-000000000003",
+              "name": "Emissão",
+              "kind": "emissao",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0063-0000-7000-8000-000000000006",
+                  "meaning": "Emite a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0053-0000-7000-8000-000000000004",
+              "name": "Aceite no campo",
+              "kind": "aceite_campo",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0063-0000-7000-8000-000000000007",
+                  "meaning": "Aceita no campo",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0053-0000-7000-8000-000000000005",
+              "name": "Entrega",
+              "kind": "entrega",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0063-0000-7000-8000-000000000008",
+                  "meaning": "Entrega a área",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0053-0000-7000-8000-000000000006",
+              "name": "Aceite da área",
+              "kind": "aceite_area",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0063-0000-7000-8000-000000000009",
+                  "meaning": "Encerra a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            }
+          ],
+          "separation": [
+            {
+              "slotA": "019a0063-0000-7000-8000-000000000006",
+              "slotB": "019a0063-0000-7000-8000-000000000007",
+              "locked": true
+            },
+            {
+              "slotA": "019a0063-0000-7000-8000-000000000002",
+              "slotB": "019a0063-0000-7000-8000-000000000004",
+              "locked": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "019a0040-0000-7000-8000-000000000003",
+      "name": "PT geral",
+      "retentionClass": "pt",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "versions": [
+        {
+          "id": "019a0041-0000-7000-8000-000000000005",
+          "number": 1,
+          "status": "rascunho",
+          "createdAt": "2026-11-06T09:00:00-03:00",
+          "activatedAt": null,
+          "note": "Formulário em papel convertido",
+          "origin": "manual",
+          "sourceSha256": null,
+          "holdsEquipment": true,
+          "maxWindowHours": 72,
+          "locationTypeIds": [
+            "019a0002-0000-7000-8000-000000000004",
+            "019a0002-0000-7000-8000-000000000006"
+          ],
+          "assetTypeIds": [
+            "019a0003-0000-7000-8000-000000000001",
+            "019a0003-0000-7000-8000-000000000002",
+            "019a0003-0000-7000-8000-000000000005",
+            "019a0003-0000-7000-8000-000000000006"
+          ],
+          "stages": [
+            {
+              "id": "019a0054-0000-7000-8000-000000000001",
+              "name": "Solicitação",
+              "kind": "solicitacao",
+              "slots": [
+                {
+                  "id": "019a0064-0000-7000-8000-000000000001",
+                  "meaning": "Solicita a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0054-0000-7000-8000-000000000002",
+              "name": "Preparação",
+              "slots": [
+                {
+                  "id": "019a0064-0000-7000-8000-000000000005",
+                  "meaning": "Confirma as precauções",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000003",
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0054-0000-7000-8000-000000000003",
+              "name": "Emissão",
+              "kind": "emissao",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0064-0000-7000-8000-000000000006",
+                  "meaning": "Emite a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0054-0000-7000-8000-000000000004",
+              "name": "Aceite no campo",
+              "kind": "aceite_campo",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0064-0000-7000-8000-000000000007",
+                  "meaning": "Aceita no campo",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0054-0000-7000-8000-000000000005",
+              "name": "Entrega",
+              "kind": "entrega",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0064-0000-7000-8000-000000000008",
+                  "meaning": "Entrega a área",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000001"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            },
+            {
+              "id": "019a0054-0000-7000-8000-000000000006",
+              "name": "Aceite da área",
+              "kind": "aceite_area",
+              "locked": true,
+              "slots": [
+                {
+                  "id": "019a0064-0000-7000-8000-000000000009",
+                  "meaning": "Encerra a PT",
+                  "kind": "cargo",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": null,
+                  "min": 1,
+                  "required": true
+                }
+              ]
+            }
+          ],
+          "separation": [
+            {
+              "slotA": "019a0064-0000-7000-8000-000000000006",
+              "slotB": "019a0064-0000-7000-8000-000000000007",
+              "locked": true
+            },
+            {
+              "slotA": "019a0064-0000-7000-8000-000000000008",
+              "slotB": "019a0064-0000-7000-8000-000000000009",
+              "locked": true
+            }
+          ],
+          "form": {
+            "sections": [
+              {
+                "id": "fs_ident",
+                "title": "Identificação da tarefa",
+                "stageId": "019a0054-0000-7000-8000-000000000001",
+                "items": [
+                  {
+                    "id": "fi_empresa",
+                    "kind": "texto",
+                    "label": "Empresa contratada",
+                    "required": true,
+                    "long": false
+                  },
+                  {
+                    "id": "fi_trab",
+                    "kind": "marcacao",
+                    "label": "Tipos de trabalho",
+                    "required": true,
+                    "multiple": true,
+                    "other": true,
+                    "options": [],
+                    "listId": "019a0030-0000-7000-8000-000000000004"
+                  },
+                  {
+                    "id": "fi_clima",
+                    "kind": "marcacao",
+                    "label": "Condição do tempo",
+                    "required": true,
+                    "multiple": false,
+                    "other": false,
+                    "options": [
+                      {
+                        "id": "fo_clima_bom",
+                        "label": "Bom"
+                      },
+                      {
+                        "id": "fo_clima_chuva",
+                        "label": "Chuva fraca"
+                      },
+                      {
+                        "id": "fo_clima_vento",
+                        "label": "Ventos fortes",
+                        "blocks": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "fs_prec",
+                "title": "Avaliação de perigos e preparação",
+                "stageId": "019a0054-0000-7000-8000-000000000002",
+                "items": [
+                  {
+                    "id": "fi_prec",
+                    "kind": "verificacao",
+                    "label": "Precauções",
+                    "required": true,
+                    "answers": "sim_nao_na",
+                    "lines": [
+                      {
+                        "id": "fl_bloq",
+                        "label": "Disjuntor ou seccionadora bloqueados, fusíveis retirados ou chave Castell removida",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_teste",
+                        "label": "Circuito testado e comprovado desenergizado",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_mec",
+                        "label": "Isolamento mecânico e energia armazenada dissipada",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_tubo",
+                        "label": "Tubulações drenadas, purgadas ou desconectadas",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_ext",
+                        "label": "Extintor disponível no local",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      },
+                      {
+                        "id": "fl_barr",
+                        "label": "Sinalização e barreiras instaladas",
+                        "blockOn": [
+                          "nao"
+                        ],
+                        "noteOn": [
+                          "na"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_docs",
+                    "kind": "marcacao",
+                    "label": "Outros documentos emitidos com a PT",
+                    "required": false,
+                    "multiple": true,
+                    "other": true,
+                    "options": [],
+                    "listId": "019a0030-0000-7000-8000-000000000003"
+                  },
+                  {
+                    "id": "fi_area",
+                    "kind": "verificacao",
+                    "label": "Área de trabalho",
+                    "required": true,
+                    "answers": "lista",
+                    "answerListId": "019a0030-0000-7000-8000-000000000005",
+                    "lines": [
+                      {
+                        "id": "fl_area_lib",
+                        "label": "Área liberada pela operação",
+                        "blockOn": [],
+                        "noteOn": [
+                          "019a0035-0000-7000-8000-000000000002"
+                        ]
+                      },
+                      {
+                        "id": "fl_area_ilum",
+                        "label": "Iluminação adequada",
+                        "blockOn": [],
+                        "noteOn": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_resid",
+                    "kind": "texto",
+                    "label": "Riscos residuais",
+                    "required": true,
+                    "long": true
+                  },
+                  {
+                    "id": "fi_quente_pt",
+                    "kind": "texto",
+                    "label": "Nº da PT de trabalho a quente",
+                    "required": true,
+                    "long": false,
+                    "showWhen": {
+                      "itemId": "fi_trab",
+                      "anyOf": [
+                        "019a0034-0000-7000-8000-000000000004"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "fi_altura_resgate",
+                    "kind": "anexo",
+                    "label": "Plano de resgate em altura",
+                    "required": true,
+                    "accept": [
+                      "arquivo",
+                      "foto"
+                    ],
+                    "min": 1,
+                    "hint": "O plano assinado pela área.",
+                    "showWhen": {
+                      "itemId": "fi_trab",
+                      "anyOf": [
+                        "019a0034-0000-7000-8000-000000000002"
+                      ]
+                    }
+                  },
+                  {
+                    "id": "fi_o2",
+                    "kind": "numero",
+                    "label": "Oxigênio no ar (teste de gás)",
+                    "required": true,
+                    "unit": "%",
+                    "decimals": 1,
+                    "negative": false,
+                    "min": 19.5,
+                    "max": 23.5
+                  },
+                  {
+                    "id": "fi_prep_foto",
+                    "kind": "anexo",
+                    "label": "Foto do isolamento aplicado",
+                    "required": true,
+                    "accept": [
+                      "foto"
+                    ],
+                    "min": 1,
+                    "hint": "Um registro por ponto de bloqueio."
+                  },
+                  {
+                    "id": "fi_epi",
+                    "kind": "marcacao",
+                    "label": "EPI mínimo durante todo o trabalho",
+                    "required": true,
+                    "multiple": true,
+                    "other": true,
+                    "options": [],
+                    "listId": "019a0030-0000-7000-8000-000000000001"
+                  }
+                ]
+              },
+              {
+                "id": "fs_emi",
+                "title": "Emissão",
+                "stageId": "019a0054-0000-7000-8000-000000000003",
+                "items": [
+                  {
+                    "id": "fi_emi_decl",
+                    "kind": "aviso",
+                    "label": "Aviso",
+                    "required": false,
+                    "text": "As precauções e os documentos acima são adequados para um sistema seguro de trabalho nesta tarefa."
+                  },
+                  {
+                    "id": "fi_emi_transf",
+                    "kind": "aviso",
+                    "label": "Aviso",
+                    "required": false,
+                    "text": "Esta PT só é transferida sob supervisão pessoal de uma pessoa autorizada."
+                  }
+                ]
+              },
+              {
+                "id": "fs_receb",
+                "title": "Recebimento",
+                "stageId": "019a0054-0000-7000-8000-000000000004",
+                "items": [
+                  {
+                    "id": "fi_receb",
+                    "kind": "aviso",
+                    "label": "Aviso",
+                    "required": false,
+                    "text": "Li, entendi e aceito minhas responsabilidades nesta PT."
+                  }
+                ]
+              },
+              {
+                "id": "fs_entrega",
+                "title": "Entrega da área",
+                "stageId": "019a0054-0000-7000-8000-000000000005",
+                "items": [
+                  {
+                    "id": "fi_entrega",
+                    "kind": "verificacao",
+                    "label": "Antes de entregar",
+                    "required": true,
+                    "answers": "confirmo",
+                    "lines": [
+                      {
+                        "id": "fl_pessoas",
+                        "label": "Todas as pessoas foram retiradas da área e do equipamento",
+                        "blockOn": [],
+                        "noteOn": []
+                      },
+                      {
+                        "id": "fl_ferr",
+                        "label": "Ferramentas e resíduos removidos",
+                        "blockOn": [],
+                        "noteOn": []
+                      },
+                      {
+                        "id": "fl_prot",
+                        "label": "Proteções e portas de acesso recolocadas",
+                        "blockOn": [],
+                        "noteOn": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_ent_evid",
+                    "kind": "anexo",
+                    "label": "Foto, vídeo ou arquivo da área entregue",
+                    "required": false,
+                    "accept": [
+                      "foto",
+                      "video",
+                      "arquivo"
+                    ],
+                    "min": 1,
+                    "hint": ""
+                  }
+                ]
+              },
+              {
+                "id": "fs_cond",
+                "title": "Condição da área",
+                "stageId": "019a0054-0000-7000-8000-000000000006",
+                "items": [
+                  {
+                    "id": "fi_cond",
+                    "kind": "verificacao",
+                    "label": "Encerramento",
+                    "required": true,
+                    "answers": "sim_nao",
+                    "lines": [
+                      {
+                        "id": "fl_oper",
+                        "label": "A área e o equipamento podem voltar à operação",
+                        "blockOn": [],
+                        "noteOn": [
+                          "nao"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fi_cond_aviso",
+                    "kind": "aviso",
+                    "label": "Aviso",
+                    "required": false,
+                    "text": "Encerrar a PT não restaura o isolamento."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

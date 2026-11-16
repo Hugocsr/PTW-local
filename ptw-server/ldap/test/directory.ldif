@@ -1,0 +1,102 @@
+dn: dc=ptw,dc=test
+objectClass: domain
+dc: ptw
+
+dn: ou=people,dc=ptw,dc=test
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,dc=ptw,dc=test
+objectClass: organizationalUnit
+ou: groups
+
+dn: uid=ana,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn: Ana Souza
+sn: Souza
+uid: ana
+uid: marina.costa
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000001
+
+dn: uid=paulo,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn: Paulo Santos
+sn: Santos
+uid: paulo
+uid: paulo.lima
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000002
+
+dn: uid=bia,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn: Bia Lima
+sn: Lima
+uid: bia
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000003
+
+dn: uid=semgrupo,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn: Sem Grupo
+sn: Grupo
+uid: semgrupo
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000004
+
+dn: cn=ptw-users,ou=groups,dc=ptw,dc=test
+objectClass: groupOfNames
+cn: ptw-users
+member: uid=ana,ou=people,dc=ptw,dc=test
+member: uid=paulo,ou=people,dc=ptw,dc=test
+member: uid=bia,ou=people,dc=ptw,dc=test
+member: uid=rafael.nunes,ou=people,dc=ptw,dc=test
+member: uid=beatriz.souza,ou=people,dc=ptw,dc=test
+member: uid=joana.reis,ou=people,dc=ptw,dc=test
+member: uid=luis.ferraz,ou=people,dc=ptw,dc=test
+member: uid=sergio.dias,ou=people,dc=ptw,dc=test
+
+dn: cn=ptw-admins,ou=groups,dc=ptw,dc=test
+objectClass: groupOfNames
+cn: ptw-admins
+member: uid=ana,ou=people,dc=ptw,dc=test
+
+dn: uid=rafael.nunes,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn: Rafael Nunes
+sn: Nunes
+uid: rafael.nunes
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000005
+
+dn: uid=beatriz.souza,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn: Beatriz Souza
+sn: Souza
+uid: beatriz.souza
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000006
+
+dn: uid=joana.reis,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn: Joana Reis
+sn: Reis
+uid: joana.reis
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000007
+
+dn: uid=luis.ferraz,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn:: THXDrXMgRmVycmF6
+sn: Ferraz
+uid: luis.ferraz
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000008
+
+dn: uid=sergio.dias,ou=people,dc=ptw,dc=test
+objectClass: inetOrgPerson
+cn:: U8OpcmdpbyBEaWFz
+sn: Dias
+uid: sergio.dias
+userPassword: Teste-local-2026!
+entryUUID: 00000001-0000-4000-8000-000000000009

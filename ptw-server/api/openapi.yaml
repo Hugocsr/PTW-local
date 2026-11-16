@@ -1,0 +1,2264 @@
+openapi: 3.1.0
+info:
+  title: PTW in a Box · API
+  version: 1.0.0-fase1
+  summary: "Contrato da API entre o app (ptw-mockup-v2) e o banco (ptw-server/db/schema)."
+  description: |
+    Contrato da fase 1 da fábrica (`fabrica/fase-1.md`). Fonte única entre os pacotes: quem implementa a
+    API e quem implementa a camada de dados do app seguem este arquivo.
+
+    **Formas.** Nomes e formatos são os do banco (`db/MODELO.md`) em camelCase, exatamente como os tipos do
+    app já fazem (`src/registry/types.ts`, `src/registry/modelTypes.ts`, `src/permit/types.ts`,
+    `src/core/form.ts`, `src/core/audit.ts`). Instantes: ISO 8601 com fuso. Dia: `AAAA-MM-DD`. Hash: hexa
+    minúsculo. Ids: uuid (v7); o cliente pode gerar o id de um registro novo (campo `id` no corpo).
+
+    **Quem age.** A pessoa é sempre a da sessão (`ptw.current_person()`); nenhum corpo leva `personId` de
+    quem age. A unidade é a da sessão (RLS).
+
+    **Transação.** Cada requisição autenticada abre uma transação e chama
+    `ptw.set_context(unidade, pessoa, cargo, autenticação, aparelho, id_da_requisição, motivo, p_undo)`:
+    `X-Request-Id` → `p_request`, `X-Ptw-Client` → `p_client`, `X-Ptw-Undo: true` → `p_undo`; o motivo
+    (`p_reason`) vem do corpo ou de `X-Ptw-Reason` nas operações que o pedem. `X-Request-Id` e
+    `X-Ptw-Client` são aceitos em toda operação (declarados em `GET /session`).
+
+    **Concorrência otimista.** Onde o banco tem revisão, a escrita exige `If-Match: "<n>"`: `revision` nos
+    cadastros, modelos e versões em rascunho; `rowVersion` na PT. Valor antigo → `409 PTA06` (em `detail`,
+    a revisão atual). Sem o cabeçalho → `428 PTA07`. A resposta traz `ETag: "<n>"`. Parar não exige
+    `If-Match` (Parar nunca perde uma corrida).
+
+    **Idempotência.** `POST` que cria aceita `Idempotency-Key` (uuid). A mesma chave com o mesmo corpo
+    devolve a resposta original (`Idempotency-Replayed: true`); com outro corpo, `422 PTA08`.
+
+    **Erros.** Um formato só: `{ code, message, detail? }`. `code` é o do banco (`PTWnn` ou SQLSTATE de
+    5 caracteres) ou da própria API (`PTAnn`). A mensagem é a do banco; o título da tela vem de
+    `core/ptwErrors.ts` (`PTW_MESSAGE`). Mapa em `x-ptw-error-map`. Toda recusa por regra (4xx com
+    `PTWnn`, `23xxx`, `42501`, `PTA02`, `PTA03`) fica na trilha por `ptw.audit_denied`, em outra transação.
+
+    **Paginação.** Listas de cadastro e o Quadro: `page` (a partir de 0) + `pageSize`, resposta com
+    `total`. Auditoria e Histórico: cursor por `seq` (`before`), do mais novo para o mais antigo.
+
+    **Extensões.** `x-ptw-codes`: recusas de regra esperadas na operação (cada uma tem teste de contrato).
+    `x-ptw-audit`: o que a operação grava na trilha além dos gatilhos do banco.
+  license:
+    name: Uso interno
+    identifier: LicenseRef-Proprietary
+
+servers:
+  - url: /api/v1
+    description: "Atrás do Caddy (`web`), mesmo host do app."
+
+tags:
+  - { name: sessao, description: "Entrada, saída e quem está na sessão." }
+  - { name: cadastro, description: "Unidade, tipos, locais, ativos e relações, pessoas e cargos, listas." }
+  - { name: modelos, description: "Modelos de PT, versões, importação e exportação do pacote `ptw.modelo/1`." }
+  - { name: pt, description: Permissões de trabalho e os atos sobre elas. }
+  - { name: anexos, description: "Arquivos: conteúdo no S3 pela API, chave = SHA-256." }
+  - { name: auditoria, description: "Trilha (`v_audit`), cadeia e exportação." }
+  - { name: sistema, description: "Saúde, situação e avisos em tempo real." }
+
+security:
+  - sessao: []
+
+x-ptw-error-map:
+  description: "Classe de erro (SQLSTATE do banco ou código da API) → status HTTP."
+  "422":
+    - "PTW01–PTW09, PTW11, PTW15–PTW33 (recusa de regra; a mensagem é a do banco)"
+    - "23514 (restrição de coluna)"
+    - "PTA08 (Idempotency-Key reutilizada com outro corpo)"
+    - "PTA09 (arquivo: SHA-256 ou tamanho não confere com o enviado)"
+    - "PTA10 (prévia da importação vencida, ou pacote diferente do da prévia)"
+  "409":
+    - "PTW10 (equipamento ocupado; `detail` = id da PT que prende)"
+    - "23505 (já existe um registro igual)"
+    - "23503 (registro em uso ou inexistente)"
+    - "PTA06 (revisão desatualizada; `detail` = revisão atual)"
+  "428": ["PTA07 (falta If-Match)"]
+  "400": ["PTA05 (requisição fora do contrato)", "22xxx e 23502 (dado inválido)"]
+  "401": ["PTA02 (sem sessão, sessão expirada ou conta desativada)"]
+  "403": ["PTA03 (a pessoa não tem a permissão da operação)", "42501 (o banco recusou o privilégio)"]
+  "404": ["PTA04 (não existe nesta unidade)"]
+  "413": ["PTA11 (arquivo maior que 2 GiB)"]
+  "429": ["PTA12 (tentativas demais; fase 2)"]
+  "500": ["PTW12 depois de repetir, PTW13, PTW14 (erro da API, nunca do usuário)", "PTA99 (erro não previsto)"]
+  "501": ["PTA13 (ainda não disponível nesta fase)"]
+  "503": ["PTA01 (banco ou armazenamento fora do ar; 08xxx, 53xxx, 57P0x)", "55P03 e 40001/40P01 depois de repetir (com Retry-After)"]
+  "504": ["57014 (statement_timeout)"]
+
+paths:
+  # ------------------------------------------------------------------ sessão
+  /session:
+    get:
+      tags: [sessao]
+      operationId: getSession
+      parameters: [{ $ref: "#/components/parameters/RequestId" }, { $ref: "#/components/parameters/Client" }]
+      summary: "Quem está na sessão (pessoa, unidade, permissões) e a hora do servidor."
+      responses:
+        "200": { description: Sessão ativa., content: { application/json: { schema: { $ref: "#/components/schemas/Session" } } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /session/login:
+    post:
+      tags: [sessao]
+      operationId: login
+      summary: "Entrada com o login da empresa (LDAP/AD), quando configurado."
+      security: []
+      x-ptw-audit: "ptw.audit_log('sessao.entrada', ok ou falha)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [login, password]
+              properties:
+                login: { type: string, pattern: "^[A-Za-z0-9._@-]{1,104}$" }
+                password: { type: string, minLength: 1, maxLength: 1024, format: password }
+      responses:
+        "200": { $ref: "#/components/responses/SessionStarted" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "503": { $ref: "#/components/responses/Error" }
+  /session/dev-login:
+    post:
+      tags: [sessao]
+      operationId: devLogin
+      summary: "Entrada de desenvolvimento, só com o login de uma pessoa do cadastro, sem senha."
+      description: |
+        Só existe com `PTW_DEV_LOGIN=1` no serviço `api` (nunca em implantação; `GET /status` mostra
+        `devLogin`). Desligado, responde 404. Método de autenticação na trilha: `sessao`. Serve também para
+        trocar de pessoa no desenvolvimento (a sessão anterior sai com `sessao.saida`).
+      security: []
+      x-ptw-audit: "ptw.audit_log('sessao.entrada'); se havia sessão, 'sessao.saida' antes"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [login]
+              properties:
+                login: { type: string, maxLength: 104 }
+      responses:
+        "200": { $ref: "#/components/responses/SessionStarted" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /session/dev-people:
+    get:
+      tags: [sessao]
+      operationId: listDevPeople
+      summary: "Pessoas disponíveis para a entrada de demonstração, sem senha."
+      description: "Somente com PTW_DEV_LOGIN=1; fora disso responde 404. Retorna só contas ativas da unidade."
+      security: []
+      responses:
+        "200":
+          description: Pessoas disponíveis.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, name, login]
+                      properties:
+                        id: { $ref: "#/components/schemas/Uuid" }
+                        name: { type: string }
+                        login: { type: string }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /session/activity:
+    post:
+      tags: [sessao]
+      operationId: sessionActivity
+      summary: "Marca interação humana na sessão; polling não renova inatividade."
+      responses:
+        "204": { description: Atividade registrada. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /session/logout:
+    post:
+      tags: [sessao]
+      operationId: logout
+      summary: "Sai e apaga o cookie."
+      x-ptw-audit: "ptw.audit_log('sessao.saida')"
+      responses:
+        "204": { description: Sessão encerrada. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  # ------------------------------------------------------------------ cadastro
+  /unit:
+    get:
+      tags: [cadastro]
+      operationId: getUnit
+      summary: "A unidade da sessão. Só leitura (a API não cria nem altera unidade)."
+      responses:
+        "200": { description: Unidade., content: { application/json: { schema: { $ref: "#/components/schemas/Unit" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  /types:
+    get:
+      tags: [cadastro]
+      operationId: listTypes
+      summary: "Tipos configuráveis (`type_def`) das quatro famílias."
+      parameters:
+        - { name: family, in: query, schema: { $ref: "#/components/schemas/TypeFamily" } }
+        - { name: active, in: query, schema: { type: boolean } }
+        - { $ref: "#/components/parameters/Q" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: "Página de tipos, por família e rótulo.", content: { application/json: { schema: { $ref: "#/components/schemas/TypePage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [cadastro]
+      operationId: createType
+      summary: "Cria um tipo (também refaz um tipo removido, com o mesmo `id` e `X-Ptw-Undo`)."
+      x-ptw-codes: ["23505", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/TypeInput" } } } }
+      responses:
+        "201": { description: Criado., content: { application/json: { schema: { $ref: "#/components/schemas/TypeDef" } } } }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /types/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [cadastro]
+      operationId: getType
+      summary: "Um tipo."
+      responses:
+        "200": { description: Tipo., content: { application/json: { schema: { $ref: "#/components/schemas/TypeDef" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [cadastro]
+      operationId: updateType
+      summary: "Renomeia, troca o ícone, desativa ou reativa. `type_def` não tem revisão (última escrita vale)."
+      x-ptw-codes: ["23505", "23514", "23503"]
+      parameters: [{ $ref: "#/components/parameters/Undo" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              minProperties: 1
+              properties:
+                label: { type: string, minLength: 1, maxLength: 80 }
+                icon: { type: [string, "null"], pattern: "^[a-z0-9_]{1,40}$" }
+                active: { type: boolean }
+      responses:
+        "200": { description: Alterado., content: { application/json: { schema: { $ref: "#/components/schemas/TypeDef" } } } }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [cadastro]
+      operationId: removeType
+      summary: "Remove um tipo sem uso. Em uso → 409 (`23503`); tipo do sistema (`systemKey`) → 422 (`23514`)."
+      x-ptw-codes: ["23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/Undo" }]
+      responses:
+        "204": { description: Removido. }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  /locations:
+    get:
+      tags: [cadastro]
+      operationId: listLocations
+      summary: "Locais. A árvore inteira cabe em poucas páginas (`pageSize` até 1000)."
+      parameters:
+        - { $ref: "#/components/parameters/Q" }
+        - { name: parentId, in: query, description: "Filhos diretos; `root` = locais sem pai.", schema: { type: string } }
+        - { name: under, in: query, description: O local e tudo abaixo dele., schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: typeId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { $ref: "#/components/parameters/Status" }
+        - { $ref: "#/components/parameters/UpdatedSince" }
+        - { name: sort, in: query, schema: { type: string, enum: [code, -code, name, -name, updatedAt, -updatedAt], default: code } }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: Página de locais., content: { application/json: { schema: { $ref: "#/components/schemas/LocationPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [cadastro]
+      operationId: createLocation
+      summary: "Cria um local."
+      x-ptw-codes: [PTW02, "23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LocationInput" } } } }
+      responses:
+        "201": { $ref: "#/components/responses/LocationOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /locations/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [cadastro]
+      operationId: getLocation
+      summary: "Um local."
+      responses:
+        "200": { $ref: "#/components/responses/LocationOk" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [cadastro]
+      operationId: updateLocation
+      summary: "Altera o local (mover = trocar `parentId`). Desativar = `status: inativo`."
+      x-ptw-codes: [PTW02, "23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/LocationInput" } } } }
+      responses:
+        "200": { $ref: "#/components/responses/LocationOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  /assets:
+    get:
+      tags: [cadastro]
+      operationId: listAssets
+      summary: "Ativos, com busca por trecho do código, nome ou apelido (trigram, sem acento)."
+      parameters:
+        - { $ref: "#/components/parameters/Q" }
+        - { name: typeId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: locationId, in: query, description: Ativos neste local ou abaixo dele., schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: id, in: query, description: "Busca por ids (até 200), para completar referências.", schema: { type: array, maxItems: 200, items: { $ref: "#/components/schemas/Uuid" } } }
+        - { $ref: "#/components/parameters/Status" }
+        - { $ref: "#/components/parameters/UpdatedSince" }
+        - { name: sort, in: query, schema: { type: string, enum: [code, -code, name, -name, updatedAt, -updatedAt], default: code } }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: Página de ativos., content: { application/json: { schema: { $ref: "#/components/schemas/AssetPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [cadastro]
+      operationId: createAsset
+      summary: "Cria um ativo."
+      x-ptw-codes: ["23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AssetInput" } } } }
+      responses:
+        "201": { $ref: "#/components/responses/AssetOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /assets/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [cadastro]
+      operationId: getAsset
+      summary: "O ativo, as relações dele e a PT que o prende agora (contando \"parte de\")."
+      responses:
+        "200": { description: Ativo com relações e trava., content: { application/json: { schema: { $ref: "#/components/schemas/AssetDetail" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [cadastro]
+      operationId: updateAsset
+      summary: "Altera o ativo; `locationIds` substitui as linhas de `asset_location`. Desativar = `status: inativo`."
+      x-ptw-codes: ["23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AssetInput" } } } }
+      responses:
+        "200": { $ref: "#/components/responses/AssetOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  /asset-relations:
+    get:
+      tags: [cadastro]
+      operationId: listAssetRelations
+      summary: "Relações entre ativos."
+      parameters:
+        - { name: assetId, in: query, description: Relações em que o ativo é origem ou destino., schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: kindId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: Página de relações., content: { application/json: { schema: { $ref: "#/components/schemas/AssetRelationPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [cadastro]
+      operationId: createAssetRelation
+      summary: "Cria uma relação (não se altera; remove e cria). \"Desfazer\" de uma remoção = criar com o mesmo `id` e `X-Ptw-Undo`."
+      x-ptw-codes: [PTW10, PTW11, "23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AssetRelation" } } } }
+      responses:
+        "201": { description: Criada., content: { application/json: { schema: { $ref: "#/components/schemas/AssetRelation" } } } }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /asset-relations/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    delete:
+      tags: [cadastro]
+      operationId: removeAssetRelation
+      summary: "Remove uma relação."
+      parameters: [{ $ref: "#/components/parameters/Undo" }]
+      responses:
+        "204": { description: Removida. }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  /equipment-holds:
+    get:
+      tags: [cadastro]
+      operationId: listEquipmentHolds
+      summary: "Quem prende cada equipamento agora (`v_equipment_hold`), contando \"parte de\" nos dois sentidos."
+      parameters:
+        - { name: assetId, in: query, required: true, schema: { type: array, minItems: 1, maxItems: 200, items: { $ref: "#/components/schemas/Uuid" } } }
+        - { name: exceptPermitId, in: query, description: Ignora esta PT (a que está sendo editada)., schema: { $ref: "#/components/schemas/Uuid" } }
+      responses:
+        "200":
+          description: "Uma linha por ativo pedido que está preso."
+          content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/EquipmentHold" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  /people:
+    get:
+      tags: [cadastro]
+      operationId: listPeople
+      summary: "Pessoas com os cargos. Com `eligibleAt`, cada linha diz se é elegível hoje naquele local (`person_ineligible`)."
+      parameters:
+        - { $ref: "#/components/parameters/Q" }
+        - { name: roleId, in: query, description: Só quem tem este cargo (qualquer escopo e validade)., schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: hasLogin, in: query, schema: { type: boolean } }
+        - { name: eligibleAt, in: query, description: "Local da PT; preenche `ineligible` em cada pessoa (com `roleId`, para esse cargo).", schema: { $ref: "#/components/schemas/Uuid" } }
+        - { $ref: "#/components/parameters/Status" }
+        - { $ref: "#/components/parameters/UpdatedSince" }
+        - { name: sort, in: query, schema: { type: string, enum: [name, -name, company, -company, updatedAt, -updatedAt], default: name } }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: Página de pessoas., content: { application/json: { schema: { $ref: "#/components/schemas/PersonPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [cadastro]
+      operationId: createPerson
+      summary: "Cria uma pessoa (com ou sem login)."
+      x-ptw-codes: ["23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PersonInput" } } } }
+      responses:
+        "201": { $ref: "#/components/responses/PersonOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /people/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [cadastro]
+      operationId: getPerson
+      summary: "Uma pessoa, com os cargos."
+      responses:
+        "200": { $ref: "#/components/responses/PersonOk" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [cadastro]
+      operationId: updatePerson
+      summary: "Altera a pessoa; `roles` substitui as linhas de `person_role` (concede, altera, revoga). Desativar = `status: inativo` ou `enabled: false`."
+      x-ptw-codes: ["23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PersonInput" } } } }
+      responses:
+        "200": { $ref: "#/components/responses/PersonOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  /option-lists:
+    get:
+      tags: [cadastro]
+      operationId: listOptionLists
+      summary: "Listas de opções, com os itens."
+      parameters:
+        - { $ref: "#/components/parameters/Q" }
+        - { $ref: "#/components/parameters/UpdatedSince" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: "Página de listas, com os itens.", content: { application/json: { schema: { $ref: "#/components/schemas/OptionListPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [cadastro]
+      operationId: createOptionList
+      summary: "Cria uma lista de opções."
+      x-ptw-codes: ["23505", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/OptionListInput" } } } }
+      responses:
+        "201": { $ref: "#/components/responses/OptionListOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /option-lists/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [cadastro]
+      operationId: getOptionList
+      summary: "Uma lista, com os itens."
+      responses:
+        "200": { $ref: "#/components/responses/OptionListOk" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [cadastro]
+      operationId: updateOptionList
+      summary: "Altera o nome e os itens (a ordem é a posição; item nunca muda de id; desativar item = `active: false`)."
+      x-ptw-codes: ["23505", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/OptionListInput" } } } }
+      responses:
+        "200": { $ref: "#/components/responses/OptionListOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [cadastro]
+      operationId: removeOptionList
+      summary: "Remove a lista. Usada pelo formulário de um modelo → 409 (`23503`)."
+      x-ptw-codes: ["23503"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      responses:
+        "204": { description: Removida. }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  # ------------------------------------------------------------------ modelos
+  /templates:
+    get:
+      tags: [modelos]
+      operationId: listTemplates
+      summary: "Modelos com todas as versões. `content=ativa` (padrão) traz etapas e formulário só da versão em uso e dos rascunhos."
+      parameters:
+        - { $ref: "#/components/parameters/Q" }
+        - { name: content, in: query, schema: { type: string, enum: [none, ativa, all], default: ativa } }
+        - { $ref: "#/components/parameters/UpdatedSince" }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: Página de modelos., content: { application/json: { schema: { $ref: "#/components/schemas/TemplatePage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [modelos]
+      operationId: createTemplate
+      summary: "Cria o modelo com a primeira versão em rascunho (etapas fixas do produto, formulário vazio)."
+      x-ptw-codes: ["23505", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name]
+              properties:
+                id: { $ref: "#/components/schemas/Uuid" }
+                name: { type: string, minLength: 1, maxLength: 120 }
+                retentionClass: { $ref: "#/components/schemas/RetentionClass" }
+                version: { $ref: "#/components/schemas/TemplateVersionInput" }
+      responses:
+        "201": { $ref: "#/components/responses/TemplateOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /templates/import/preview:
+    post:
+      tags: [modelos]
+      operationId: previewTemplateImport
+      summary: "Lê um pacote `ptw.modelo/1` e devolve a lista completa do que seria criado. Não grava nada."
+      description: |
+        Roda as mesmas regras do app e do validador (`core/templatePackage.ts`, `importarModelo`) contra o
+        cadastro da unidade. Com erro, `rascunho` é nulo e `token` não vem. O `token` vale 15 minutos e
+        amarra a confirmação a este pacote e a este resultado.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ImportRequest" } } } }
+      responses:
+        "200": { description: Resultado da leitura., content: { application/json: { schema: { $ref: "#/components/schemas/ImportPreview" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /templates/import/confirm:
+    post:
+      tags: [modelos]
+      operationId: confirmTemplateImport
+      summary: "Cria, numa transação só, o que a prévia listou; a versão nasce rascunho \"Sugerida pela importação\"."
+      description: |
+        Refaz a leitura do pacote; se o resultado não for o da prévia (o cadastro mudou, o pacote é outro,
+        o `token` venceu) responde `422 PTA10` e nada é criado. Cria tipos, cargos e listas novos, o modelo
+        (ou só a versão, se o modelo já existe), etapas, assinaturas e separações, e por fim
+        `ptw.audit_import(versão, {listas, tipos, cargos})`. Nunca ativa.
+      x-ptw-codes: [PTW14, PTW15, "23505", "23514", PTA10]
+      x-ptw-audit: "ptw.audit_import → modelo.importado"
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - { $ref: "#/components/schemas/ImportRequest" }
+                - { type: object, required: [token], properties: { token: { type: string, maxLength: 512 } } }
+      responses:
+        "201":
+          description: "Criado."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [template, versionId, created]
+                properties:
+                  template: { $ref: "#/components/schemas/PermitTemplate" }
+                  versionId: { $ref: "#/components/schemas/Uuid" }
+                  created:
+                    type: object
+                    description: "O que é novo no cadastro (ids), como em `audit_import`."
+                    required: [listas, tipos, cargos]
+                    properties:
+                      listas: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+                      tipos: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+                      cargos: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /templates/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [modelos]
+      operationId: getTemplate
+      summary: "O modelo com todas as versões completas."
+      responses:
+        "200": { $ref: "#/components/responses/TemplateOk" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [modelos]
+      operationId: updateTemplate
+      summary: "Nome e classe de retenção."
+      x-ptw-codes: ["23505", "23514", "23503"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              minProperties: 1
+              properties:
+                name: { type: string, minLength: 1, maxLength: 120 }
+                retentionClass: { $ref: "#/components/schemas/RetentionClass" }
+      responses:
+        "200": { $ref: "#/components/responses/TemplateOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [modelos]
+      operationId: removeTemplate
+      summary: "Remove um modelo que só tem rascunhos. Com versão ativa ou arquivada → 422 (`PTW03`); usado por PT → 409."
+      x-ptw-codes: [PTW03, "23503"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      responses:
+        "204": { description: Removido. }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /templates/{id}/export:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [modelos]
+      operationId: exportTemplate
+      summary: "Pacote `ptw.modelo/1` de uma versão (padrão, a ativa), para levar a outra planta."
+      x-ptw-audit: "ptw.audit_access('acesso.exportacao.modelo', motivo)"
+      parameters:
+        - { name: versionId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { $ref: "#/components/parameters/ReasonRequired" }
+      responses:
+        "200":
+          description: "O pacote."
+          headers: { Content-Disposition: { schema: { type: string }, description: '`attachment; filename="<modelo>.ptw-modelo.json"`' } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/ModelPackage" } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /templates/{id}/versions:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [modelos]
+      operationId: createTemplateVersion
+      summary: "Novo rascunho, copiado de uma versão (`copyFrom`) ou com o conteúdo enviado."
+      description: |
+        Com `copyFrom`: ids novos de versão, etapas e assinaturas; seções, separações e condições
+        reapontadas; ids de item mantidos; origem `manual` (como `copyVersion` em `core/templateVersions.ts`).
+        O número é o seguinte do modelo.
+      x-ptw-codes: [PTW15, "23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  additionalProperties: false
+                  required: [copyFrom]
+                  properties:
+                    copyFrom: { $ref: "#/components/schemas/Uuid" }
+                    id: { $ref: "#/components/schemas/Uuid" }
+                - { $ref: "#/components/schemas/TemplateVersionInput" }
+      responses:
+        "201": { $ref: "#/components/responses/VersionOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /templates/{id}/versions/{versionId}:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/VersionId" }]
+    get:
+      tags: [modelos]
+      operationId: getTemplateVersion
+      summary: "Uma versão do modelo, completa."
+      responses:
+        "200": { $ref: "#/components/responses/VersionOk" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [modelos]
+      operationId: updateTemplateVersion
+      summary: "Grava o rascunho inteiro (escopo, etapas, assinaturas, separações, formulário, prazo, \"prende o equipamento\")."
+      description: "Só em rascunho; ativa ou arquivada → 422 (`PTW03`). Etapas, assinaturas e separações são trocadas pelas enviadas, na mesma transação."
+      x-ptw-codes: [PTW03, PTW15, "23505", "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/TemplateVersionInput" } } } }
+      responses:
+        "200": { $ref: "#/components/responses/VersionOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [modelos]
+      operationId: removeTemplateVersion
+      summary: "Remove um rascunho (`PTW03` se não for rascunho)."
+      x-ptw-codes: [PTW03]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/Undo" }]
+      responses:
+        "204": { description: Removido. }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /templates/{id}/versions/{versionId}/activate:
+    parameters: [{ $ref: "#/components/parameters/Id" }, { $ref: "#/components/parameters/VersionId" }]
+    post:
+      tags: [modelos]
+      operationId: activateTemplateVersion
+      summary: "Ativa o rascunho e arquiva a versão em uso (`ptw.version_activate`)."
+      x-ptw-codes: [PTW03, PTW15, PTW28]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }]
+      responses:
+        "200": { $ref: "#/components/responses/TemplateOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  # ------------------------------------------------------------------ PT
+  /permits:
+    get:
+      tags: [pt]
+      operationId: listPermits
+      summary: "Quadro (`v_permit_board`), com filtros, busca, ordem e página no servidor."
+      description: "Rascunho de outra pessoa não aparece. `next` e `mine` valem para a pessoa da sessão."
+      parameters:
+        - { name: segment, in: query, description: "Os segmentos do Quadro (`QuadroView`).", schema: { type: string, enum: [minhas, andamento, preparacao, campo, finalizadas] } }
+        - { name: state, in: query, schema: { type: array, items: { $ref: "#/components/schemas/PermitState" } } }
+        - { name: q, in: query, description: "Trecho do número, do escopo, do código de ativo, do modelo ou do local.", schema: { type: string, maxLength: 100 } }
+        - { name: locationId, in: query, description: PTs neste local ou abaixo dele., schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: templateId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: assetId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: authorId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: windowFrom, in: query, description: Janela que termina depois deste instante., schema: { type: string, format: date-time } }
+        - { name: windowTo, in: query, description: Janela que começa antes deste instante., schema: { type: string, format: date-time } }
+        - { name: sort, in: query, schema: { type: string, enum: [state, -state, number, -number, windowStart, -windowStart, windowEnd, -windowEnd, updatedAt, -updatedAt, location, -location, template, -template, assets, -assets], default: state } }
+        - { name: answers, in: query, description: "Inclui `answers` em cada linha (painel Desabilitados agora). Não conta como PT aberta.", schema: { type: boolean, default: false } }
+        - { $ref: "#/components/parameters/Page" }
+        - { $ref: "#/components/parameters/PageSize" }
+      responses:
+        "200": { description: Página do Quadro., content: { application/json: { schema: { $ref: "#/components/schemas/PermitBoardPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [pt]
+      operationId: createPermit
+      summary: "Cria um rascunho na versão em uso do modelo. O solicitante é a pessoa da sessão."
+      x-ptw-codes: [PTW04, "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PermitDraftInput" } } } }
+      responses:
+        "201": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/counts:
+    get:
+      tags: [pt]
+      operationId: countPermits
+      summary: "Totais do Quadro por estado e por segmento (mesmos filtros de `GET /permits`, sem `segment`, `state` e página)."
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: locationId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: templateId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+      responses:
+        "200":
+          description: "Totais."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [byState, bySegment, total]
+                properties:
+                  total: { type: integer }
+                  byState: { type: object, additionalProperties: { type: integer }, propertyNames: { $ref: "#/components/schemas/PermitState" } }
+                  bySegment: { type: object, additionalProperties: { type: integer } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/mine:
+    get:
+      tags: [pt]
+      operationId: listMyPermits
+      summary: "Minha área — as PTs que dizem respeito à pessoa da sessão, completas."
+      description: |
+        Conjunto de trabalho de `core/myWork.ts`: PTs abertas (e as finalizadas dos últimos `finishedDays`
+        dias) em que a pessoa é solicitante, está na equipe, assinou, parou, retomou, ou é elegível para uma
+        assinatura pendente da etapa em curso, para Retomar ou para a Entrega. O app agrupa (em campo, agir,
+        bloqueadas, próximas, aguardando, finalizadas) com o mesmo núcleo. Entregar este conjunto não é
+        "abrir a PT": a abertura é registrada por `POST /permits/{id}/access`.
+      parameters:
+        - { name: finishedDays, in: query, schema: { type: integer, minimum: 0, maximum: 30, default: 2 } }
+        - { name: updatedSince, in: query, description: "Só o que mudou desde este instante (as demais continuam valendo); `gone` lista as que saíram do conjunto.", schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: "PTs da pessoa."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, asOf]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/PermitDetail" } }
+                  gone: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+                  asOf: { type: string, format: date-time, description: "Hora do servidor; use como `updatedSince` na próxima leitura." }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [pt]
+      operationId: getPermit
+      summary: "A PT inteira — formulário (congelado ou o da versão), respostas, assinaturas, revisões, prorrogações e anexos."
+      description: |
+        Abrir a PT é leitura sensível: cada abertura grava o seu `acesso.pt.aberta` (decisão D5: sem
+        agrupar releituras). O número também serve de `id` (`PT-UN01-2026-00012`).
+      x-ptw-audit: "ptw.audit_access('acesso.pt.aberta', pt)"
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [pt]
+      operationId: updatePermit
+      summary: "Campos da PT em rascunho ou devolvida — local, ativos, equipe, janela, escopo. A janela também em análise."
+      description: "`assetIds` e `team` substituem as linhas (`permit_asset`, `permit_team`). Da emitida em diante a janela só muda por Prorrogar (`PTW05`)."
+      x-ptw-codes: [PTW04, PTW05, PTW10, PTW17, PTW31, "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/PermitPatch" } } } }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/access:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: recordPermitAccess
+      summary: "Registra que a pessoa abriu a PT na tela (quando o conteúdo veio de `GET /permits/mine` ou do cache)."
+      x-ptw-audit: "ptw.audit_access('acesso.pt.aberta', pt); um evento por chamada (D5)"
+      responses:
+        "204": { description: Registrado. }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/history:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [pt]
+      operationId: getPermitHistory
+      summary: "Histórico da PT (`v_permit_history`, sem as leituras `acesso.*`)."
+      parameters: [{ $ref: "#/components/parameters/Before" }, { $ref: "#/components/parameters/Limit" }]
+      responses:
+        "200": { description: "Eventos, do mais novo para o mais antigo, e total de acessos à PT.", content: { application/json: { schema: { $ref: "#/components/schemas/PermitHistoryPage" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /permits/{id}/answers/{itemId}:
+    parameters:
+      - { $ref: "#/components/parameters/Id" }
+      - { name: itemId, in: path, required: true, schema: { type: string, pattern: "^[A-Za-z0-9_.:-]{1,64}$" } }
+    put:
+      tags: [pt]
+      operationId: putPermitAnswer
+      summary: "Grava a resposta de um item (uma linha de `permit_answer`). Sem `If-Match`, cada item é a sua linha."
+      description: |
+        Em `verificacao`, as linhas enviadas são juntadas às já gravadas (dois toques rápidos em linhas
+        diferentes não se apagam). O banco confere a resposta contra o item do formulário da PT (`PTW15`),
+        o estado (`PTW06`) e, em `pessoa` com `mustBeEligible`, a elegibilidade (`PTW08`). Valor fora da
+        faixa, documento vencido e código fora do formato são aceitos e bloqueiam a assinatura.
+      x-ptw-codes: [PTW06, PTW08, PTW15]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/ItemAnswer" } } } }
+      responses:
+        "200": { description: Resposta gravada., content: { application/json: { schema: { $ref: "#/components/schemas/AnswerSaved" } } } }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [pt]
+      operationId: removePermitAnswer
+      summary: "Apaga a resposta do item."
+      x-ptw-codes: [PTW06]
+      responses:
+        "204": { description: Removida. }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/submit:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: submitPermit
+      summary: "Enviar (rascunho) ou Reenviar (devolvida) — número, formulário congelado, em análise e a assinatura da Solicitação."
+      description: |
+        Uma transação: `ptw.permit_submit` (a trava de equipamento dispara aqui; no reenvio, revisão
+        seguinte e assinaturas anteriores anuladas) e a assinatura do solicitante na Solicitação. O
+        formulário congelado é montado no servidor (opções das listas copiadas).
+      x-ptw-codes: [PTW04, PTW05, PTW08, PTW10, PTW15, PTW16, PTW17, PTW23, PTW31]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/IdempotencyKey" }]
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/signatures:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: signPermit
+      summary: "Assinar uma assinatura da etapa em curso. Conclui com o botão; não pede login de novo."
+      description: |
+        A assinatura é da pessoa da sessão, na revisão informada (`rev` diferente da atual → `PTW07`).
+        Quando ela completa a etapa, o estado avança na mesma transação (em análise → emitida → ativa →
+        entregue → encerrada; suspensa → ativa depois da Retomada). Não usa `If-Match`: a revisão assinada
+        (`rev`) é a garantia.
+      x-ptw-codes: [PTW07, PTW08, PTW09, PTW16, PTW17, PTW19, PTW20, PTW21, PTW22, PTW23, PTW27, PTW30, PTW31]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [slotId, rev]
+              properties:
+                id: { $ref: "#/components/schemas/Uuid" }
+                slotId: { $ref: "#/components/schemas/Uuid" }
+                rev: { type: integer, minimum: 1 }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/return:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: returnPermit
+      summary: "Devolver ao solicitante (em análise → devolvida), com o motivo."
+      x-ptw-codes: [PTW05, PTW18, PTW29, "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { $ref: "#/components/requestBodies/Reason" }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/discard:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: discardPermit
+      summary: "Descartar rascunho (decisão D3) — só o solicitante, com o motivo; o rascunho vira cancelada e não prende equipamento."
+      description: "`ptw.permit_discard(unidade, pt, motivo)`. Só em rascunho; cancelar depois do envio não existe nesta fase."
+      x-ptw-codes: [PTW05, PTW17, "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { $ref: "#/components/requestBodies/Reason" }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/stop:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: stopPermit
+      summary: "Parar — registra a parada (`hold_*`); a PT ativa fica suspensa na mesma escrita."
+      description: "Sem `If-Match`. Com a API no ar e o banco fora, responde `503 PTA01` e o app guarda a parada para reenviar."
+      x-ptw-codes: [PTW21, PTW24, PTW25, "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { $ref: "#/components/requestBodies/Reason" }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/resume:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: resumePermit
+      summary: "Retomar — limpa a parada e registra a retomada; na suspensa, anula o Aceite no campo."
+      x-ptw-codes: [PTW26, "23514"]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { $ref: "#/components/requestBodies/Reason" }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/extensions:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: extendPermit
+      summary: "Prorrogar a janela (`ptw.permit_extend`) — novo fim depois do atual e justificativa."
+      x-ptw-codes: [PTW05, PTW31, PTW32, PTW33]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [newEnd, reason]
+              properties:
+                newEnd: { type: string, format: date-time }
+                reason: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+  # ------------------------------------------------------------------ anexos
+  /blobs/{sha256}:
+    parameters: [{ name: sha256, in: path, required: true, schema: { $ref: "#/components/schemas/Sha256" } }]
+    head:
+      tags: [anexos]
+      operationId: hasBlob
+      summary: "O arquivo já está guardado? (o mesmo conteúdo é gravado uma vez só)"
+      responses:
+        "200": { description: Existe., headers: { Content-Length: { schema: { type: integer } }, Content-Type: { schema: { type: string } } } }
+        "404": { description: Ainda não existe. }
+    put:
+      tags: [anexos]
+      operationId: putBlob
+      summary: "Envia o conteúdo de um arquivo. A API confere o SHA-256 e o tamanho antes de aceitar."
+      description: |
+        Corpo = os bytes do arquivo (fluxo; até 2 GiB). A API grava no S3 numa chave temporária enquanto
+        calcula o SHA-256; conferido, copia para `<unidade>/<aa>/<sha256>`, apaga a temporária e inclui a
+        linha de `blob`. Diferente do caminho → `422 PTA09` e nada fica. Já existente → `200` sem regravar.
+        O anexo (a ligação com a PT) é outra chamada.
+      x-ptw-codes: [PTA09, PTA11, "23514"]
+      parameters:
+        - { name: Content-Length, in: header, required: true, schema: { type: integer, minimum: 1, maximum: 2147483648 } }
+      requestBody:
+        required: true
+        content:
+          "*/*": { schema: { type: string, format: binary } }
+      responses:
+        "200": { description: Já existia., content: { application/json: { schema: { $ref: "#/components/schemas/Blob" } } } }
+        "201": { description: Guardado., content: { application/json: { schema: { $ref: "#/components/schemas/Blob" } } } }
+        "413": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /permits/{id}/attachments:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [anexos]
+      operationId: createAttachment
+      summary: "Liga um arquivo já enviado (e a miniatura, se houver) a um item da PT. Somente inclusão."
+      x-ptw-codes: [PTW06, PTW15, "23503", "23514"]
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AttachmentInput" } } } }
+      responses:
+        "201": { description: Anexo incluído., content: { application/json: { schema: { $ref: "#/components/schemas/PermitAttachment" } } } }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /attachments/{id}:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [anexos]
+      operationId: getAttachment
+      summary: "Metadados do anexo (não é leitura do conteúdo)."
+      responses:
+        "200": { description: Anexo., content: { application/json: { schema: { $ref: "#/components/schemas/PermitAttachment" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /attachments/{id}/content:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [anexos]
+      operationId: getAttachmentContent
+      summary: "O arquivo. O acesso é registrado antes de o conteúdo ser entregue."
+      description: "`mode=visto` entrega para ver na tela (`inline`); `mode=baixado`, para salvar (`attachment`). Aceita `Range` (vídeo)."
+      x-ptw-audit: "ptw.audit_access('acesso.anexo.visto' | 'acesso.anexo.baixado', anexo), antes do primeiro byte"
+      parameters:
+        - { name: mode, in: query, required: true, schema: { type: string, enum: [visto, baixado] } }
+        - { name: Range, in: header, schema: { type: string } }
+      responses:
+        "200": { $ref: "#/components/responses/File" }
+        "206": { $ref: "#/components/responses/File" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /attachments/{id}/preview:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [anexos]
+      operationId: getAttachmentPreview
+      summary: "Miniatura da foto ou capa do vídeo (`preview_sha256`). Faz parte de abrir a PT; não gera evento próprio."
+      responses:
+        "200": { $ref: "#/components/responses/File" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ auditoria
+  /audit/events:
+    get:
+      tags: [auditoria]
+      operationId: listAuditEvents
+      summary: "Trilha (`v_audit`), do mais novo para o mais antigo."
+      description: |
+        Com qualquer filtro além de `before`/`limit`, a busca fica registrada (`acesso.auditoria.busca`, com
+        os filtros em `data`), uma vez por combinação de filtros: as páginas seguintes (`before`) não repetem.
+      x-ptw-audit: "ptw.audit_access('acesso.auditoria.busca', dados = filtros)"
+      parameters:
+        - { name: group, in: query, description: "Grupos da tela (`auditGroup`).", schema: { type: array, items: { $ref: "#/components/schemas/AuditGroup" } } }
+        - { name: area, in: query, description: "Primeiro segmento da ação: cadastro, modelo, pt, acesso, sessao, conta, sistema.", schema: { type: string, pattern: "^[a-z_]{1,30}$" } }
+        - { name: action, in: query, description: Prefixo da ação (`pt.assinatura`)., schema: { type: string, pattern: "^[a-z_.]{1,80}$" } }
+        - { name: actorId, in: query, description: "Pessoa que agiu; `sistema` filtra os eventos sem pessoa (agendador, migração, testes).", schema: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: string, const: sistema }] } }
+        - { name: permitId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: assetId, in: query, schema: { $ref: "#/components/schemas/Uuid" } }
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+        - { name: q, in: query, description: "Trecho do texto, do número da PT ou do código do ativo. Exige `from`.", schema: { type: string, maxLength: 100 } }
+        - { $ref: "#/components/parameters/Before" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "200": { description: Eventos., content: { application/json: { schema: { $ref: "#/components/schemas/AuditPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /audit/events/{seq}:
+    parameters: [{ name: seq, in: path, required: true, schema: { type: integer, format: int64, minimum: 1 } }]
+    get:
+      tags: [auditoria]
+      operationId: getAuditEvent
+      summary: "Um evento, com o anterior (para conferir o elo)."
+      x-ptw-audit: "ptw.audit_access('acesso.auditoria.evento', dados = {seq})"
+      responses:
+        "200":
+          description: "Evento."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [event]
+                properties:
+                  event: { $ref: "#/components/schemas/AuditEvent" }
+                  previous: { oneOf: [{ $ref: "#/components/schemas/AuditEvent" }, { type: "null" }] }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /audit/facets:
+    get:
+      tags: [auditoria]
+      operationId: getAuditFacets
+      summary: "O que os filtros da tela oferecem — pessoas que agiram, áreas e o total de eventos."
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date-time } }
+        - { name: to, in: query, schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: "Opções dos filtros."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [actors, areas, total]
+                properties:
+                  actors: { type: array, items: { type: object, required: [id, name], properties: { id: { $ref: "#/components/schemas/Uuid" }, name: { type: string } } } }
+                  areas: { type: array, items: { type: string } }
+                  total: { type: integer, format: int64, description: Último `seq` da unidade. }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /audit/chain:
+    get:
+      tags: [auditoria]
+      operationId: getAuditChain
+      summary: "Situação da cadeia — a ponta e a última verificação registrada (`sistema.verificacao`)."
+      responses:
+        "200": { description: Situação., content: { application/json: { schema: { $ref: "#/components/schemas/ChainStatus" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /audit/chain/verify:
+    post:
+      tags: [auditoria]
+      operationId: verifyAuditChain
+      summary: "Recalcula a cadeia da unidade agora (`ptw.audit_verify`). Pode levar segundos."
+      responses:
+        "200": { description: Resultado., content: { application/json: { schema: { $ref: "#/components/schemas/ChainStatus" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+        "504": { $ref: "#/components/responses/Error" }
+  /audit/exports:
+    get:
+      tags: [auditoria]
+      operationId: listAuditExports
+      summary: "Exportações já registradas."
+      parameters: [{ $ref: "#/components/parameters/Page" }, { $ref: "#/components/parameters/PageSize" }]
+      responses:
+        "200": { description: "Exportações registradas, da mais nova para a mais antiga.", content: { application/json: { schema: { $ref: "#/components/schemas/AuditExportPage" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [auditoria]
+      operationId: createAuditExport
+      summary: "Exporta um período (JSONL + manifesto `ptw-auditoria/2`). Motivo obrigatório; fica na trilha."
+      description: |
+        Calcula a faixa contínua de `seq` do período (`audit_seq_range`), o SHA-256 do JSONL
+        (`audit_export_lines`) e do manifesto, e registra (`audit_export_record` → `acesso.exportacao`).
+        Os arquivos saem pelos dois endereços abaixo e passam em `tools/ptw_verifica.py` como `ÍNTEGRA`.
+      x-ptw-codes: [PTW14]
+      x-ptw-audit: "ptw.audit_export_record → acesso.exportacao (com o motivo)"
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [from, to, reason]
+              properties:
+                from: { type: string, format: date-time }
+                to: { type: string, format: date-time, description: Exclusivo. }
+                reason: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        "201": { description: Exportação registrada., content: { application/json: { schema: { $ref: "#/components/schemas/AuditExport" } } } }
+        "422": { $ref: "#/components/responses/Rule" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /audit/exports/{id}/events.jsonl:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [auditoria]
+      operationId: downloadAuditExportEvents
+      summary: "O JSONL da exportação (uma linha canônica por evento)."
+      responses:
+        "200": { description: Arquivo., content: { application/x-ndjson: { schema: { type: string } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /audit/exports/{id}/manifest.json:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [auditoria]
+      operationId: downloadAuditExportManifest
+      summary: "O manifesto da exportação (mesmos bytes cujo SHA-256 foi registrado)."
+      responses:
+        "200": { description: Manifesto., content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ------------------------------------------------------------------ sistema
+  /health:
+    get:
+      tags: [sistema]
+      operationId: getHealth
+      summary: "A API responde? Sem sessão, sem banco. Traz a hora do servidor (o app acerta o relógio da tela por ela)."
+      security: []
+      responses:
+        "200":
+          description: "No ar."
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, now, devLogin, passwordLogin]
+                properties:
+                  ok: { type: boolean, const: true }
+                  devLogin: { type: boolean }
+                  passwordLogin: { type: boolean }
+                  now: { type: string, format: date-time }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /status:
+    get:
+      tags: [sistema]
+      operationId: getStatus
+      summary: "Banco, armazenamento, relógio e versão. Banco fora → 503 `PTA01` (o app trava o que salva; Parar continua)."
+      responses:
+        "200": { description: Tudo no ar., content: { application/json: { schema: { $ref: "#/components/schemas/SystemStatus" } } } }
+        "503": { $ref: "#/components/responses/Unavailable" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+  /events:
+    get:
+      tags: [sistema]
+      operationId: streamEvents
+      summary: "Avisos em tempo real (SSE) do `NOTIFY ptw` — o cliente relê o que mudou."
+      description: "Cada mensagem: `event: ptw`, `data: {\"seq\": n, \"permit\": id|null}` (só da unidade da sessão). `Last-Event-ID` = último `seq` visto."
+      responses:
+        "200": { description: Fluxo de eventos., content: { text/event-stream: { schema: { type: string } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
+components:
+  securitySchemes:
+    sessao:
+      type: apiKey
+      in: cookie
+      name: ptw_session
+      description: |
+        Cookie de sessão opaco: `HttpOnly; Secure; SameSite=Strict; Path=/api`. O valor é aleatório (256
+        bits); o servidor guarda só o SHA-256 dele. Toda escrita exige também o cabeçalho `X-Ptw-Csrf` com o
+        `csrfToken` de `GET /session` e `Origin` igual ao host do app.
+
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: string, maxLength: 64 }, description: uuid do registro. }
+    VersionId: { name: versionId, in: path, required: true, schema: { $ref: "#/components/schemas/Uuid" } }
+    RequestId:
+      name: X-Request-Id
+      in: header
+      description: "Id da requisição (até 100 caracteres); sem ele, a API gera um uuid. Vai para `set_context` e volta na resposta. Aceito em toda operação."
+      schema: { type: string, maxLength: 100, pattern: "^[A-Za-z0-9._:-]+$" }
+    Client:
+      name: X-Ptw-Client
+      in: header
+      description: "Aparelho (até 200): nome que o app guarda no aparelho. Vai para `set_context`. Aceito em toda operação."
+      schema: { type: string, maxLength: 200 }
+    ReasonRequired:
+      name: X-Ptw-Reason
+      in: header
+      required: true
+      description: "Motivo, obrigatório nesta operação, até 500 caracteres (o limite de `set_context`). Texto UTF-8 codificado em porcentagem (`encodeURIComponent`), porque cabeçalho HTTP não leva acentos; a API decodifica antes de passar a `p_reason`."
+      schema: { type: string, minLength: 1, maxLength: 500 }
+    Undo:
+      name: X-Ptw-Undo
+      in: header
+      description: "`true` = esta escrita é o \"Desfazer\" de outra: sai na trilha como `<ação>.desfeito` (`set_context(..., p_undo => true)`)."
+      schema: { type: string, enum: ["true"] }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: 'Revisão que o cliente leu, entre aspas: `"7"`.'
+      schema: { type: string, pattern: '^"[0-9]+"$' }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      description: "uuid gerado pelo cliente para esta criação; repetir a chamada não cria de novo (guardada por 24 h)."
+      schema: { $ref: "#/components/schemas/Uuid" }
+    Q: { name: q, in: query, description: "Busca por trecho, sem acento e sem caixa.", schema: { type: string, maxLength: 100 } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+    PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 1000, default: 50 } }
+    Status: { name: status, in: query, schema: { type: array, items: { $ref: "#/components/schemas/RecordStatus" } } }
+    UpdatedSince: { name: updatedSince, in: query, description: Só o que mudou desde este instante (sincronização do cache do app)., schema: { type: string, format: date-time } }
+    Before: { name: before, in: query, description: "Eventos com `seq` menor que este (cursor).", schema: { type: integer, format: int64, minimum: 1 } }
+    Limit: { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 100 } }
+
+  headers:
+    ETag: { description: 'Revisão atual, entre aspas: `"8"`.', schema: { type: string } }
+    X-Request-Id: { description: O id desta requisição (o recebido ou o gerado)., schema: { type: string } }
+    Idempotency-Replayed: { description: "`true` quando a resposta é a repetição de uma criação já feita.", schema: { type: string, enum: ["true"] } }
+    Retry-After: { description: Segundos até tentar de novo., schema: { type: integer } }
+
+  requestBodies:
+    Reason:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [reason]
+            properties:
+              reason: { type: string, minLength: 1, maxLength: 500 }
+
+  responses:
+    Error:
+      description: "Erro no formato único."
+      headers: { X-Request-Id: { $ref: "#/components/headers/X-Request-Id" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    BadRequest:
+      description: "Requisição fora do contrato (`PTA05`) ou dado inválido."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Unauthorized:
+      description: "Sem sessão, sessão expirada ou conta desativada (`PTA02`)."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Forbidden:
+      description: "Sem a permissão da operação (`PTA03`, `42501`). Em toda operação autenticada."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    NotFound:
+      description: "Não existe nesta unidade (`PTA04`)."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Conflict:
+      description: "Revisão desatualizada (`PTA06`), equipamento ocupado (`PTW10`), registro igual (`23505`) ou em uso (`23503`)."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Rule:
+      description: "Recusa de regra do banco (`PTWnn`, `23514`) ou da API (`PTA08`–`PTA10`). Nada foi gravado; a tentativa fica na trilha."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    PreconditionRequired:
+      description: "Falta `If-Match` (`PTA07`)."
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Unavailable:
+      description: "Banco ou armazenamento fora do ar (`PTA01`)."
+      headers: { Retry-After: { $ref: "#/components/headers/Retry-After" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    SessionStarted:
+      description: "Sessão criada; o cookie `ptw_session` vem em `Set-Cookie`."
+      headers: { Set-Cookie: { schema: { type: string } } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/Session" } } }
+    File:
+      description: "Conteúdo do arquivo."
+      headers:
+        Content-Disposition: { schema: { type: string } }
+        ETag: { description: 'SHA-256 do conteúdo, entre aspas.', schema: { type: string } }
+        Cache-Control: { schema: { type: string }, description: "`private, no-store` no conteúdo; `private, max-age=31536000, immutable` na miniatura." }
+      content: { "*/*": { schema: { type: string, format: binary } } }
+    LocationOk:
+      description: "Local."
+      headers: { ETag: { $ref: "#/components/headers/ETag" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/Location" } } }
+    AssetOk:
+      description: "Ativo."
+      headers: { ETag: { $ref: "#/components/headers/ETag" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/Asset" } } }
+    PersonOk:
+      description: "Pessoa."
+      headers: { ETag: { $ref: "#/components/headers/ETag" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/Person" } } }
+    OptionListOk:
+      description: "Lista."
+      headers: { ETag: { $ref: "#/components/headers/ETag" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/OptionList" } } }
+    TemplateOk:
+      description: "Modelo com as versões."
+      headers: { ETag: { $ref: "#/components/headers/ETag" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/PermitTemplate" } } }
+    VersionOk:
+      description: "Versão do modelo."
+      headers: { ETag: { $ref: "#/components/headers/ETag" } }
+      content: { application/json: { schema: { $ref: "#/components/schemas/TemplateVersion" } } }
+    PermitOk:
+      description: "A PT como ficou (o app troca o que tinha por isto)."
+      headers:
+        ETag: { $ref: "#/components/headers/ETag" }
+        Idempotency-Replayed: { $ref: "#/components/headers/Idempotency-Replayed" }
+      content: { application/json: { schema: { $ref: "#/components/schemas/PermitDetail" } } }
+
+  schemas:
+    # ---------- comuns ----------
+    Uuid: { type: string, format: uuid, pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" }
+    Sha256: { type: string, pattern: "^[0-9a-f]{64}$" }
+    Instant: { type: string, format: date-time, description: ISO 8601 com fuso (`timestamptz`). }
+    Day: { type: string, format: date, description: "`AAAA-MM-DD`, no fuso da unidade." }
+    Error:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          pattern: "^[A-Z0-9]{5}$"
+          description: "`PTWnn` ou SQLSTATE do banco (`23505`, `23503`, `23514`, `42501`…), ou `PTAnn` da API. É o código gravado na negação."
+          examples: [PTW10, PTA06, "23505"]
+        message: { type: string, description: "Frase em português: a do banco, ou a da API." }
+        detail: { type: string, description: "Complemento: id da PT que prende (`PTW10`), revisão atual (`PTA06`), campo recusado (`PTA05`)." }
+    PageMeta:
+      type: object
+      required: [page, pageSize, total]
+      properties:
+        page: { type: integer, minimum: 0 }
+        pageSize: { type: integer, minimum: 1 }
+        total: { type: integer, minimum: 0, description: Total com os filtros aplicados. }
+    RecordOrigin: { type: string, enum: [manual, csv, sugerida, ad] }
+    RecordStatus: { type: string, enum: [ativo, em_revisao, inativo] }
+    TypeFamily: { type: string, enum: [local, ativo, cargo, relacao] }
+    AuthMethod: { type: string, enum: [senha, ldap, pin, sessao, emergencia, servico, sistema] }
+    SystemMeta:
+      type: object
+      description: "Campos do sistema; nunca enviados pelo cliente (`SystemMeta` em `registry/types.ts`)."
+      required: [id, unitId, revision, updatedAt]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        unitId: { $ref: "#/components/schemas/Uuid" }
+        revision: { type: integer, minimum: 1 }
+        updatedAt: { $ref: "#/components/schemas/Instant" }
+    RegistryRecord:
+      allOf:
+        - { $ref: "#/components/schemas/SystemMeta" }
+        - type: object
+          required: [origin, status]
+          properties:
+            origin: { $ref: "#/components/schemas/RecordOrigin" }
+            status: { $ref: "#/components/schemas/RecordStatus" }
+
+    # ---------- sessão ----------
+    Session:
+      type: object
+      required: [person, unit, auth, grants, expiresAt, now, csrfToken]
+      properties:
+        person: { $ref: "#/components/schemas/Person" }
+        unit: { $ref: "#/components/schemas/Unit" }
+        auth: { $ref: "#/components/schemas/AuthMethod" }
+        grants:
+          type: array
+          description: "Permissões administrativas conferidas nos grupos LDAP ao entrar e imutáveis nesta sessão. Atos de PT são decididos por cargo no banco."
+          items: { type: string, enum: [cadastro, modelos, auditoria, exportacao] }
+        expiresAt: { $ref: "#/components/schemas/Instant" }
+        now: { $ref: "#/components/schemas/Instant" }
+        csrfToken: { type: string }
+        devLogin: { type: boolean, description: A entrada de desenvolvimento está ligada. }
+
+    # ---------- cadastro ----------
+    Unit:
+      type: object
+      required: [id, code, name, timezone]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        code: { type: string, pattern: "^[A-Z0-9-]{2,16}$" }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        timezone: { type: string, examples: [America/Sao_Paulo] }
+    TypeDef:
+      type: object
+      required: [id, family, label, active]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        family: { $ref: "#/components/schemas/TypeFamily" }
+        label: { type: string, minLength: 1, maxLength: 80 }
+        icon: { type: [string, "null"], pattern: "^[a-z0-9_]{1,40}$", description: Só local e ativo. }
+        systemKey: { type: [string, "null"], description: "`parte_de` na relação que trava equipamento; só leitura." }
+        active: { type: boolean }
+    TypeInput:
+      type: object
+      additionalProperties: false
+      required: [family, label]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        family: { $ref: "#/components/schemas/TypeFamily" }
+        label: { type: string, minLength: 1, maxLength: 80 }
+        icon: { type: [string, "null"], pattern: "^[a-z0-9_]{1,40}$" }
+        active: { type: boolean, default: true }
+    TypePage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/TypeDef" } } } }]
+    LocationFields:
+      type: object
+      required: [typeId, code, name]
+      properties:
+        parentId: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        typeId: { $ref: "#/components/schemas/Uuid" }
+        code: { type: string, minLength: 1, maxLength: 64 }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        aliases: { type: array, items: { type: string } }
+    Location:
+      allOf: [{ $ref: "#/components/schemas/RegistryRecord" }, { $ref: "#/components/schemas/LocationFields" }]
+    LocationInput:
+      allOf:
+        - { $ref: "#/components/schemas/LocationFields" }
+        - { $ref: "#/components/schemas/RecordInputMeta" }
+    RecordInputMeta:
+      type: object
+      description: "O que o cliente pode mandar dos campos comuns. `revision` e `updatedAt`, se vierem, são ignorados (vale o `If-Match`)."
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        origin: { $ref: "#/components/schemas/RecordOrigin" }
+        status: { $ref: "#/components/schemas/RecordStatus" }
+    LocationPage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/Location" } } } }]
+    AssetFields:
+      type: object
+      required: [typeId, code, name]
+      properties:
+        typeId: { $ref: "#/components/schemas/Uuid" }
+        code: { type: string, minLength: 1, maxLength: 64 }
+        name: { type: string, minLength: 1, maxLength: 200 }
+        aliases: { type: array, items: { type: string } }
+        locationIds: { type: array, items: { $ref: "#/components/schemas/Uuid" }, description: Uma linha de `asset_location` cada. }
+    Asset:
+      allOf: [{ $ref: "#/components/schemas/RegistryRecord" }, { $ref: "#/components/schemas/AssetFields" }]
+    AssetInput:
+      allOf: [{ $ref: "#/components/schemas/AssetFields" }, { $ref: "#/components/schemas/RecordInputMeta" }]
+    AssetPage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/Asset" } } } }]
+    AssetDetail:
+      type: object
+      required: [asset, relations, related, holds]
+      properties:
+        asset: { $ref: "#/components/schemas/Asset" }
+        relations: { type: array, items: { $ref: "#/components/schemas/AssetRelation" } }
+        related: { type: array, description: Os ativos do outro lado das relações., items: { $ref: "#/components/schemas/Asset" } }
+        holds: { type: array, description: "PTs que prendem este ativo agora, direto ou por \"parte de\".", items: { $ref: "#/components/schemas/EquipmentHold" } }
+    AssetRelation:
+      type: object
+      additionalProperties: false
+      description: "`fromId` <relação> `toId`; em \"parte de\", `fromId` é parte de `toId`."
+      required: [fromId, toId, kindId]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        fromId: { $ref: "#/components/schemas/Uuid" }
+        toId: { $ref: "#/components/schemas/Uuid" }
+        kindId: { $ref: "#/components/schemas/Uuid" }
+    AssetRelationPage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/AssetRelation" } } } }]
+    EquipmentHold:
+      type: object
+      description: "`v_equipment_hold`, mais o ativo pedido que levou a ele."
+      required: [assetId, heldAssetId, heldAssetCode, permitId, number, state]
+      properties:
+        assetId: { $ref: "#/components/schemas/Uuid", description: O ativo perguntado. }
+        heldAssetId: { $ref: "#/components/schemas/Uuid", description: "O ativo preso (ele mesmo, um ancestral ou um descendente)." }
+        heldAssetCode: { type: string }
+        permitId: { $ref: "#/components/schemas/Uuid" }
+        number: { type: [string, "null"] }
+        state: { $ref: "#/components/schemas/PermitState" }
+    RoleAssignment:
+      type: object
+      additionalProperties: false
+      required: [roleId, scopeLocationId, validUntil]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        roleId: { $ref: "#/components/schemas/Uuid" }
+        scopeLocationId: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }], description: O local e abaixo; nulo = unidade inteira. }
+        validUntil: { $ref: "#/components/schemas/Day" }
+    PersonFields:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+        company: { type: string, maxLength: 200 }
+        employeeId: { type: string, maxLength: 64 }
+        login: { type: [string, "null"], pattern: "^[A-Za-z0-9._@-]{1,104}$", description: Sem login = contato (não assina). }
+        enabled: { type: boolean }
+        accountExpires: { oneOf: [{ $ref: "#/components/schemas/Instant" }, { type: "null" }] }
+        adObjectGuid: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        roles: { type: array, items: { $ref: "#/components/schemas/RoleAssignment" } }
+    Person:
+      allOf:
+        - { $ref: "#/components/schemas/RegistryRecord" }
+        - { $ref: "#/components/schemas/PersonFields" }
+        - type: object
+          properties:
+            ineligible: { type: [string, "null"], description: "Só com `eligibleAt`: motivo de não ser elegível hoje (nulo = elegível)." }
+    PersonInput:
+      allOf: [{ $ref: "#/components/schemas/PersonFields" }, { $ref: "#/components/schemas/RecordInputMeta" }]
+    PersonPage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/Person" } } } }]
+    OptionItem:
+      type: object
+      additionalProperties: false
+      required: [id, label, active]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        label: { type: string, minLength: 1, maxLength: 200 }
+        active: { type: boolean }
+    OptionList:
+      type: object
+      required: [id, name, revision, updatedAt, items]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        revision: { type: integer, minimum: 1 }
+        updatedAt: { $ref: "#/components/schemas/Instant" }
+        items: { type: array, description: A posição é o índice., items: { $ref: "#/components/schemas/OptionItem" } }
+    OptionListInput:
+      type: object
+      required: [name, items]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        items: { type: array, items: { $ref: "#/components/schemas/OptionItem" } }
+    OptionListPage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/OptionList" } } } }]
+
+    # ---------- modelos ----------
+    RetentionClass: { type: string, enum: [pet, pt, cadastro] }
+    VersionStatus: { type: string, enum: [rascunho, ativa, arquivada] }
+    VersionOrigin: { type: string, enum: [manual, sugerida] }
+    StageKind: { type: string, enum: [solicitacao, emissao, aceite_campo, entrega, aceite_area] }
+    Condition:
+      type: object
+      additionalProperties: false
+      required: [itemId, anyOf]
+      properties:
+        itemId: { type: string }
+        lineId: { type: string }
+        anyOf: { type: array, minItems: 1, maxItems: 50, items: { type: string } }
+    SignSlot:
+      type: object
+      additionalProperties: false
+      required: [id, meaning, kind, roleIds, personId, min, required]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        meaning: { type: [string, "null"], minLength: 1, maxLength: 120 }
+        kind: { type: string, enum: [cargo, pessoa] }
+        roleIds: { type: array, maxItems: 20, uniqueItems: true, items: { $ref: "#/components/schemas/Uuid" } }
+        personId: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        min: { type: integer, minimum: 1, maximum: 20 }
+        required: { type: boolean }
+        requiredWhen: { $ref: "#/components/schemas/Condition" }
+    Stage:
+      type: object
+      additionalProperties: false
+      description: "A posição é o índice na lista."
+      required: [id, name, slots]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        kind: { $ref: "#/components/schemas/StageKind" }
+        locked: { type: boolean }
+        slots: { type: array, items: { $ref: "#/components/schemas/SignSlot" } }
+    Separation:
+      type: object
+      additionalProperties: false
+      required: [slotA, slotB, locked]
+      properties:
+        slotA: { $ref: "#/components/schemas/Uuid" }
+        slotB: { $ref: "#/components/schemas/Uuid" }
+        locked: { type: boolean }
+    FormItem:
+      type: object
+      description: |
+        Item do formulário, como em `db/MODELO.md` ("Formulário") e `FormItem` em `registry/modelTypes.ts`.
+        Os campos além dos comuns dependem de `kind` (tabela de `MODELO.md`); o banco confere a estrutura
+        (`form_problem`, `PTW15`).
+      required: [id, kind, label]
+      properties:
+        id: { type: string, pattern: "^[A-Za-z0-9_.:-]{1,64}$" }
+        kind: { type: string, enum: [texto, numero, horario, marcacao, verificacao, aviso, anexo, documento, data, pessoa, isolamento, grupo] }
+        label: { type: string }
+        required: { type: boolean }
+        showWhen: { $ref: "#/components/schemas/Condition" }
+      additionalProperties: true
+    FormSection:
+      type: object
+      additionalProperties: false
+      required: [id, title, items]
+      properties:
+        id: { type: string, pattern: "^[A-Za-z0-9_.:-]{1,64}$" }
+        title: { type: string }
+        stageId: { $ref: "#/components/schemas/Uuid" }
+        items: { type: array, items: { $ref: "#/components/schemas/FormItem" } }
+    FormSpec:
+      type: object
+      additionalProperties: false
+      required: [sections]
+      properties:
+        sections: { type: array, items: { $ref: "#/components/schemas/FormSection" } }
+    TemplateContent:
+      type: object
+      required: [locationTypeIds, assetTypeIds, stages, separation]
+      properties:
+        locationTypeIds: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        assetTypeIds: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        stages: { type: array, items: { $ref: "#/components/schemas/Stage" } }
+        separation: { type: array, items: { $ref: "#/components/schemas/Separation" } }
+        form: { $ref: "#/components/schemas/FormSpec" }
+    TemplateVersionInput:
+      description: "O que se grava num rascunho. `number`, `status`, `origin` e a origem da importação são do servidor."
+      allOf:
+        - { $ref: "#/components/schemas/TemplateContent" }
+        - type: object
+          properties:
+            id: { $ref: "#/components/schemas/Uuid" }
+            note: { type: string, maxLength: 2000 }
+            maxWindowHours: { type: [number, "null"], exclusiveMinimum: 0, description: "`max_window` em horas; nulo = sem limite." }
+            holdsEquipment: { type: boolean, default: true, description: '"Prende o equipamento" (`holds_equipment`).' }
+    TemplateVersion:
+      description: "`TemplateVersion` do app. Em `GET /templates` com `content` ≠ `all`, versões arquivadas vêm sem `stages`, `separation` e `form` (`contentOmitted: true`)."
+      allOf:
+        - { $ref: "#/components/schemas/TemplateVersionInput" }
+        - type: object
+          required: [id, number, status, createdAt, activatedAt, note, origin, maxWindowHours, holdsEquipment, sourceSha256, revision]
+          properties:
+            number: { type: integer, minimum: 1 }
+            status: { $ref: "#/components/schemas/VersionStatus" }
+            createdAt: { $ref: "#/components/schemas/Instant" }
+            activatedAt: { oneOf: [{ $ref: "#/components/schemas/Instant" }, { type: "null" }] }
+            origin: { $ref: "#/components/schemas/VersionOrigin" }
+            sourceSha256: { oneOf: [{ $ref: "#/components/schemas/Sha256" }, { type: "null" }] }
+            importSource: { $ref: "#/components/schemas/ImportSource" }
+            revision: { type: integer, minimum: 1, description: "Concorrência otimista do rascunho (`If-Match`). Coluna nova no banco: lacuna L6 de `fabrica/fase-1.md`." }
+            contentOmitted: { type: boolean }
+    ImportSource:
+      type: object
+      description: "`template_version.import_source` (mesmas chaves do banco, em português)."
+      required: [pacote, documentos, ferramenta, importadoEm, trechos]
+      properties:
+        pacote: { type: object, required: [arquivo, sha256], properties: { arquivo: { type: string }, sha256: { $ref: "#/components/schemas/Sha256" } } }
+        documentos: { type: array, items: { type: object, required: [arquivo, sha256, paginas], properties: { arquivo: { type: string }, sha256: { $ref: "#/components/schemas/Sha256" }, paginas: { type: integer } } } }
+        ferramenta: { type: string }
+        modelo: { type: string }
+        idioma: { type: object, required: [documento, rotulos], properties: { documento: { type: string }, rotulos: { type: string } } }
+        importadoEm: { $ref: "#/components/schemas/Instant" }
+        trechos:
+          type: object
+          additionalProperties:
+            type: object
+            required: [pagina, trecho]
+            properties:
+              pagina: { type: integer, minimum: 1 }
+              trecho: { type: string, minLength: 1 }
+              arquivo: { type: string }
+              original: { type: string }
+              confianca: { type: string, enum: [alta, media, baixa] }
+              observacao: { type: string }
+    PermitTemplate:
+      type: object
+      required: [id, name, retentionClass, revision, updatedAt, versions]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        retentionClass: { $ref: "#/components/schemas/RetentionClass" }
+        revision: { type: integer, minimum: 1 }
+        updatedAt: { $ref: "#/components/schemas/Instant" }
+        versions: { type: array, items: { $ref: "#/components/schemas/TemplateVersion" } }
+    TemplatePage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/PermitTemplate" } } } }]
+    ModelPackage:
+      type: object
+      description: "Pacote `ptw.modelo/1`. O esquema completo é o da skill (`.claude/skills/ptw-modelo-de-formulario`, igual a `ESQUEMA_PTW_MODELO` em `core/templatePackage.ts`); aqui só o envelope."
+      required: [formato]
+      properties:
+        formato: { type: string, const: ptw.modelo/1 }
+      additionalProperties: true
+    ImportRequest:
+      type: object
+      required: [pacote]
+      properties:
+        arquivo: { type: string, maxLength: 255, description: Nome do arquivo escolhido (vai para a origem). }
+        pacote: { type: string, maxLength: 5000000, description: "O texto do arquivo, como lido (o SHA-256 é o destes bytes em UTF-8)." }
+    ImportPreview:
+      type: object
+      description: "`ResultadoImportacao` de `core/templatePackage.ts` (chaves em português, como o app já usa), mais os totais e o token da confirmação."
+      required: [rascunho, previa, problemas, pendencias, resolucao, resumo, sha256]
+      properties:
+        rascunho: { type: [object, "null"], additionalProperties: true, description: "`Rascunho`; nulo quando há erro (nada será criado)." }
+        previa: { type: [object, "null"], additionalProperties: true }
+        problemas: { type: array, items: { type: object, required: [nivel, onde, mensagem], properties: { nivel: { type: string, enum: [erro, aviso] }, onde: { type: string }, mensagem: { type: string }, alvo: { type: string } } } }
+        pendencias: { type: array, items: { type: object, additionalProperties: true } }
+        resolucao: { type: object, additionalProperties: true }
+        resumo: { type: [object, "null"], additionalProperties: true }
+        totais: { type: object, additionalProperties: { type: integer }, description: "`totaisDaImportacao`: o que a confirmação mostra." }
+        sha256: { $ref: "#/components/schemas/Sha256", description: SHA-256 do pacote. }
+        token: { type: string, description: Só sem erros. }
+
+    # ---------- PT ----------
+    PermitState: { type: string, enum: [rascunho, em_analise, devolvida, emitida, ativa, suspensa, entregue, encerrada, cancelada, expirada] }
+    AttachKind: { type: string, enum: [foto, video, arquivo] }
+    LineAnswer: { type: string, description: "`sim`, `nao`, `na`, `confirmo` ou, com `answers: lista`, o uuid de um item da lista." }
+    ItemAnswer:
+      description: "`permit_answer.value`: `t` é o `kind` do item (`ItemAnswer` em `core/form.ts`)."
+      oneOf:
+        - { type: object, additionalProperties: false, required: [t, v], properties: { t: { const: texto }, v: { type: string } } }
+        - { type: object, additionalProperties: false, required: [t, v], properties: { t: { const: numero }, v: { type: number } } }
+        - { type: object, additionalProperties: false, required: [t, v], properties: { t: { const: horario }, v: { type: string, pattern: "^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$" } } }
+        - { type: object, additionalProperties: false, required: [t, v], properties: { t: { const: data }, v: { $ref: "#/components/schemas/Day" } } }
+        - { type: object, additionalProperties: false, required: [t, ids], properties: { t: { const: marcacao }, ids: { type: array, items: { type: string } }, other: { type: string } } }
+        - type: object
+          additionalProperties: false
+          required: [t, lines]
+          properties:
+            t: { const: verificacao }
+            lines:
+              type: object
+              additionalProperties: { type: object, additionalProperties: false, required: [a], properties: { a: { $ref: "#/components/schemas/LineAnswer" }, note: { type: string } } }
+        - { type: object, additionalProperties: false, required: [t, files], properties: { t: { const: anexo }, files: { type: array, uniqueItems: true, items: { $ref: "#/components/schemas/Uuid" } } } }
+        - type: object
+          additionalProperties: false
+          required: [t, code, files]
+          properties:
+            t: { const: documento }
+            code: { type: string }
+            files: { type: array, uniqueItems: true, items: { $ref: "#/components/schemas/Uuid" } }
+            validUntil: { $ref: "#/components/schemas/Day" }
+        - { type: object, additionalProperties: false, required: [t, ids], properties: { t: { const: pessoa }, ids: { type: array, items: { $ref: "#/components/schemas/Uuid" } } } }
+        - type: object
+          additionalProperties: false
+          required: [t, rows]
+          properties:
+            t: { const: isolamento }
+            rows:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [id, point, method, lock]
+                properties:
+                  id: { type: string }
+                  point: { type: string }
+                  assetId: { $ref: "#/components/schemas/Uuid" }
+                  energy: { type: string, enum: [eletrica, mecanica, hidraulica, pneumatica, termica, quimica, gravitacional, outra] }
+                  method: { type: string }
+                  lock: { type: string }
+                  zero: { type: string, enum: [sim, nao] }
+                  by: { $ref: "#/components/schemas/Uuid" }
+        - type: object
+          additionalProperties: false
+          required: [t, rows]
+          properties:
+            t: { const: grupo }
+            rows:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [id, answers]
+                properties:
+                  id: { type: string }
+                  answers: { type: object, additionalProperties: { $ref: "#/components/schemas/ItemAnswer" } }
+    AnswerSaved:
+      type: object
+      required: [itemId, value, answeredBy, answeredAt]
+      properties:
+        itemId: { type: string }
+        value: { $ref: "#/components/schemas/ItemAnswer" }
+        answeredBy: { $ref: "#/components/schemas/Uuid" }
+        answeredAt: { $ref: "#/components/schemas/Instant" }
+    PermitHeader:
+      type: object
+      description: "A linha de `ptw.permit`, sem as respostas (`Permit` do app menos `answers` e `answerMeta`)."
+      required: [id, number, templateId, versionId, state, authorId, locationId, assetIds, team, windowStart, windowEnd, scope, snapshotSha256, snapshotAt, revision, note, holdReason, holdBy, holdAt, resumedReason, resumedBy, resumedAt, createdAt, updatedAt, rowVersion]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        number: { type: [string, "null"], examples: [PT-UN01-2026-00012] }
+        templateId: { $ref: "#/components/schemas/Uuid" }
+        versionId: { $ref: "#/components/schemas/Uuid" }
+        state: { $ref: "#/components/schemas/PermitState" }
+        authorId: { $ref: "#/components/schemas/Uuid" }
+        locationId: { $ref: "#/components/schemas/Uuid" }
+        assetIds: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        team: { type: object, description: "cargo → pessoas (`permit_team`).", additionalProperties: { type: array, items: { $ref: "#/components/schemas/Uuid" } } }
+        windowStart: { $ref: "#/components/schemas/Instant" }
+        windowEnd: { $ref: "#/components/schemas/Instant" }
+        scope: { type: string, minLength: 1, maxLength: 500 }
+        snapshotSha256: { oneOf: [{ $ref: "#/components/schemas/Sha256" }, { type: "null" }] }
+        snapshotAt: { oneOf: [{ $ref: "#/components/schemas/Instant" }, { type: "null" }] }
+        revision: { type: integer, minimum: 1, description: Revisão assinada. }
+        note: { type: [string, "null"], maxLength: 500, description: "`state_note`." }
+        holdReason: { type: [string, "null"] }
+        holdBy: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        holdAt: { oneOf: [{ $ref: "#/components/schemas/Instant" }, { type: "null" }] }
+        resumedReason: { type: [string, "null"] }
+        resumedBy: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        resumedAt: { oneOf: [{ $ref: "#/components/schemas/Instant" }, { type: "null" }] }
+        createdAt: { $ref: "#/components/schemas/Instant" }
+        updatedAt: { $ref: "#/components/schemas/Instant" }
+        rowVersion: { type: integer, minimum: 1, description: "Concorrência otimista (`If-Match`)." }
+    Permit:
+      allOf:
+        - { $ref: "#/components/schemas/PermitHeader" }
+        - type: object
+          required: [answers, answerMeta]
+          properties:
+            answers: { type: object, additionalProperties: { $ref: "#/components/schemas/ItemAnswer" } }
+            answerMeta:
+              type: object
+              additionalProperties:
+                type: object
+                required: [answeredBy, answeredAt]
+                properties: { answeredBy: { $ref: "#/components/schemas/Uuid" }, answeredAt: { $ref: "#/components/schemas/Instant" } }
+    PermitDraftInput:
+      type: object
+      additionalProperties: false
+      required: [templateId, locationId, windowStart, windowEnd, scope]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        templateId: { $ref: "#/components/schemas/Uuid" }
+        versionId: { $ref: "#/components/schemas/Uuid", description: "Opcional; se vier, tem de ser a versão em uso (`PTW04`)." }
+        locationId: { $ref: "#/components/schemas/Uuid" }
+        assetIds: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        team: { type: object, additionalProperties: { type: array, items: { $ref: "#/components/schemas/Uuid" } } }
+        windowStart: { $ref: "#/components/schemas/Instant" }
+        windowEnd: { $ref: "#/components/schemas/Instant" }
+        scope: { type: string, minLength: 1, maxLength: 500 }
+    PermitPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        locationId: { $ref: "#/components/schemas/Uuid" }
+        assetIds: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        team: { type: object, additionalProperties: { type: array, items: { $ref: "#/components/schemas/Uuid" } } }
+        windowStart: { $ref: "#/components/schemas/Instant" }
+        windowEnd: { $ref: "#/components/schemas/Instant" }
+        scope: { type: string, minLength: 1, maxLength: 500 }
+    SignatureRec:
+      type: object
+      required: [id, permitId, rev, slotId, personId, signedAt, voidedAt, voidedReason]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        permitId: { $ref: "#/components/schemas/Uuid" }
+        rev: { type: integer, minimum: 1 }
+        slotId: { $ref: "#/components/schemas/Uuid" }
+        personId: { $ref: "#/components/schemas/Uuid" }
+        signedAt: { $ref: "#/components/schemas/Instant" }
+        voidedAt: { oneOf: [{ $ref: "#/components/schemas/Instant" }, { type: "null" }] }
+        voidedReason: { type: [string, "null"] }
+    PermitRevision:
+      type: object
+      required: [permitId, rev, at, reason, sha256]
+      properties:
+        permitId: { $ref: "#/components/schemas/Uuid" }
+        rev: { type: integer, minimum: 1 }
+        at: { $ref: "#/components/schemas/Instant" }
+        reason: { type: string }
+        sha256: { $ref: "#/components/schemas/Sha256" }
+    PermitExtension:
+      type: object
+      required: [id, permitId, revision, oldEnd, newEnd, reason, personId, at]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        permitId: { $ref: "#/components/schemas/Uuid" }
+        revision: { type: integer, minimum: 1 }
+        oldEnd: { $ref: "#/components/schemas/Instant" }
+        newEnd: { $ref: "#/components/schemas/Instant" }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        personId: { $ref: "#/components/schemas/Uuid" }
+        at: { $ref: "#/components/schemas/Instant" }
+    Blob:
+      type: object
+      description: "`ptw.blob`. O `url` da simulação não existe aqui: o conteúdo sai por `/attachments/{id}/content`."
+      required: [sha256, size, mime, storedAt]
+      properties:
+        sha256: { $ref: "#/components/schemas/Sha256" }
+        size: { type: integer, format: int64, minimum: 1, maximum: 2147483648 }
+        mime: { type: string, pattern: "^(image|video|application|text)/[a-z0-9.+-]{1,100}$" }
+        storedAt: { $ref: "#/components/schemas/Instant" }
+    AttachmentInput:
+      type: object
+      required: [itemId, kind, sha256, fileName]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        itemId: { type: string, pattern: "^[A-Za-z0-9_.:-]{1,64}$" }
+        kind: { $ref: "#/components/schemas/AttachKind" }
+        sha256: { $ref: "#/components/schemas/Sha256" }
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        previewSha256: { oneOf: [{ $ref: "#/components/schemas/Sha256" }, { type: "null" }] }
+        width: { type: [integer, "null"], minimum: 1 }
+        height: { type: [integer, "null"], minimum: 1 }
+        durationMs: { type: [integer, "null"], minimum: 0 }
+    PermitAttachment:
+      allOf:
+        - { $ref: "#/components/schemas/AttachmentInput" }
+        - type: object
+          required: [id, permitId, previewSha256, width, height, durationMs, capturedBy, capturedAt]
+          properties:
+            permitId: { $ref: "#/components/schemas/Uuid" }
+            capturedBy: { $ref: "#/components/schemas/Uuid" }
+            capturedAt: { $ref: "#/components/schemas/Instant" }
+    PermitDetail:
+      type: object
+      description: "Tudo o que a tela da PT e o núcleo do app (`railOf`, `myWork`, `workRelease`) precisam de uma PT."
+      required: [permit, form, signatures, revisions, extensions, attachments, blobs, assets, currentStageId, released, now]
+      properties:
+        permit: { $ref: "#/components/schemas/Permit" }
+        form: { $ref: "#/components/schemas/FormSpec", description: "O formulário da PT: o congelado no primeiro envio, senão o da versão com as listas copiadas (`ptw.permit_form`)." }
+        signatures: { type: array, description: "Todas, inclusive as anuladas.", items: { $ref: "#/components/schemas/SignatureRec" } }
+        revisions: { type: array, items: { $ref: "#/components/schemas/PermitRevision" } }
+        extensions: { type: array, items: { $ref: "#/components/schemas/PermitExtension" } }
+        attachments: { type: array, items: { $ref: "#/components/schemas/PermitAttachment" } }
+        blobs: { type: object, description: "Por SHA-256, os blobs dos anexos e das miniaturas.", additionalProperties: { $ref: "#/components/schemas/Blob" } }
+        assets: { type: array, description: Os ativos da PT (o app não guarda todos os ativos da planta)., items: { $ref: "#/components/schemas/Asset" } }
+        currentStageId: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }], description: "`ptw.permit_current_stage`." }
+        blocker: { type: [string, "null"], description: "`ptw.permit_blocker` da etapa em curso: o que impede a assinatura (nulo = nada)." }
+        released: { type: boolean, description: "`ptw.work_released`: ativa, sem parada, dentro da janela agora." }
+        now: { $ref: "#/components/schemas/Instant", description: Hora do servidor da leitura. }
+    PermitBoardRow:
+      type: object
+      description: "`v_permit_board` em camelCase, mais quem move a seguir."
+      required: [permit, stateLabel, released, authorName, locationName, locationPath, templateName, versionNumber, assetCodes, next, mine]
+      properties:
+        permit: { $ref: "#/components/schemas/PermitHeader" }
+        stateLabel: { type: string }
+        released: { type: boolean }
+        authorName: { type: string }
+        locationName: { type: string }
+        locationPath: { type: array, description: "Ids dos locais, da raiz até o local da PT.", items: { $ref: "#/components/schemas/Uuid" } }
+        templateName: { type: string }
+        versionNumber: { type: integer }
+        assetCodes: { type: array, items: { type: string } }
+        currentStageId: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        next: { type: string, description: 'Quem move a seguir, como `nextLabel` do app ("Marina Costa · Emissão", "Sem elegível · …", "—").' }
+        mine: { type: boolean, description: É a vez da pessoa da sessão (`waitsFor`). }
+        answers: { type: object, additionalProperties: true, description: "Respostas por item, como em `PermitDetail.permit.answers`. Só com `answers=true`." }
+    PermitBoardPage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/PermitBoardRow" } } } }]
+
+    # ---------- auditoria ----------
+    AuditGroup: { type: string, enum: [alteracao, acesso, sessao, negada] }
+    AuditEvent:
+      type: object
+      description: "`AuditEvent` de `core/audit.ts` (as chaves do hash), mais os nomes de `v_audit` para a tela."
+      required: [v, unit, seq, at, prev, hash, actor, role, auth, client, request, reason, action, ok, permit, rev, asset, entity, entityId, text, data]
+      properties:
+        v: { type: integer, const: 2 }
+        unit: { $ref: "#/components/schemas/Uuid" }
+        seq: { type: integer, format: int64, minimum: 1 }
+        at: { type: integer, format: int64, description: Microssegundos desde 1970 UTC. }
+        prev: { $ref: "#/components/schemas/Sha256" }
+        hash: { $ref: "#/components/schemas/Sha256" }
+        actor: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        role: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        auth: { oneOf: [{ $ref: "#/components/schemas/AuthMethod" }, { type: "null" }] }
+        client: { type: [string, "null"] }
+        request: { type: [string, "null"] }
+        reason: { type: [string, "null"] }
+        action: { type: string }
+        ok: { type: boolean }
+        permit: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        rev: { type: [integer, "null"] }
+        asset: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        entity: { type: [string, "null"] }
+        entityId: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        text: { type: string }
+        data: { type: object, additionalProperties: true, description: '`{"de": {…}, "para": {…}}` com nomes de coluna e valores crus.' }
+        actorName: { type: [string, "null"] }
+        roleLabel: { type: [string, "null"] }
+        permitNumber: { type: [string, "null"] }
+        assetCode: { type: [string, "null"] }
+    AuditPage:
+      type: object
+      required: [items, nextBefore, total]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/AuditEvent" } }
+        total: { type: integer, description: "Eventos que passam nos filtros (para \"N de M\" na tela); conta limitada ao período pedido." }
+        nextBefore: { type: [integer, "null"], format: int64, description: "Passe em `before` para a página seguinte; nulo = acabou." }
+    PermitHistoryPage:
+      allOf:
+        - { $ref: "#/components/schemas/AuditPage" }
+        - type: object
+          properties:
+            accesses: { type: integer, minimum: 0, description: "Total de eventos acesso.* desta PT, separado dos eventos do histórico." }
+    ChainStatus:
+      type: object
+      required: [headSeq, headHash, verified]
+      properties:
+        headSeq: { type: integer, format: int64 }
+        headHash: { $ref: "#/components/schemas/Sha256" }
+        verified:
+          oneOf:
+            - { type: "null" }
+            - type: object
+              required: [at, ok, upToSeq]
+              properties:
+                at: { $ref: "#/components/schemas/Instant" }
+                ok: { type: boolean }
+                upToSeq: { type: integer, format: int64 }
+                firstBroken: { type: [integer, "null"], format: int64 }
+        lastAnchor:
+          oneOf:
+            - { type: "null" }
+            - { type: object, required: [day, seq], properties: { day: { $ref: "#/components/schemas/Day" }, seq: { type: integer, format: int64 } } }
+    AuditExport:
+      type: object
+      required: [id, firstSeq, lastSeq, events, fileSha256, manifestSha256, reason, actorId, at, fileName]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        firstSeq: { type: integer, format: int64 }
+        lastSeq: { type: integer, format: int64 }
+        events: { type: integer, format: int64 }
+        fileSha256: { $ref: "#/components/schemas/Sha256" }
+        manifestSha256: { $ref: "#/components/schemas/Sha256" }
+        reason: { type: string }
+        actorId: { oneOf: [{ $ref: "#/components/schemas/Uuid" }, { type: "null" }] }
+        at: { $ref: "#/components/schemas/Instant" }
+        fileName: { type: string, description: "Base dos dois arquivos: `ptw-auditoria-<unidade>-<primeiro>-<último>`." }
+    AuditExportPage:
+      allOf: [{ $ref: "#/components/schemas/PageMeta" }, { type: object, required: [items], properties: { items: { type: array, items: { $ref: "#/components/schemas/AuditExport" } } } }]
+
+    # ---------- sistema ----------
+    SystemStatus:
+      type: object
+      required: [now, version, db, storage, clock, devLogin]
+      properties:
+        now: { $ref: "#/components/schemas/Instant" }
+        version: { type: string, description: Versão da API. }
+        schema: { type: object, description: "`ptw.schema_info.files`: SHA-256 de cada arquivo de `db/schema`.", additionalProperties: { $ref: "#/components/schemas/Sha256" } }
+        db: { type: object, required: [ok], properties: { ok: { type: boolean }, latencyMs: { type: number } } }
+        storage: { type: object, required: [ok], properties: { ok: { type: boolean }, latencyMs: { type: number } } }
+        clock:
+          type: object
+          description: "Diferença entre o relógio da API e o do banco; acima do limite, a API grava `sistema.relogio.desvio`."
+          required: [driftMs, ok]
+          properties: { driftMs: { type: number }, ok: { type: boolean } }
+        devLogin: { type: boolean }
+        startedAt: { $ref: "#/components/schemas/Instant" }

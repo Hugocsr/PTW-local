@@ -1,0 +1,18 @@
+{
+  "url": "ldaps://ldap-gateway:1636",
+  "serverName": "ad.planta.local",
+  "bindDn": "CN=ptw-leitura,OU=Servicos,DC=planta,DC=local",
+  "passwordFile": "/run/secrets/ldap_bind",
+  "caFile": "/run/secrets/ldap_ca",
+  "baseDn": "OU=Pessoas,DC=planta,DC=local",
+  "loginAttribute": "sAMAccountName",
+  "guidAttribute": "objectGUID",
+  "groupBaseDn": "OU=Grupos,DC=planta,DC=local",
+  "accessGroup": "CN=PTW-Usuarios,OU=Grupos,DC=planta,DC=local",
+  "grantGroups": {
+    "cadastro": "CN=PTW-Cadastro,OU=Grupos,DC=planta,DC=local",
+    "modelos": "CN=PTW-Modelos,OU=Grupos,DC=planta,DC=local",
+    "auditoria": "CN=PTW-Auditoria,OU=Grupos,DC=planta,DC=local",
+    "exportacao": "CN=PTW-Exportacao,OU=Grupos,DC=planta,DC=local"
+  }
+}

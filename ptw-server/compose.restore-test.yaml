@@ -1,0 +1,32 @@
+# Confere os arquivos restaurados; não publica portas nem altera os volumes originais.
+services:
+  storage-restore:
+    extends: { file: compose.yaml, service: storage }
+    restart: "no"
+    volumes:
+      - restored-files:/data
+  verify-files:
+    image: ptw-api:local
+    profiles: [test]
+    command: [node, scripts/verify-files.mjs]
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    secrets: [db_api, s3_api_key, s3_api_secret]
+    environment:
+      PTW_UNIT: ${PTW_UNIT:-UN-01}
+      PTW_DB_NAME: ${PTW_RESTORE_DB:?Informe o banco restaurado}
+      PTW_S3_URL: http://storage-restore:8333
+    volumes:
+      - ./api/scripts/verify-files.mjs:/app/scripts/verify-files.mjs:ro
+    networks: [interna]
+    depends_on:
+      storage-restore: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 160M, pids: 100 }
+volumes:
+  restored-files:
+    external: true
+    name: ${PTW_RESTORE_FILES_VOLUME:?Informe o volume restaurado}

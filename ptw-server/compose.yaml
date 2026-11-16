@@ -1,0 +1,204 @@
+# PTW in a Box · o sistema inteiro: app (web), banco (db) e arquivos (storage).
+# Primeira vez:  sh setup.sh && docker compose up -d
+# Recursos (rodapé do app): "stats" lê a API do Docker por um repassador que só deixa 4 GETs e grava
+# /status.json, que o web serve.
+# Testes:        sh test.sh
+#
+# Só o "web" publica portas (HTTPS). Banco e arquivos ficam numa rede interna, sem porta e sem
+# saída para a internet. A API recebe do web pela rede interna "apiweb" e fala com banco e S3
+# pela rede "interna". Não recebe acesso à rede de borda.
+name: ptw
+
+x-endurecido: &endurecido
+  restart: unless-stopped
+  read_only: true                      # sistema de arquivos do contêiner só leitura
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: [ALL]                      # nenhuma capacidade do kernel
+  init: true
+  logging: { driver: local, options: { max-size: 10m, max-file: "3" } }
+  networks: [interna]
+
+services:
+  # ---------- App: frontend compilado, servido pelo Caddy com HTTPS da CA interna ----------
+  web:
+    <<: *endurecido
+    build:
+      context: ../ptw-mockup-v2
+      dockerfile: ../ptw-server/web/Dockerfile
+      additional_contexts:
+        caddyfile: ./web
+        # Os testes do app leem o esquema e o exemplo do pacote ptw.modelo/1 (../.claude/skills/...).
+        modelo: ../.claude/skills/ptw-modelo-de-formulario
+    image: ptw-web:local
+    environment:
+      PTW_HOSTS: ${PTW_HOSTS:-localhost}   # nomes/IPs pelos quais a planta acessa
+    ports:
+      - "${PTW_HTTPS_PORT:-443}:8443"
+      - "${PTW_HTTP_PORT:-80}:8080"      # só redireciona para HTTPS
+    volumes:
+      - webdata:/data                    # CA interna e certificados: mantém a mesma CA entre reinícios
+      - status:/status:ro                # status.json do "stats" (rodapé de recursos)
+      - ./tema:/planta/tema:ro           # tema da planta (tema.json, logotipo, fonte); vazio = tema padrão
+    tmpfs: ["/config:uid=1001,gid=1001,mode=0700", "/tmp:uid=1001,gid=1001,mode=1777"]
+    networks: [borda, apiweb]
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -S -O /dev/null http://127.0.0.1:8080/ 2>&1 | grep -q 301"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 64M, pids: 100 }
+
+  # ---------- API: única ponte entre o navegador, o banco e os arquivos ----------
+  api:
+    <<: *endurecido
+    build: ./api
+    image: ptw-api:local
+    user: "1000:1000"
+    environment:
+      PTW_UNIT: ${PTW_UNIT:-UN-01}
+      PTW_DEV_LOGIN: ${PTW_DEV_LOGIN:-0}
+      PTW_CHECK_RESPONSES: "1"
+      PTW_DB_POOL: "4"
+    secrets: [db_api, s3_api_key, s3_api_secret]
+    tmpfs: ["/tmp:uid=1000,gid=1000,mode=0700"]
+    networks: [interna, apiweb]
+    depends_on:
+      db: { condition: service_healthy }
+      storage: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 160M, pids: 100 }
+
+  # ---------- Banco: PostgreSQL 18 ----------
+  db:
+    <<: *endurecido
+    image: postgres:18.6-alpine
+    user: "70:70"                      # usuário postgres da imagem, nunca root
+    shm_size: 128m
+    environment:
+      POSTGRES_DB: ptw
+      POSTGRES_USER: ptw_owner         # dono do schema; cria o banco a partir de db/schema
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_owner
+      POSTGRES_INITDB_ARGS: --data-checksums --auth-local=scram-sha-256 --auth-host=scram-sha-256
+    command:
+      - postgres
+      # Memória para um contêiner de 512 MB.
+      - --shared_buffers=128MB
+      - --effective_cache_size=320MB
+      - --work_mem=4MB
+      - --maintenance_work_mem=64MB
+      - --max_connections=40          # a API usa um pool pequeno; PgBouncer só se crescer
+      - --jit=off                     # consultas curtas: JIT só gasta memória
+      # Disco e WAL.
+      - --random_page_cost=1.1
+      - --wal_compression=lz4
+      - --checkpoint_timeout=15min
+      - --max_wal_size=1GB
+      # Segurança e higiene.
+      - --password_encryption=scram-sha-256
+      - --idle_in_transaction_session_timeout=30s
+      - --log_min_duration_statement=250ms
+      - --log_lock_waits=on
+      - --track_io_timing=on
+    secrets: [db_owner, db_api]
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./db/init.sh:/docker-entrypoint-initdb.d/10-ptw.sh:ro
+      - ./db/schema:/ptw/schema:ro
+    tmpfs:
+      - /tmp:uid=70,gid=70,mode=1777
+      - /var/run/postgresql:uid=70,gid=70,mode=2775
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "ptw_owner", "-d", "ptw"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 512M, pids: 200 }
+
+  # ---------- Arquivos: SeaweedFS (S3), fotos, vídeos e documentos ----------
+  # Só a API acessa. Cada arquivo é gravado uma vez, com a chave = SHA-256 do conteúdo.
+  storage:
+    <<: *endurecido
+    image: chrislusf/seaweedfs:4.50
+    user: "1000:1000"                  # usuário seaweed da imagem
+    entrypoint: ["/bin/sh", "/ptw/storage.sh"]
+    environment:
+      GODEBUG: fips140=on
+    secrets: [s3_api_key, s3_api_secret]
+    volumes:
+      - files:/data
+      - ./storage/storage.sh:/ptw/storage.sh:ro
+    tmpfs: ["/tmp:uid=1000,gid=1000,mode=0700"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:9333/cluster/healthz && wget -q -O /dev/null http://127.0.0.1:8333/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 384M, pids: 200 }
+
+  # ---------- Recursos: RAM, CPU e disco de cada serviço, para o rodapé do app ----------
+  # Grava status.json a cada 5 s no volume "status" (o web só lê). Sem porta e sem rede de saída:
+  # só fala com o repassador abaixo, numa rede própria.
+  stats:
+    <<: *endurecido
+    build: ./stats
+    image: ptw-stats:local
+    environment:
+      PTW_PROJETO: ptw
+      PTW_INTERVALO: "5"
+    volumes:
+      - status:/status
+    networks: [docker]
+    depends_on: [stats-docker]
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 48M, pids: 20 }
+
+  # Repassador da API do Docker: só GET em /containers/json, /containers/<id>/json e /stats, e
+  # /system/df (stats/haproxy.cfg); todo o resto é recusado (403). É o único com o socket, montado
+  # só leitura; roda sem root, com o grupo dono do socket (0 no Docker Desktop; num Linux, o gid do
+  # grupo "docker": PTW_DOCKER_GID).
+  stats-docker:
+    <<: *endurecido
+    image: tecnativa/docker-socket-proxy:v0.4.1
+    user: "65534:65534"
+    group_add: ["${PTW_DOCKER_GID:-0}"]
+    environment:
+      DISABLE_IPV6: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./stats/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg.template:ro
+    tmpfs: ["/tmp:uid=65534,gid=65534,mode=0700", "/run:uid=65534,gid=65534,mode=0700"]
+    networks: [docker]
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 32M, pids: 20 }
+
+volumes:
+  status:
+  pgdata:
+  files:
+  webdata:
+
+networks:
+  interna:
+    internal: true                     # sem rota para fora
+  borda:
+  apiweb:
+    internal: true                     # apenas web ↔ api; sem saída para a internet
+  docker:
+    internal: true                     # só stats ↔ stats-docker; ninguém mais alcança o repassador
+
+secrets:
+  db_owner:      { file: ./secrets/db_owner }
+  db_api:        { file: ./secrets/db_api }
+  s3_api_key:    { file: ./secrets/s3_api_key }
+  s3_api_secret: { file: ./secrets/s3_api_secret }

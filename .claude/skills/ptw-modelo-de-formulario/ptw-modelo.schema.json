@@ -1,0 +1,1696 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ptw.modelo/1",
+  "title": "Pacote de modelo de PT (ptw.modelo/1)",
+  "description": "Modelo de Permissão de Trabalho portátil: lido de um formulário da planta ou exportado de outra planta. Referências por nome. O app importa como rascunho; uma pessoa revisa e ativa.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "formato",
+    "origem",
+    "modelo",
+    "listas",
+    "etapas",
+    "separacoes",
+    "campos_do_sistema",
+    "pendencias"
+  ],
+  "properties": {
+    "formato": {
+      "const": "ptw.modelo/1"
+    },
+    "origem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tipo",
+        "arquivos",
+        "gerado_por",
+        "gerado_em"
+      ],
+      "properties": {
+        "tipo": {
+          "enum": [
+            "documento",
+            "exportacao"
+          ]
+        },
+        "arquivos": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "arquivo",
+              "sha256",
+              "paginas"
+            ],
+            "properties": {
+              "arquivo": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "paginas": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        },
+        "gerado_por": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ferramenta"
+          ],
+          "properties": {
+            "ferramenta": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "modelo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "versao": {
+              "type": "string"
+            }
+          }
+        },
+        "gerado_em": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:\\d{2})?)?$"
+        }
+      }
+    },
+    "idioma": {
+      "description": "Idioma do documento e dos rótulos (padrão pt-BR). Rótulos traduzidos guardam o texto original em *_original.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "documento",
+        "rotulos"
+      ],
+      "properties": {
+        "documento": {
+          "type": "string",
+          "maxLength": 35,
+          "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+        },
+        "rotulos": {
+          "type": "string",
+          "maxLength": 35,
+          "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+        }
+      }
+    },
+    "modelo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nome",
+        "escopo"
+      ],
+      "properties": {
+        "nome": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "nome_original": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descricao": {
+          "type": "string"
+        },
+        "prazo_maximo_horas": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 8784
+        },
+        "prende_equipamento": {
+          "type": "boolean",
+          "description": "Falso: a PT deste modelo pode existir junto com outra PT aberta no mesmo equipamento (ex.: desabilitação de intertravamento). Ausente = verdadeiro."
+        },
+        "escopo": {
+          "description": "Tipos de local e de ativo aceitos, pelo nome.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tipos_de_local",
+            "tipos_de_ativo"
+          ],
+          "properties": {
+            "tipos_de_local": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            },
+            "tipos_de_ativo": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          }
+        }
+      }
+    },
+    "listas": {
+      "type": "array",
+      "items": {
+        "description": "Listas de opções (EPI, perigos…) usadas por itens de marcação e respostas de verificação. Sem itens: a planta inclui antes de ativar.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nome",
+          "itens"
+        ],
+        "properties": {
+          "nome": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "nome_original": {
+            "type": "string",
+            "minLength": 1
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "itens_originais": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "origem": {
+            "$ref": "#/$defs/origem_trecho"
+          }
+        }
+      }
+    },
+    "etapas": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/etapa"
+      },
+      "minItems": 1
+    },
+    "separacoes": {
+      "type": "array",
+      "items": {
+        "description": "Duas assinaturas (refs) que precisam ser de pessoas diferentes.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "a",
+          "b"
+        ],
+        "properties": {
+          "a": {
+            "type": "string",
+            "minLength": 1
+          },
+          "b": {
+            "type": "string",
+            "minLength": 1
+          },
+          "travada": {
+            "type": "boolean"
+          },
+          "origem": {
+            "$ref": "#/$defs/origem_trecho"
+          }
+        }
+      }
+    },
+    "campos_do_sistema": {
+      "type": "array",
+      "items": {
+        "description": "O que o papel pede e o sistema já guarda (nº da PT, local, data…): não vira item.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rotulo",
+          "corresponde_a",
+          "origem"
+        ],
+        "properties": {
+          "rotulo": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rotulo_original": {
+            "type": "string",
+            "minLength": 1
+          },
+          "corresponde_a": {
+            "enum": [
+              "numero_pt",
+              "local",
+              "ativos",
+              "data",
+              "janela",
+              "equipe",
+              "empresa",
+              "lider",
+              "escopo"
+            ]
+          },
+          "origem": {
+            "$ref": "#/$defs/origem_trecho"
+          }
+        }
+      }
+    },
+    "pendencias": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pendencia"
+      }
+    }
+  },
+  "$defs": {
+    "origem_trecho": {
+      "description": "Página e texto literal de onde o nó veio.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pagina",
+        "trecho"
+      ],
+      "properties": {
+        "arquivo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pagina": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "trecho": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bbox": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      }
+    },
+    "condicao": {
+      "description": "Mostrar quando o item (ou a linha) tem um destes valores.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item",
+        "valores"
+      ],
+      "properties": {
+        "item": {
+          "type": "string",
+          "minLength": 1
+        },
+        "linha": {
+          "type": "string",
+          "minLength": 1
+        },
+        "valores": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "pendencia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "descricao",
+        "motivo"
+      ],
+      "properties": {
+        "descricao": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trecho_original": {
+          "type": "string",
+          "minLength": 1
+        },
+        "motivo": {
+          "enum": [
+            "sem_tipo",
+            "ilegivel",
+            "fora_do_produto",
+            "duvida",
+            "sem_fonte"
+          ]
+        },
+        "sugestao": {
+          "type": "string"
+        },
+        "onde": {
+          "type": "string"
+        },
+        "origem": {
+          "$ref": "#/$defs/origem_trecho"
+        }
+      }
+    },
+    "assinatura": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "significado",
+        "minimo",
+        "obrigatoria"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "significado": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "significado_original": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cargo": {
+          "type": [
+            "string",
+            "array",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 80,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "cargos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "minimo": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "obrigatoria": {
+          "type": "boolean"
+        },
+        "obrigatoria_quando": {
+          "$ref": "#/$defs/condicao"
+        },
+        "origem": {
+          "$ref": "#/$defs/origem_trecho"
+        },
+        "confianca": {
+          "enum": [
+            "alta",
+            "media",
+            "baixa"
+          ]
+        },
+        "observacao": {
+          "type": "string"
+        }
+      }
+    },
+    "etapa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ref",
+        "nome",
+        "assinaturas",
+        "secoes"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "nome_original": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tipo": {
+          "enum": [
+            "solicitacao",
+            "emissao",
+            "aceite_campo",
+            "entrega",
+            "aceite_area"
+          ]
+        },
+        "assinaturas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/assinatura"
+          }
+        },
+        "secoes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/secao"
+          }
+        },
+        "origem": {
+          "$ref": "#/$defs/origem_trecho"
+        }
+      }
+    },
+    "secao": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "titulo",
+        "itens"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "titulo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "titulo_original": {
+          "type": "string",
+          "minLength": 1
+        },
+        "itens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/item"
+          }
+        },
+        "origem": {
+          "$ref": "#/$defs/origem_trecho"
+        }
+      }
+    },
+    "linha": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rotulo",
+        "impede",
+        "justificar"
+      ],
+      "properties": {
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rotulo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "rotulo_original": {
+          "type": "string",
+          "minLength": 1
+        },
+        "impede": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "justificar": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "origem": {
+          "$ref": "#/$defs/origem_trecho"
+        },
+        "confianca": {
+          "enum": [
+            "alta",
+            "media",
+            "baixa"
+          ]
+        },
+        "observacao": {
+          "type": "string"
+        }
+      }
+    },
+    "coluna": {
+      "anyOf": [
+        {
+          "description": "Coluna de texto.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "longo"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "texto"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "longo": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "Coluna de marcação.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "multipla",
+            "outro"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "marcacao"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "opcoes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "rotulo"
+                ],
+                "properties": {
+                  "rotulo": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "rotulo_original": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "impede": {
+                    "type": "boolean"
+                  },
+                  "origem": {
+                    "$ref": "#/$defs/origem_trecho"
+                  }
+                }
+              }
+            },
+            "lista": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "multipla": {
+              "type": "boolean"
+            },
+            "outro": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "Coluna de verificação.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "respostas",
+            "linhas"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "verificacao"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "respostas": {
+              "enum": [
+                "sim_nao_na",
+                "sim_nao",
+                "confirmo",
+                "lista"
+              ]
+            },
+            "lista_respostas": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "linhas": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/linha"
+              },
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "description": "Coluna de número (faixa impede a etapa).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "unidade",
+            "casas_decimais",
+            "negativo"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "numero"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "unidade": {
+              "type": "string"
+            },
+            "unidade_original": {
+              "type": "string"
+            },
+            "casas_decimais": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "negativo": {
+              "type": "boolean"
+            },
+            "minimo": {
+              "type": "number"
+            },
+            "maximo": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "description": "Coluna de horário.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "segundos"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "horario"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "segundos": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "item": {
+      "anyOf": [
+        {
+          "description": "Texto livre (curto ou longo).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "longo"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "texto"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "longo": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "Marcar opções próprias (opcoes; impede = a opção barra a etapa) ou de uma lista (lista = nome).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "multipla",
+            "outro"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "marcacao"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "opcoes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "rotulo"
+                ],
+                "properties": {
+                  "rotulo": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "rotulo_original": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "impede": {
+                    "type": "boolean"
+                  },
+                  "origem": {
+                    "$ref": "#/$defs/origem_trecho"
+                  }
+                }
+              }
+            },
+            "lista": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "multipla": {
+              "type": "boolean"
+            },
+            "outro": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "Checklist: cada linha responde Sim/Não/N/A, Confirmo, ou os itens de uma lista (respostas = lista, lista_respostas = nome).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "respostas",
+            "linhas"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "verificacao"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "respostas": {
+              "enum": [
+                "sim_nao_na",
+                "sim_nao",
+                "confirmo",
+                "lista"
+              ]
+            },
+            "lista_respostas": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120
+            },
+            "linhas": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/linha"
+              },
+              "minItems": 1
+            }
+          }
+        },
+        {
+          "description": "Texto impresso sem resposta (declaração, nota).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "texto"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "aviso"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "texto": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "texto_original": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "description": "Foto, vídeo ou arquivo pedido no local.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "aceita",
+            "minimo",
+            "dica"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "anexo"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "aceita": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "foto",
+                  "video",
+                  "arquivo"
+                ]
+              },
+              "minItems": 1
+            },
+            "minimo": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "dica": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Valor medido com unidade; fora da faixa impede a etapa.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "unidade",
+            "casas_decimais",
+            "negativo"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "numero"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "unidade": {
+              "type": "string"
+            },
+            "unidade_original": {
+              "type": "string"
+            },
+            "casas_decimais": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "negativo": {
+              "type": "boolean"
+            },
+            "minimo": {
+              "type": "number"
+            },
+            "maximo": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "description": "Hora do dia (hh:mm ou hh:mm:ss).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "segundos"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "horario"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "segundos": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "Documento externo (Nº da APR, ART, OS, procedimento): número ou código, opcionalmente no formato (# algarismo, A letra), anexo e validade.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "anexo",
+            "validade"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "documento"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "formato": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 30,
+              "pattern": "\\S"
+            },
+            "anexo": {
+              "type": "boolean"
+            },
+            "validade": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "Data (dd/mm/aaaa); fora da regra impede a etapa.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "nao_antes_de_hoje"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "data"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "nao_antes_de_hoje": {
+              "type": "boolean"
+            },
+            "minimo": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "maximo": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          }
+        },
+        {
+          "description": "Pessoa(s) do cadastro (vigia, observador de incêndio, executantes), opcionalmente de um cargo.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "multipla",
+            "deve_ser_elegivel"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "pessoa"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "multipla": {
+              "type": "boolean"
+            },
+            "cargo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "deve_ser_elegivel": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "Pontos de isolamento (bloqueio/LOTO): ponto ou tag, tipo de energia, método, nº do cadeado/etiqueta, energia zero verificada, aplicado por.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "minimo_linhas"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "isolamento"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "minimo_linhas": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50
+            }
+          }
+        },
+        {
+          "description": "Grupo repetível (tabela de medições): cada linha responde as mesmas colunas (texto, número, horário, marcação, verificação).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ref",
+            "tipo",
+            "rotulo",
+            "obrigatorio",
+            "minimo_linhas",
+            "colunas"
+          ],
+          "properties": {
+            "tipo": {
+              "const": "grupo"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rotulo": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rotulo_original": {
+              "type": "string",
+              "minLength": 1
+            },
+            "obrigatorio": {
+              "type": "boolean"
+            },
+            "mostrar_quando": {
+              "$ref": "#/$defs/condicao"
+            },
+            "origem": {
+              "$ref": "#/$defs/origem_trecho"
+            },
+            "confianca": {
+              "enum": [
+                "alta",
+                "media",
+                "baixa"
+              ]
+            },
+            "observacao": {
+              "type": "string"
+            },
+            "minimo_linhas": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 50
+            },
+            "colunas": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/coluna"
+              },
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    }
+  }
+}

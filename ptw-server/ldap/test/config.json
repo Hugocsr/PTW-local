@@ -1,0 +1,18 @@
+{
+  "url": "ldaps://ldap-gateway:1636",
+  "serverName": "ldap-test",
+  "bindDn": "cn=reader,dc=ptw,dc=test",
+  "passwordFile": "/ldap-fixture/reader-password",
+  "caFile": "/ldap-certs/ca.crt",
+  "baseDn": "ou=people,dc=ptw,dc=test",
+  "loginAttribute": "uid",
+  "guidAttribute": "entryUUID",
+  "groupBaseDn": "ou=groups,dc=ptw,dc=test",
+  "accessGroup": "cn=ptw-users,ou=groups,dc=ptw,dc=test",
+  "grantGroups": {
+    "cadastro": "cn=ptw-admins,ou=groups,dc=ptw,dc=test",
+    "modelos": "cn=ptw-admins,ou=groups,dc=ptw,dc=test",
+    "auditoria": "cn=ptw-admins,ou=groups,dc=ptw,dc=test",
+    "exportacao": "cn=ptw-admins,ou=groups,dc=ptw,dc=test"
+  }
+}

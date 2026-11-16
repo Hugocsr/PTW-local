@@ -1,0 +1,7 @@
+{
+  "nome": "PTW Local",
+  "sigla": "PT",
+  "simbolo": "logo.svg",
+  "cores": { "marca": "#0b5d3b", "fundo": "#f1f5f0", "tinta": "#10201a" },
+  "fonte": { "familia": "Georgia" }
+}

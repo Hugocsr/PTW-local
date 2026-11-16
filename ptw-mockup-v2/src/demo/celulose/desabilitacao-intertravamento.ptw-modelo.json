@@ -1,0 +1,654 @@
+{
+  "formato": "ptw.modelo/1",
+  "idioma": {
+    "documento": "pt-BR",
+    "rotulos": "pt-BR"
+  },
+  "origem": {
+    "tipo": "documento",
+    "arquivos": [
+      {
+        "arquivo": "formulario.png",
+        "sha256": "eb29c5395fbddf60423a694c034b5930f3f95cc1dd6b3df3a024765ee353a47b",
+        "paginas": 1
+      }
+    ],
+    "gerado_por": {
+      "ferramenta": "Claude Code · skill ptw-modelo-de-formulario",
+      "modelo": "claude-opus-5-5",
+      "versao": "1"
+    },
+    "gerado_em": "2026-11-09T10:00:00-03:00"
+  },
+  "modelo": {
+    "nome": "Desabilitação de intertravamento físico e lógico / dispositivo de segurança",
+    "descricao": "Formulário do cliente (foto, 1 página): pedido de desabilitação de intertravamentos físicos e lógicos e de dispositivos de segurança, com aprovação por classe e reabilitação.",
+    "prazo_maximo_horas": 168,
+    "prende_equipamento": false,
+    "escopo": {
+      "tipos_de_local": [],
+      "tipos_de_ativo": []
+    }
+  },
+  "listas": [
+    {
+      "nome": "SIM / N.A.",
+      "itens": [
+        "SIM",
+        "N.A."
+      ],
+      "origem": {
+        "pagina": 1,
+        "trecho": "Preencha as colunas com x no SIM ou N.A. somente após a verificação no local"
+      }
+    },
+    {
+      "nome": "Intertravamentos",
+      "itens": [],
+      "origem": {
+        "pagina": 1,
+        "trecho": "TAG DO INTERTRAVAMENTO / DISPOSITIVO DE SEGURANÇA A SER DESABILITADO:"
+      }
+    }
+  ],
+  "etapas": [
+    {
+      "ref": "sol",
+      "nome": "Solicitação",
+      "tipo": "solicitacao",
+      "origem": {
+        "pagina": 1,
+        "trecho": "VERIFICAÇÃO DE SEGURANÇA: Deve ser preenchida pelo Solicitante da Atividade."
+      },
+      "assinaturas": [
+        {
+          "ref": "a_sol",
+          "significado": "Solicita a desabilitação",
+          "cargo": "Responsável Operacional",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 1,
+            "trecho": "Nome do Responsável Operacional (solicitante) | Assinatura"
+          }
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_class",
+          "titulo": "Classificação de intertravamentos",
+          "origem": {
+            "pagina": 1,
+            "trecho": "CLASSIFICAÇÃO DE INTERTRAVAMENTOS: os intertravamentos são divididos em cinco classes, de acordo com sua função."
+          },
+          "itens": [
+            {
+              "ref": "av_c5",
+              "tipo": "aviso",
+              "rotulo": "Classe 5",
+              "texto": "Classe 5: Proteção da comunidade vizinha · aprovação mínima: Não há aprovação para esta classe (não forçável) · prazo máximo: NÃO FORÇÁVEL",
+              "origem": {
+                "pagina": 1,
+                "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 5 | Proteção da comunidade vizinha | Não há aprovação para esta classe (não forçável) | NÃO FORÇÁVEL"
+              }
+            },
+            {
+              "ref": "av_c4",
+              "tipo": "aviso",
+              "rotulo": "Classe 4",
+              "texto": "Classe 4: Proteção de pessoas dentro da Unidade · aprovação mínima: Gerente industrial Gerente de manutenção Gerente da área · prazo máximo: 01 DIA",
+              "origem": {
+                "pagina": 1,
+                "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 4 | Proteção de pessoas dentro da Unidade | Gerente industrial Gerente de manutenção Gerente da área | 01 DIA"
+              }
+            },
+            {
+              "ref": "av_c3",
+              "tipo": "aviso",
+              "rotulo": "Classe 3",
+              "texto": "Classe 3: Proteção contra grandes danos ambientais, perdas de ativos ou de produção · aprovação mínima: Gerente da área Coordenador de manutenção Coordenador da área · prazo máximo: 03 DIAS",
+              "origem": {
+                "pagina": 1,
+                "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 3 | Proteção contra grandes danos ambientais, perdas de ativos ou de produção | Gerente da área Coordenador de manutenção Coordenador da área | 03 DIAS"
+              }
+            },
+            {
+              "ref": "av_c2",
+              "tipo": "aviso",
+              "rotulo": "Classe 2",
+              "texto": "Classe 2: Proteção contra pequenos danos ambientais, perdas de ativos ou de produção · aprovação mínima: Coordenador da área Coordenador de manutenção · prazo máximo: 05 DIAS",
+              "origem": {
+                "pagina": 1,
+                "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 2 | Proteção contra pequenos danos ambientais, perdas de ativos ou de produção | Coordenador da área Coordenador de manutenção | 05 DIAS"
+              }
+            },
+            {
+              "ref": "av_c1",
+              "tipo": "aviso",
+              "rotulo": "Classe 1",
+              "texto": "Classe 1: Intertravamentos para continuidade operacionais sem riscos · aprovação mínima: Especialistas de operação Especialistas de manutenção · prazo máximo: 07 DIAS",
+              "origem": {
+                "pagina": 1,
+                "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 1 | Intertravamentos para continuidade operacionais sem riscos | Especialistas de operação Especialistas de manutenção | 07 DIAS"
+              }
+            },
+            {
+              "ref": "tipo",
+              "tipo": "marcacao",
+              "rotulo": "Intertravamento lógico, intertravamento físico ou dispositivo de segurança",
+              "obrigatorio": true,
+              "multipla": false,
+              "outro": false,
+              "opcoes": [
+                {
+                  "rotulo": "Intertravamento lógico"
+                },
+                {
+                  "rotulo": "Intertravamento físico"
+                },
+                {
+                  "rotulo": "Dispositivo de segurança"
+                }
+              ],
+              "confianca": "media",
+              "observacao": "No papel cada tipo é uma caixa separada; tratado como uma escolha só. Confirmar se um pedido pode cobrir mais de um tipo.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "[ ] INTERTRAVAMENTO LÓGICO | [ ] INTERTRAVAMENTO FÍSICO | [ ] DISPOSITIVO DE SEGURANÇA"
+              }
+            },
+            {
+              "ref": "classe",
+              "tipo": "marcacao",
+              "rotulo": "Classe",
+              "obrigatorio": true,
+              "multipla": false,
+              "outro": false,
+              "opcoes": [
+                {
+                  "rotulo": "Classe 1"
+                },
+                {
+                  "rotulo": "Classe 2"
+                },
+                {
+                  "rotulo": "Classe 3"
+                },
+                {
+                  "rotulo": "Classe 4"
+                },
+                {
+                  "rotulo": "Classe 5",
+                  "impede": true
+                }
+              ],
+              "mostrar_quando": {
+                "item": "tipo",
+                "valores": [
+                  "Intertravamento lógico",
+                  "Intertravamento físico"
+                ]
+              },
+              "origem": {
+                "pagina": 1,
+                "trecho": "CLASSE 1 [ ]  CLASSE 2 [ ]  CLASSE 3 [ ]  CLASSE 4 [ ]  CLASSE 5 [ ]"
+              }
+            }
+          ]
+        },
+        {
+          "ref": "s_id",
+          "titulo": "Intertravamento / dispositivo de segurança",
+          "origem": {
+            "pagina": 1,
+            "trecho": "TAG DO INTERTRAVAMENTO / DISPOSITIVO DE SEGURANÇA A SER DESABILITADO:"
+          },
+          "itens": [
+            {
+              "ref": "tag",
+              "tipo": "marcacao",
+              "rotulo": "Tag do intertravamento / dispositivo de segurança a ser desabilitado",
+              "obrigatorio": true,
+              "multipla": false,
+              "outro": false,
+              "lista": "Intertravamentos",
+              "origem": {
+                "pagina": 1,
+                "trecho": "TAG DO INTERTRAVAMENTO / DISPOSITIVO DE SEGURANÇA A SER DESABILITADO:"
+              }
+            },
+            {
+              "ref": "funcao",
+              "tipo": "texto",
+              "rotulo": "Função do intertravamento / dispositivo de segurança",
+              "obrigatorio": true,
+              "longo": false,
+              "origem": {
+                "pagina": 1,
+                "trecho": "FUNÇÃO DO INTERTRAVAMENTO / DISPOSITIVO DE SEGURANÇA:"
+              }
+            },
+            {
+              "ref": "motivo",
+              "tipo": "texto",
+              "rotulo": "Motivo da desabilitação",
+              "obrigatorio": true,
+              "longo": true,
+              "origem": {
+                "pagina": 1,
+                "trecho": "MOTIVO DA DESABILITAÇÃO:"
+              }
+            },
+            {
+              "ref": "justif_prazo",
+              "tipo": "texto",
+              "rotulo": "Justificativa de ultrapasse do período previsto inicialmente",
+              "obrigatorio": false,
+              "longo": true,
+              "confianca": "media",
+              "observacao": "Só vale quando o período previsto é ultrapassado. No app, Prorrogar pede a justificativa no próprio ato; este campo guarda a do papel e fica opcional.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "Registro da justificativa de ultrapasse o período previsto inicialmente:"
+              }
+            }
+          ]
+        },
+        {
+          "ref": "s_verif",
+          "titulo": "Itens de verificação",
+          "origem": {
+            "pagina": 1,
+            "trecho": "Preencha as colunas com x no SIM ou N.A. somente após a verificação no local"
+          },
+          "itens": [
+            {
+              "ref": "verif",
+              "tipo": "verificacao",
+              "rotulo": "Itens de verificação",
+              "obrigatorio": true,
+              "respostas": "lista",
+              "lista_respostas": "SIM / N.A.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "Preencha as colunas com x no SIM ou N.A. somente após a verificação no local ITENS DE VERIFICAÇÃO"
+              },
+              "confianca": "media",
+              "observacao": "O papel só tem as colunas SIM e N.A. (não há NÃO): as respostas vêm da lista 'SIM / N.A.'. Nenhuma resposta impede a etapa nem pede justificativa, porque o papel não diz. Confirmar com o cliente se 'N.A.' em alguma linha deve impedir ou pedir justificativa.",
+              "linhas": [
+                {
+                  "ref": "v1",
+                  "rotulo": "A desabilitação de intertravamento / dispositivo de segurança será feita com o equipamento em operação?",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "1. A desabilitação de intertravamento / dispositivo de segurança será feita com o equipamento em operação?"
+                  }
+                },
+                {
+                  "ref": "v2",
+                  "rotulo": "Foi estabelecida uma proteção alternativa em substituição ao intertravamento / dispositivo de segurança desabilitado?",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "2. Foi estabelecida uma proteção alternativa em substituição ao intertravamento / dispositivo de segurança desabilitado?"
+                  }
+                },
+                {
+                  "ref": "v3",
+                  "rotulo": "O cartão de advertência referente à desabilitação de intertravamento e dispositivo de segurança está instalado?",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "3. O cartão de advertência referente à desabilitação de intertravamento e dispositivo de segurança está instalado?"
+                  }
+                },
+                {
+                  "ref": "v4",
+                  "rotulo": "A desabilitação de intertravamento / dispositivo de segurança será em instalação elétrica?",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "4. A desabilitação de intertravamento / dispositivo de segurança será em instalação elétrica?"
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "medidas",
+              "tipo": "texto",
+              "rotulo": "Medidas preventivas / contingenciais",
+              "obrigatorio": true,
+              "longo": true,
+              "confianca": "media",
+              "observacao": "O papel não diz se é obrigatório; marcado como obrigatório.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "MEDIDAS PREVENTIVAS / CONTINGENCIAIS:"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "emi",
+      "nome": "Aprovação",
+      "tipo": "emissao",
+      "origem": {
+        "pagina": 1,
+        "trecho": "APROVAÇÃO"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_emi4",
+          "significado": "Autoriza a desabilitação classe 4",
+          "cargo": [
+            "Gerente industrial",
+            "Gerente de manutenção",
+            "Gerente da área"
+          ],
+          "minimo": 1,
+          "obrigatoria": true,
+          "obrigatoria_quando": {
+            "item": "classe",
+            "valores": [
+              "Classe 4"
+            ]
+          },
+          "origem": {
+            "pagina": 1,
+            "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 4 | Proteção de pessoas dentro da Unidade | Gerente industrial Gerente de manutenção Gerente da área | 01 DIA"
+          }
+        },
+        {
+          "ref": "a_emi3",
+          "significado": "Autoriza a desabilitação classe 3",
+          "cargo": [
+            "Gerente da área",
+            "Coordenador de manutenção",
+            "Coordenador da área",
+            "Gerente industrial",
+            "Gerente de manutenção"
+          ],
+          "minimo": 1,
+          "obrigatoria": true,
+          "obrigatoria_quando": {
+            "item": "classe",
+            "valores": [
+              "Classe 3"
+            ]
+          },
+          "origem": {
+            "pagina": 1,
+            "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 4 | Proteção de pessoas dentro da Unidade | Gerente industrial Gerente de manutenção Gerente da área | 01 DIA / 3 | Proteção contra grandes danos ambientais, perdas de ativos ou de produção | Gerente da área Coordenador de manutenção Coordenador da área | 03 DIAS"
+          },
+          "observacao": "Aprovação mínima: os cargos impressos para a classe 3 e, por ser mínima, os das classes acima."
+        },
+        {
+          "ref": "a_emi2",
+          "significado": "Autoriza a desabilitação classe 2",
+          "cargo": [
+            "Coordenador da área",
+            "Coordenador de manutenção",
+            "Gerente da área",
+            "Gerente industrial",
+            "Gerente de manutenção"
+          ],
+          "minimo": 1,
+          "obrigatoria": true,
+          "obrigatoria_quando": {
+            "item": "classe",
+            "valores": [
+              "Classe 2"
+            ]
+          },
+          "origem": {
+            "pagina": 1,
+            "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 4 | Proteção de pessoas dentro da Unidade | Gerente industrial Gerente de manutenção Gerente da área | 01 DIA / 3 | Proteção contra grandes danos ambientais, perdas de ativos ou de produção | Gerente da área Coordenador de manutenção Coordenador da área | 03 DIAS / 2 | Proteção contra pequenos danos ambientais, perdas de ativos ou de produção | Coordenador da área Coordenador de manutenção | 05 DIAS"
+          },
+          "observacao": "Aprovação mínima: os cargos impressos para a classe 2 e, por ser mínima, os das classes acima."
+        },
+        {
+          "ref": "a_emi1",
+          "significado": "Autoriza a desabilitação classe 1",
+          "cargo": [
+            "Especialistas de operação",
+            "Especialistas de manutenção",
+            "Coordenador da área",
+            "Coordenador de manutenção",
+            "Gerente da área",
+            "Gerente industrial",
+            "Gerente de manutenção"
+          ],
+          "minimo": 1,
+          "obrigatoria": true,
+          "obrigatoria_quando": {
+            "item": "classe",
+            "valores": [
+              "Classe 1"
+            ]
+          },
+          "origem": {
+            "pagina": 1,
+            "trecho": "CLASSE | FUNÇÃO | APROVAÇÃO MÍNIMA | PRAZO MÁXIMO / 4 | Proteção de pessoas dentro da Unidade | Gerente industrial Gerente de manutenção Gerente da área | 01 DIA / 3 | Proteção contra grandes danos ambientais, perdas de ativos ou de produção | Gerente da área Coordenador de manutenção Coordenador da área | 03 DIAS / 2 | Proteção contra pequenos danos ambientais, perdas de ativos ou de produção | Coordenador da área Coordenador de manutenção | 05 DIAS / 1 | Intertravamentos para continuidade operacionais sem riscos | Especialistas de operação Especialistas de manutenção | 07 DIAS"
+          },
+          "observacao": "Aprovação mínima: os cargos impressos para a classe 1 e, por ser mínima, os das classes acima."
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_decl",
+          "titulo": "Declaração de aprovação",
+          "origem": {
+            "pagina": 1,
+            "trecho": "APROVAÇÃO: Declaramos que as documentações necessárias para a liberação estão preenchidas. Concordando em cumprir e fazer cumprir todas essas recomendações. Estamos cientes que devemos paralisar o serviço caso qualquer condição insegura seja detectada até completa correção."
+          },
+          "itens": [
+            {
+              "ref": "decl",
+              "tipo": "aviso",
+              "rotulo": "Aprovação",
+              "texto": "Declaramos que as documentações necessárias para a liberação estão preenchidas. Concordando em cumprir e fazer cumprir todas essas recomendações. Estamos cientes que devemos paralisar o serviço caso qualquer condição insegura seja detectada até completa correção.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "APROVAÇÃO: Declaramos que as documentações necessárias para a liberação estão preenchidas. Concordando em cumprir e fazer cumprir todas essas recomendações. Estamos cientes que devemos paralisar o serviço caso qualquer condição insegura seja detectada até completa correção."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "campo",
+      "nome": "Desabilitação",
+      "tipo": "aceite_campo",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Nome do Executante da Desabilitação | Assinatura"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_exec",
+          "significado": "Executa a desabilitação",
+          "cargo": "Executante da Desabilitação",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 1,
+            "trecho": "Nome do Executante da Desabilitação | Assinatura"
+          }
+        }
+      ],
+      "secoes": []
+    },
+    {
+      "ref": "area",
+      "nome": "Reabilitação",
+      "tipo": "aceite_area",
+      "origem": {
+        "pagina": 1,
+        "trecho": "REABILITAÇÃO DO INTERTRAVAMENTO/DISPOSITIVO DE SEGURANÇA"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_reab",
+          "significado": "Autoriza a reabilitação",
+          "cargo": "Responsável pela Autorização",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 1,
+            "trecho": "APROVAÇÃO | Data: | Hora: | Nome do Responsável pela Autorização | Assinatura"
+          }
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_reab",
+          "titulo": "Reabilitação",
+          "origem": {
+            "pagina": 1,
+            "trecho": "REABILITAÇÃO DO INTERTRAVAMENTO/DISPOSITIVO DE SEGURANÇA: a pessoa de mais alto nível hierárquico envolvida no processo é a responsável por garantir que a desabilitação do intertravamento tenha sido reabilitada ou que o dispositivo de segurança tenha sido reinstalado antes que máquina/equipamento/sistema volte a operar, verificando os seguintes itens:"
+          },
+          "itens": [
+            {
+              "ref": "av_reab",
+              "tipo": "aviso",
+              "rotulo": "Reabilitação do intertravamento / dispositivo de segurança",
+              "texto": "a pessoa de mais alto nível hierárquico envolvida no processo é a responsável por garantir que a desabilitação do intertravamento tenha sido reabilitada ou que o dispositivo de segurança tenha sido reinstalado antes que máquina/equipamento/sistema volte a operar, verificando os seguintes itens:",
+              "origem": {
+                "pagina": 1,
+                "trecho": "REABILITAÇÃO DO INTERTRAVAMENTO/DISPOSITIVO DE SEGURANÇA: a pessoa de mais alto nível hierárquico envolvida no processo é a responsável por garantir que a desabilitação do intertravamento tenha sido reabilitada ou que o dispositivo de segurança tenha sido reinstalado antes que máquina/equipamento/sistema volte a operar, verificando os seguintes itens:"
+              }
+            },
+            {
+              "ref": "reab",
+              "tipo": "verificacao",
+              "rotulo": "Reabilitação",
+              "obrigatorio": true,
+              "respostas": "lista",
+              "lista_respostas": "SIM / N.A.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "REABILITAÇÃO DO INTERTRAVAMENTO/DISPOSITIVO DE SEGURANÇA: a pessoa de mais alto nível hierárquico envolvida no processo é a responsável por garantir que a desabilitação do intertravamento tenha sido reabilitada ou que o dispositivo de segurança tenha sido reinstalado antes que máquina/equipamento/sistema volte a operar, verificando os seguintes itens:"
+              },
+              "confianca": "media",
+              "observacao": "O papel só tem as colunas SIM e N.A. (não há NÃO): as respostas vêm da lista 'SIM / N.A.'. Nenhuma resposta impede a etapa nem pede justificativa, porque o papel não diz. Confirmar com o cliente se 'N.A.' em alguma linha deve impedir ou pedir justificativa.",
+              "linhas": [
+                {
+                  "ref": "r1",
+                  "rotulo": "Todos os dispositivos de bloqueio / sinalização foram removidos?",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "1. Todos os dispositivos de bloqueio / sinalização foram removidos?"
+                  }
+                },
+                {
+                  "ref": "r2",
+                  "rotulo": "Verificadas as condições de funcionamento do intertravamento / dispositivo de segurança?",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "2. Verificadas as condições de funcionamento do intertravamento / dispositivo de segurança?"
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "av_concl",
+              "tipo": "aviso",
+              "rotulo": "Conclusão do serviço / intervenção",
+              "texto": "Devolva este formulário ao Responsável Operacional.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "CONCLUSÃO DO SERVIÇO / INTERVENÇÃO: Devolva este formulário ao Responsável Operacional"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "separacoes": [],
+  "campos_do_sistema": [
+    {
+      "rotulo": "Área",
+      "corresponde_a": "local",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Área:"
+      }
+    },
+    {
+      "rotulo": "Data",
+      "corresponde_a": "data",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Data:"
+      }
+    },
+    {
+      "rotulo": "Período previsto inicial",
+      "corresponde_a": "janela",
+      "origem": {
+        "pagina": 1,
+        "trecho": "PERÍODO PREVISTO INICIAL: ____/____/____ até ____/____/____"
+      }
+    }
+  ],
+  "pendencias": [
+    {
+      "descricao": "Prazo máximo por classe (classe 4: 1 dia; 3: 3 dias; 2: 5 dias; 1: 7 dias) não é representado: o prazo máximo é um por modelo, e este usa o maior (7 dias) para todo pedido.",
+      "motivo": "fora_do_produto",
+      "onde": "classe",
+      "sugestao": "Se o cliente precisar do limite por classe, separar em um modelo por classe, cada um com o seu prazo.",
+      "origem": {
+        "pagina": 1,
+        "trecho": "PRAZO MÁXIMO"
+      }
+    },
+    {
+      "descricao": "A lista 'Intertravamentos' está vazia: o cliente precisa mandar as tags dos intertravamentos e dispositivos de segurança, para incluir em Configuração › Listas. A versão só ativa com a lista preenchida.",
+      "motivo": "sem_fonte",
+      "onde": "tag",
+      "origem": {
+        "pagina": 1,
+        "trecho": "TAG DO INTERTRAVAMENTO / DISPOSITIVO DE SEGURANÇA A SER DESABILITADO:"
+      }
+    },
+    {
+      "descricao": "Dispositivo de segurança não tem classe no papel: não se sabe quem aprova.",
+      "motivo": "duvida",
+      "onde": "tipo",
+      "origem": {
+        "pagina": 1,
+        "trecho": "[ ] DISPOSITIVO DE SEGURANÇA"
+      }
+    },
+    {
+      "descricao": "Escopo: o papel não diz em que tipos de local e de ativo o modelo se aplica.",
+      "motivo": "sem_fonte",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Área:"
+      }
+    },
+    {
+      "descricao": "Data e Hora ao lado do nome na reabilitação: o app grava data e hora de cada assinatura; não viraram itens.",
+      "motivo": "duvida",
+      "onde": "a_reab",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Data: | Hora:"
+      }
+    }
+  ]
+}

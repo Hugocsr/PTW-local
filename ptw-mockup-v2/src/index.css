@@ -1,0 +1,492 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    /* Status palette (DESIGN.md · Cor de estado): one hue per meaning, never colour alone. */
+    --color-st-ok-surface: var(--st-ok-surface);
+    --color-st-ok-border: var(--st-ok-border);
+    --color-st-ok-fg: var(--st-ok-fg);
+    --color-st-ok-solid: var(--st-ok-solid);
+    --color-st-pending-surface: var(--st-pending-surface);
+    --color-st-pending-border: var(--st-pending-border);
+    --color-st-pending-fg: var(--st-pending-fg);
+    --color-st-pending-solid: var(--st-pending-solid);
+    --color-st-attention-surface: var(--st-attention-surface);
+    --color-st-attention-border: var(--st-attention-border);
+    --color-st-attention-fg: var(--st-attention-fg);
+    --color-st-attention-solid: var(--st-attention-solid);
+    --color-st-stop-surface: var(--st-stop-surface);
+    --color-st-stop-border: var(--st-stop-border);
+    --color-st-stop-fg: var(--st-stop-fg);
+    --color-st-stop-solid: var(--st-stop-solid);
+    --color-st-neutral-surface: var(--st-neutral-surface);
+    --color-st-neutral-border: var(--st-neutral-border);
+    --color-st-neutral-fg: var(--st-neutral-fg);
+    --color-st-neutral-solid: var(--st-neutral-solid);
+    --color-surface-canvas: var(--surface-canvas);
+    --color-surface-well: var(--surface-well);
+    --color-surface-fixed: var(--surface-fixed);
+    --color-surface-row: var(--surface-row);
+    --color-destructive-text: var(--destructive-text);
+    --color-ok-surface: var(--ok-surface);
+    --color-ok-foreground: var(--ok-foreground);
+    --font-heading: var(--font-sans);
+    --font-sans: var(--app-font), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+    /* Elevation (DESIGN.md · Sistema): translucent shadows tinted with the ink hue, never opaque black.
+       L1 rests with a 1px ring and no shadow; L2 = card in play; L3 = popover / menu; L4 = dialog / sheet. */
+    --shadow-elev-1: 0 0 0 1px var(--border);
+    --shadow-elev-2: 0 1px 2px oklch(0.2 0.02 265 / 6%), 0 6px 16px -6px oklch(0.2 0.02 265 / 10%);
+    --shadow-elev-3: 0 8px 24px -8px oklch(0.2 0.02 265 / 16%), 0 0 0 1px var(--border);
+    --shadow-elev-4: 0 24px 48px -16px oklch(0.2 0.02 265 / 24%);
+    /* Motion easings: `ease-standard` (stays), `ease-enter` (appears), `ease-exit` (leaves). */
+    --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
+    --ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
+    --ease-exit: cubic-bezier(0.2, 0, 1, 0.9);
+}
+
+:root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.17 0.015 265);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.2 0.02 265);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.2 0.02 265);
+    --primary: #0038a8;
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.955 0.006 265);
+    --secondary-foreground: oklch(0.24 0.03 265);
+    --muted: oklch(0.965 0.005 265);
+    --muted-foreground: oklch(0.48 0.02 265);
+    --accent: oklch(0.955 0.008 265);
+    --accent-foreground: oklch(0.24 0.03 265);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.86 0.006 265);
+    /* field outline: >= 3:1 against white and the well, so an editable field reads at a glance */
+    --input: oklch(0.66 0.015 265);
+    /* focus: ink, never blue (blue means "your turn"); the keyboard ring is two-colour, see `focus-ring` */
+    --ring: oklch(0.3 0.03 265);
+    /* motion durations (DESIGN.md · Sistema) */
+    --dur-press: 90ms;
+    --dur-fast: 150ms;
+    --dur-base: 240ms;
+    --dur-slow: 400ms;
+    /* tonal surfaces: canvas < well < row; fixed is the darker well for product-fixed items */
+    --surface-canvas: #f0f4f8;
+    --surface-well: #eaf0f6;
+    --surface-fixed: #e2eaf4;
+    --surface-row: oklch(1 0 0);
+    --destructive-text: oklch(0.5 0.2 27);
+    --ok-surface: oklch(0.94 0.06 150);
+    --ok-foreground: oklch(0.32 0.09 150);
+    /* Status palette — ok: concluído / liberado · pending: sua vez, em andamento · attention: revisar, vence, devolvida
+       stop: falhou, bloqueado, parado · neutral: aguardando outros, rascunho, encerrado sem destaque. */
+    --st-ok-surface: oklch(0.955 0.045 150);
+    --st-ok-border: oklch(0.83 0.09 150);
+    --st-ok-fg: oklch(0.40 0.11 150);
+    --st-ok-solid: oklch(0.5 0.14 150);
+    --st-pending-surface: oklch(0.955 0.03 250);
+    --st-pending-border: oklch(0.82 0.08 250);
+    --st-pending-fg: oklch(0.42 0.15 255);
+    --st-pending-solid: oklch(0.5 0.19 255);
+    --st-attention-surface: oklch(0.965 0.05 85);
+    --st-attention-border: oklch(0.84 0.11 80);
+    --st-attention-fg: oklch(0.45 0.11 60);
+    --st-attention-solid: oklch(0.72 0.16 70);
+    --st-stop-surface: oklch(0.955 0.03 27);
+    --st-stop-border: oklch(0.82 0.09 27);
+    --st-stop-fg: oklch(0.48 0.19 27);
+    --st-stop-solid: oklch(0.577 0.245 27.325);
+    --st-neutral-surface: oklch(0.955 0.006 265);
+    --st-neutral-border: oklch(0.885 0.008 265);
+    --st-neutral-fg: oklch(0.42 0.02 265);
+    --st-neutral-solid: oklch(0.6 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.375rem;
+    /* the look of the plant (core/brand.ts sets these and --primary, --foreground, --surface-canvas, --sidebar) */
+    --app-font: 'Geist Variable';
+    --brand-mark-from: oklch(0.36 0.09 262);
+    --brand-glow: oklch(0.93 0.04 262);
+    --sidebar: #ffffff;
+    --sidebar-foreground: oklch(0.3 0.02 265);
+    --sidebar-primary: oklch(0.24 0.03 265);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: #ebf0fb;
+    --sidebar-accent-foreground: #0038a8;
+    --sidebar-border: oklch(0.915 0.006 265);
+    --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+    --surface-canvas: oklch(0.16 0 0);
+    --surface-well: oklch(0.24 0 0);
+    --surface-fixed: oklch(0.3 0 0);
+    --surface-row: oklch(0.205 0 0);
+    --destructive-text: oklch(0.75 0.15 22);
+    --ok-surface: oklch(0.3 0.06 150);
+    --ok-foreground: oklch(0.9 0.08 150);
+    --st-ok-surface: oklch(0.3 0.06 150);
+    --st-ok-border: oklch(0.45 0.08 150);
+    --st-ok-fg: oklch(0.88 0.1 150);
+    --st-ok-solid: oklch(0.7 0.15 150);
+    --st-pending-surface: oklch(0.3 0.06 255);
+    --st-pending-border: oklch(0.45 0.1 255);
+    --st-pending-fg: oklch(0.86 0.08 255);
+    --st-pending-solid: oklch(0.68 0.16 255);
+    --st-attention-surface: oklch(0.32 0.06 75);
+    --st-attention-border: oklch(0.48 0.09 75);
+    --st-attention-fg: oklch(0.88 0.1 85);
+    --st-attention-solid: oklch(0.78 0.15 75);
+    --st-stop-surface: oklch(0.3 0.07 27);
+    --st-stop-border: oklch(0.48 0.12 27);
+    --st-stop-fg: oklch(0.82 0.1 25);
+    --st-stop-solid: oklch(0.7 0.19 22);
+    --st-neutral-surface: oklch(0.26 0 0);
+    --st-neutral-border: oklch(0.38 0 0);
+    --st-neutral-fg: oklch(0.8 0 0);
+    --st-neutral-solid: oklch(0.6 0 0);
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-surface-canvas text-foreground antialiased;
+    }
+  html {
+    @apply font-sans;
+    }
+  /* Keyboard focus, everywhere: 2px ink + 2px white outside it, readable on any surface (WCAG 2.2 · 2.4.13).
+     Zero specificity: a component's own focus style (`focus-ring`, ring on fields) wins. */
+  :where(a[href], button, summary, [role="button"], [role="tab"], [role="link"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--background);
+  }
+}
+/* The same ring as a utility, for components that switch their own outline off (`outline-none`). */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--background);
+  }
+}
+/* ------------------------------------------------------------------
+   Type roles (Operate surface: dense, stable, fixed scale on a 4px grid).
+   One sans (Geist) for text, one mono (Geist Mono) for data only.
+   Sizes are rem so browser zoom and user font settings still apply.
+   ------------------------------------------------------------------ */
+@utility type-page {
+  font-size: 1.75rem;
+  line-height: 2.125rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+@utility type-title {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+/* Section heading (h2 of a PageSection): 15/600, between the page title and a card's h3. */
+@utility type-heading {
+  font-size: 0.9375rem;
+  line-height: 1.375rem;
+  font-weight: 600;
+}
+/* Section of a form (and the signatures of a stage): between a stage title (18) and a question (14/500). */
+@utility type-subtitle {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+@utility type-section {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+}
+@utility type-body {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+/* Caption of a control group (toggle group, stepper, list of rows): same size and weight as a field Label. */
+@utility type-field {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+}
+@utility type-label {
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+@utility type-meta {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--muted-foreground);
+}
+/* Table header cell: 13/500 grey (DESIGN.md · Base visual). */
+@utility type-th {
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+/* Time left of a window and window counts: sans, tabular, the figure that matters most in the field. */
+@utility type-timer {
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-data {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+@utility type-data-title {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  h1, h2, h3, h4 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  /* dates, counts and codes line up in lists and tables */
+  /* DESIGN.md: sections sit 32 apart (16 of the column gap + 16 here). */
+  .page-section + .page-section { margin-top: 1rem; }
+  td, th, time, [data-slot="badge"], [data-slot="sidebar-menu-badge"] { font-variant-numeric: tabular-nums; }
+}
+
+/* ------------------------------------------------------------------
+   Motion (DESIGN.md · Sistema): only opacity, transform, colour and shadow; 70-240 ms for what the
+   person triggers, 400 ms for dialogs and the state block changing tone. Pick a pair, never raw ms.
+   ------------------------------------------------------------------ */
+@utility motion-press { transition-duration: var(--dur-press); transition-timing-function: var(--ease-standard); }
+@utility motion-fast { transition-duration: var(--dur-fast); transition-timing-function: var(--ease-standard); }
+@utility motion-base { transition-duration: var(--dur-base); transition-timing-function: var(--ease-standard); }
+@utility motion-slow { transition-duration: var(--dur-slow); transition-timing-function: var(--ease-standard); }
+
+/* Skeleton: opacity pulse 1 -> 0.6 in 1.4 s, no shimmer. `skeleton-delayed` stays hidden for the first 250 ms. */
+@keyframes skeleton-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@keyframes skeleton-show { to { visibility: visible; } }
+@utility skeleton-pulse { animation: skeleton-pulse 1.4s ease-in-out infinite; }
+@utility skeleton-delayed {
+  visibility: hidden;
+  animation: skeleton-show 0s linear 250ms forwards, skeleton-pulse 1.4s ease-in-out 250ms infinite;
+}
+
+/* Reduced motion, global: no travel, no scale, no looping; state changes still land, instantly. */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Documento de engenharia (DESIGN.md · Direção): folha, tinta, linhas finas e carimbos.
+   ------------------------------------------------------------------ */
+/* Régua dupla sob o título de um documento. */
+@utility doc-rule { border-top: 3px double var(--foreground); }
+/* Bloco de legenda (como o de um desenho técnico): células separadas por linha fina. */
+@utility doc-block { display: grid; border-top: 1px solid var(--foreground); border-left: 1px solid var(--foreground); }
+@utility doc-cell { background: var(--background); border-right: 1px solid var(--foreground); border-bottom: 1px solid var(--foreground); padding: 0.625rem 0.75rem; min-width: 0; }
+/* Carimbo: caixa de contorno duplo, levemente girada, em tinta do estado. */
+@utility stamp {
+  display: inline-flex; flex-direction: column; gap: 0.125rem;
+  border: 2px solid currentColor; outline: 1px solid currentColor; outline-offset: 2px;
+  border-radius: 0.25rem; padding: 0.375rem 0.625rem; transform: rotate(-1.5deg);
+}
+@keyframes stamp-in {
+  0% { opacity: 0; transform: rotate(-9deg) scale(1.9); }
+  60% { opacity: 1; transform: rotate(-1.5deg) scale(0.94); }
+  100% { opacity: 1; transform: rotate(-1.5deg) scale(1); }
+}
+@utility stamp-in { animation: stamp-in 420ms cubic-bezier(0.2, 0, 0.2, 1) both; }
+/* Segurar para confirmar: o preenchimento avança da esquerda. */
+@keyframes hold-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---------- Print (DESIGN.md · Imprimir) ---------- */
+/* Any screen: the app around the page (menu, top bar, footer) is not printed. */
+@media print {
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  [data-slot="sidebar"], [data-slot="sidebar-gap"], [data-slot="sidebar-container"], [data-sonner-toaster] { display: none !important; }
+  [data-slot="sidebar-wrapper"], [data-slot="sidebar-inset"] { display: block !important; min-height: 0 !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; background: #fff !important; }
+  main { padding: 0 !important; }
+  .animate-in { animation: none !important; }
+}
+
+/* The PT as a paper form (work/PermitSheet.tsx): printed only. Sizes in pt and mm: this is paper, black
+   ink on white, readable on a monochrome printer; the brand colour is only the rule under the head. */
+.sheet { display: none; }
+@media print {
+  .sheet { display: block; color: #000; font-size: 8.5pt; line-height: 1.3; }
+  .sheet-mono { font-family: var(--font-mono); white-space: pre; }
+  .sheet-sub { display: block; font-size: 7pt; color: #333; }
+
+  .sheet-head { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 6mm; padding-bottom: 3mm; border-bottom: 1.5pt solid var(--primary); }
+  .sheet-brand { display: flex; align-items: center; gap: 3mm; min-width: 0; }
+  .sheet-brand > div { display: flex; flex-direction: column; }
+  .sheet-brand strong { font-size: 10pt; }
+  .sheet-brand span { font-size: 7.5pt; color: #333; }
+  .sheet-title { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+  .sheet-title span { font-size: 7pt; letter-spacing: 0.08em; text-transform: uppercase; }
+  .sheet-title strong { font-family: var(--font-mono); font-size: 15pt; line-height: 1.2; letter-spacing: 0.01em; }
+  .sheet-qr { width: 20mm; height: 20mm; }
+
+  .sheet-stop { margin-top: 3mm; padding: 1.5mm 2.5mm; border: 1.5pt solid #000; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+
+  /* Identification: a ruled grid of four columns, label over value. */
+  .sheet-ident { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 4mm; border-top: 0.75pt solid #000; border-left: 0.75pt solid #000; }
+  .sheet-ident > div { padding: 1.2mm 2mm 1.6mm; border-right: 0.75pt solid #000; border-bottom: 0.75pt solid #000; min-width: 0; break-inside: avoid; }
+  .sheet-ident dt, .sheet-label { display: block; font-size: 6.5pt; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #333; }
+  .sheet-ident dd { margin: 0.3mm 0 0; font-size: 9pt; overflow-wrap: anywhere; }
+  .sheet-c2 { grid-column: span 2; }
+  .sheet-c4 { grid-column: span 4; }
+  .sheet-main dd { font-size: 12pt; font-weight: 700; line-height: 1.25; }
+
+  /* A stage: a black band with its number and name, then its fields and signatures. */
+  .sheet-stage { margin-top: 5mm; }
+  .sheet-band { display: flex; align-items: baseline; gap: 2.5mm; margin: 0; padding: 1.2mm 2.5mm; background: #000; color: #fff; font-size: 9.5pt; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; break-after: avoid; }
+  .sheet-band span:first-child { font-family: var(--font-mono); }
+  .sheet-band em { margin-left: auto; font-size: 7.5pt; font-style: normal; font-weight: 500; letter-spacing: 0.04em; }
+  .sheet-section { margin-top: 2.5mm; }
+  .sheet-section h3 { margin: 0 0 1.2mm; padding-bottom: 0.6mm; border-bottom: 0.75pt solid #000; font-size: 8.5pt; font-weight: 700; break-after: avoid; }
+  .sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6mm 4mm; }
+  .sheet-field { display: flex; flex-direction: column; gap: 0.8mm; min-width: 0; break-inside: avoid; }
+  .sheet-wide { grid-column: span 2; }
+  .sheet-note { margin: 0; padding: 0.6mm 0 0.6mm 2mm; border-left: 1.5pt solid #000; font-size: 7.5pt; break-inside: avoid; }
+
+  /* Where one writes: a ruled line (short answers) or a ruled box (long ones). */
+  .sheet-write { display: block; flex: none; min-height: 5.5mm; min-width: 20mm; padding: 0.6mm 0.5mm; border-bottom: 0.75pt solid #000; font-size: 9pt; overflow-wrap: anywhere; }
+  .sheet-write-long { min-height: 16mm; padding: 1mm 1.5mm; border: 0.75pt solid #000; white-space: pre-wrap; }
+  .sheet-short { width: 30mm; }
+  .sheet-inline { display: flex; align-items: flex-end; gap: 2mm; }
+  .sheet-inline > .sheet-write { flex: 1; }
+  .sheet-inline > .sheet-short { flex: 0 0 30mm; }
+  .sheet-grid { align-items: start; }
+
+  .sheet-box { display: inline-block; flex: none; width: 3.2mm; height: 3.2mm; border: 0.75pt solid #000; vertical-align: -0.5mm; }
+  .sheet-box[data-on] { background:
+    linear-gradient(45deg, transparent 43%, #000 43% 57%, transparent 57%),
+    linear-gradient(-45deg, transparent 43%, #000 43% 57%, transparent 57%); }
+  .sheet-choices { display: flex; flex-wrap: wrap; gap: 1.2mm 5mm; }
+  .sheet-choice { display: inline-flex; align-items: flex-start; gap: 1.5mm; }
+  .sheet-choice .sheet-box { margin-top: 0.3mm; }
+
+  .sheet-table { width: 100%; border-collapse: collapse; font-size: 8pt; }
+  .sheet-table th, .sheet-table td { padding: 0.9mm 1.5mm; border: 0.75pt solid #000; text-align: left; vertical-align: top; }
+  .sheet-table th { font-size: 6.5pt; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .sheet-table tr { break-inside: avoid; }
+  .sheet-empty { height: 6.5mm; }
+  .sheet-check th:not(:first-child), .sheet-check td:not(:first-child) { width: 13mm; text-align: center; vertical-align: middle; }
+
+  /* Signatures: three boxes a row; signed in the system, or the lines to sign by hand. */
+  .sheet-signs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5mm; margin-top: 3mm; }
+  .sheet-sign { display: flex; flex-direction: column; gap: 0.6mm; min-height: 22mm; padding: 1.5mm 2mm 2mm; border: 0.75pt solid #000; break-inside: avoid; }
+  .sheet-sign strong { font-size: 8.5pt; }
+  .sheet-signed { display: flex; flex-direction: column; margin: auto 0 0; padding-top: 1mm; border-top: 0.75pt solid #000; }
+  .sheet-signed b { font-size: 9.5pt; }
+  .sheet-signed span { font-size: 7pt; }
+  .sheet-line { display: flex; align-items: flex-end; gap: 1.5mm; margin-top: 1.2mm; font-size: 6.5pt; letter-spacing: 0.05em; text-transform: uppercase; color: #333; }
+  .sheet-line::after { content: ""; flex: 1; height: 5mm; border-bottom: 0.75pt solid #000; }
+
+  .sheet-foot { margin: 5mm 0 0; padding-top: 1.5mm; border-top: 0.75pt solid #000; font-size: 7.5pt; }
+}

@@ -1,0 +1,14 @@
+.git
+.vercel
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+**/*.crt
+**/*.pem
+**/*.key
+**/__pycache__
+ptw-server/secrets
+ptw-server/tema
+ptw-server/ldap
+clientes

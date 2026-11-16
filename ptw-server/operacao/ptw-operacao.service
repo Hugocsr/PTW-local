@@ -1,0 +1,11 @@
+[Unit]
+Description=PTW manutencao, ancora e backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=ptw
+WorkingDirectory=/opt/ptw/ptw-server
+ExecStart=/usr/bin/python3 tools/ptw_operacao.py ciclo --destino /mnt/ptw-backups --ancoras /mnt/ptw-ancoras
+TimeoutStartSec=2h

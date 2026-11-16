@@ -1,0 +1,25 @@
+# Só desenvolvimento: acesso ao banco pelo DBeaver (ou psql) em 127.0.0.1:55432.
+# O banco continua sem porta e na rede interna; um repassador TCP (socat) faz a ponte,
+# publicado só no próprio computador.
+#   Ligar:    docker compose -f compose.yaml -f compose.dbeaver.yaml up -d dbproxy
+#   Desligar: docker compose -f compose.yaml -f compose.dbeaver.yaml rm -sf dbproxy
+# Nunca use em implantação.
+services:
+  dbproxy:
+    image: alpine/socat:1.8.0.3
+    command: ["TCP-LISTEN:5432,fork,reuseaddr", "TCP:db:5432"]
+    ports:
+      - "127.0.0.1:${PTW_DB_DEV_PORT:-55432}:5432"
+    networks: [interna, devdb]
+    depends_on:
+      db: { condition: service_healthy }
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    restart: "no"
+    deploy:
+      resources:
+        limits: { cpus: "0.2", memory: 32M, pids: 50 }
+
+networks:
+  devdb:

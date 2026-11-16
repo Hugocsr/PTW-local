@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" role="img" aria-label="Planta de exemplo">
+  <rect width="44" height="44" rx="10" fill="#0b5d3b"/>
+  <path d="M22 8 L32 22 H26 L33 32 H24 V37 H20 V32 H11 L18 22 H12 Z" fill="#ffffff"/>
+</svg>

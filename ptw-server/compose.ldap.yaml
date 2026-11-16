@@ -1,0 +1,33 @@
+# AD/LDAP da planta: a API continua sem rede de saída; repassador só conecta ao destino fixo.
+services:
+  api:
+    environment:
+      PTW_LDAP_CONFIG_FILE: /run/secrets/ldap_config
+      PTW_SESSION_HOURS: ${PTW_SESSION_HOURS:-12}
+      PTW_SESSION_IDLE_MINUTES: ${PTW_SESSION_IDLE_MINUTES:-30}
+      PTW_DEV_LOGIN: "0"
+    secrets: [ldap_config, ldap_bind, ldap_ca]
+    networks: [interna, apiweb, ldap]
+    depends_on: [ldap-gateway]
+  ldap-gateway:
+    build: ./ldap/gateway
+    image: ptw-ldap-gateway:local
+    restart: unless-stopped
+    user: "65534:65534"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      PTW_LDAP_HOST: ${PTW_LDAP_HOST:?Informe o servidor LDAP da planta}
+      PTW_LDAP_PORT: ${PTW_LDAP_PORT:-636}
+    networks: [ldap, ldap-saida]
+    deploy:
+      resources:
+        limits: { cpus: "0.25", memory: 48M, pids: 40 }
+networks:
+  ldap: { internal: true }
+  ldap-saida: {}
+secrets:
+  ldap_config: { file: ./secrets/ldap.json }
+  ldap_bind: { file: ./secrets/ldap_bind }
+  ldap_ca: { file: ./secrets/ldap-ca.pem }

@@ -1,0 +1,22 @@
+# Carga explícita; nunca roda com o compose normal. Não apaga dados existentes.
+# docker compose -f compose.yaml -f api/compose.seed.yaml run --rm --build seed
+services:
+  seed:
+    build: ./api
+    image: ptw-api:local
+    profiles: [seed]
+    command: [node, seed/load.mjs]
+    user: "1000:1000"
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    init: true
+    environment:
+      PTW_UNIT: UN-01
+    secrets: [db_api, db_owner]
+    networks: [interna]
+    depends_on:
+      db: { condition: service_healthy }
+    deploy:
+      resources:
+        limits: { cpus: "0.5", memory: 160M, pids: 100 }

@@ -1,0 +1,6 @@
+# Demonstração local: dados no PostgreSQL e troca de pessoa sem senha.
+# docker compose -f compose.yaml -f compose.demo.yaml up -d --build
+services:
+  api:
+    environment:
+      PTW_DEV_LOGIN: "1"

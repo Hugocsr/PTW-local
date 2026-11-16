@@ -1,0 +1,32 @@
+/reference-software/
+
+# Dependências e builds
+node_modules/
+dist/
+__pycache__/
+*.pyc
+
+# Ferramentas locais
+.playwright-mcp/
+.impeccable/review/
+.impeccable/hook.cache.json
+.impeccable/config.local.json
+.claude/settings.local.json
+
+# Segredos do servidor
+ptw-server/secrets/
+.env
+.env.*
+!.env.example
+*.crt
+*.pem
+*.key
+.vercel/
+ptw-server/.operacao.lock/
+
+# Formulários e dados de clientes: não versionar
+clientes/
+
+# Logs e caches
+*.log
+.vitest-cache/

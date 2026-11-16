@@ -1,0 +1,30 @@
+FROM node:24-bookworm-slim AS web
+WORKDIR /src/ptw-mockup-v2
+COPY ptw-mockup-v2/package*.json ./
+RUN npm ci --no-audit --no-fund
+COPY ptw-mockup-v2/ ./
+COPY .claude/skills/ptw-modelo-de-formulario/ /src/.claude/skills/ptw-modelo-de-formulario/
+RUN npm run build
+
+FROM node:24-bookworm-slim AS api
+WORKDIR /app
+COPY ptw-server/api/package*.json ./
+RUN npm ci --no-audit --no-fund
+COPY ptw-server/api/tsconfig.json ptw-server/api/openapi.yaml ./
+COPY ptw-server/api/src/ ./src/
+COPY ptw-server/api/scripts/ ./scripts/
+RUN npm run build && npm prune --omit=dev --no-audit --no-fund
+
+FROM caddy:2.10-alpine AS proxy
+FROM node:24-bookworm-slim
+ENV NODE_ENV=production PORT=3000
+WORKDIR /app
+COPY --from=proxy /usr/bin/caddy /usr/local/bin/caddy
+COPY --from=api /app/dist ./dist
+COPY --from=api /app/node_modules ./node_modules
+COPY --from=api /app/package.json /app/openapi.yaml ./
+COPY --from=web /src/ptw-mockup-v2/dist /srv
+COPY deploy/Caddyfile deploy/start.mjs ./deploy/
+USER node
+EXPOSE 3000
+CMD ["node", "deploy/start.mjs"]

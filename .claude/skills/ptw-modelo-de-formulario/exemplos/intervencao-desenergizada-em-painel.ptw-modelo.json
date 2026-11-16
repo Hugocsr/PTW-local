@@ -1,0 +1,691 @@
+{
+  "formato": "ptw.modelo/1",
+  "idioma": {
+    "documento": "pt-BR",
+    "rotulos": "pt-BR"
+  },
+  "origem": {
+    "tipo": "documento",
+    "arquivos": [
+      {
+        "arquivo": "PT-ELE-02 Intervencao em painel.pdf",
+        "sha256": "3f0a9c6be1d2f4a8b7c5e9d0a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+        "paginas": 2
+      }
+    ],
+    "gerado_por": {
+      "ferramenta": "Claude Code · skill ptw-modelo-de-formulario",
+      "modelo": "claude-opus-5-5",
+      "versao": "1"
+    },
+    "gerado_em": "2026-11-08T10:00:00-03:00"
+  },
+  "modelo": {
+    "nome": "Intervenção desenergizada em painel",
+    "descricao": "Exemplo fictício: o formulário PT-ELE-02 (rev. 4) lido e mapeado. Hash e trechos ilustrativos.",
+    "escopo": {
+      "tipos_de_local": [
+        "Sala",
+        "Ponto de trabalho"
+      ],
+      "tipos_de_ativo": [
+        "Painel / CCM",
+        "Módulo / gaveta"
+      ]
+    }
+  },
+  "listas": [],
+  "etapas": [
+    {
+      "ref": "sol",
+      "nome": "Solicitação",
+      "tipo": "solicitacao",
+      "origem": {
+        "pagina": 1,
+        "trecho": "1. SOLICITAÇÃO"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_sol",
+          "significado": "Solicita a PT",
+          "cargo": "Técnico de manutenção",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 1,
+            "trecho": "Solicitante (Técnico de Manutenção): assinatura / data"
+          }
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_dados",
+          "titulo": "Dados do serviço",
+          "origem": {
+            "pagina": 1,
+            "trecho": "1. SOLICITAÇÃO"
+          },
+          "itens": [
+            {
+              "ref": "desc",
+              "tipo": "texto",
+              "rotulo": "Descrição do serviço",
+              "obrigatorio": true,
+              "longo": false,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Descrição do serviço: ____________"
+              }
+            },
+            {
+              "ref": "apr",
+              "tipo": "documento",
+              "rotulo": "Nº da APR",
+              "obrigatorio": true,
+              "formato": "APR-####",
+              "anexo": true,
+              "validade": false,
+              "origem": {
+                "pagina": 1,
+                "trecho": "APR nº: ______ (anexar a APR)"
+              }
+            },
+            {
+              "ref": "os",
+              "tipo": "texto",
+              "rotulo": "Ordem de serviço",
+              "obrigatorio": true,
+              "longo": false,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Ordem de serviço nº: ______"
+              }
+            },
+            {
+              "ref": "limite",
+              "tipo": "texto",
+              "rotulo": "Limite do circuito",
+              "obrigatorio": true,
+              "longo": false,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Limite do circuito (de / até): ______"
+              }
+            },
+            {
+              "ref": "janela",
+              "tipo": "texto",
+              "rotulo": "Janela de trabalho",
+              "obrigatorio": true,
+              "longo": false,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Janela de trabalho: das ___ às ___"
+              }
+            },
+            {
+              "ref": "data_exec",
+              "tipo": "data",
+              "rotulo": "Data da execução",
+              "obrigatorio": true,
+              "nao_antes_de_hoje": true,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Data da execução: __/__/____"
+              }
+            },
+            {
+              "ref": "executantes",
+              "tipo": "pessoa",
+              "rotulo": "Executantes",
+              "obrigatorio": true,
+              "multipla": true,
+              "cargo": "Executante",
+              "deve_ser_elegivel": true,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Executantes (nome / matrícula — habilitados NR-10): ______"
+              }
+            },
+            {
+              "ref": "proximo",
+              "tipo": "marcacao",
+              "rotulo": "Trabalho próximo a partes energizadas",
+              "obrigatorio": true,
+              "multipla": false,
+              "outro": false,
+              "opcoes": [
+                {
+                  "rotulo": "Sim"
+                },
+                {
+                  "rotulo": "Não"
+                }
+              ],
+              "origem": {
+                "pagina": 1,
+                "trecho": "Trabalho próximo a partes energizadas? ( ) Sim ( ) Não"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "prep",
+      "nome": "Preparação",
+      "origem": {
+        "pagina": 1,
+        "trecho": "2. PREPARAÇÃO E ISOLAMENTO"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_iso",
+          "significado": "Registra o isolamento",
+          "cargo": "Técnico de manutenção",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 1,
+            "trecho": "Isolamento registrado por (Técnico de Manutenção)"
+          }
+        },
+        {
+          "ref": "a_ver",
+          "significado": "Verifica o isolamento",
+          "cargo": "Líder de equipe",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 1,
+            "trecho": "Isolamento verificado por (Líder de Equipe) — não pode ser quem registrou"
+          }
+        },
+        {
+          "ref": "a_prox",
+          "significado": "Autoriza trabalho próximo a partes energizadas",
+          "cargo": "Supervisora de área",
+          "minimo": 1,
+          "obrigatoria": true,
+          "obrigatoria_quando": {
+            "item": "proximo",
+            "valores": [
+              "Sim"
+            ]
+          },
+          "origem": {
+            "pagina": 1,
+            "trecho": "Se houver trabalho próximo a partes energizadas: autorização do(a) Supervisor(a) de Área"
+          }
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_bloqueios",
+          "titulo": "Pontos de bloqueio",
+          "origem": {
+            "pagina": 1,
+            "trecho": "2. PREPARAÇÃO E ISOLAMENTO"
+          },
+          "itens": [
+            {
+              "ref": "bloqueios",
+              "tipo": "isolamento",
+              "rotulo": "Pontos de bloqueio",
+              "obrigatorio": true,
+              "minimo_linhas": 1,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Pontos de bloqueio: ponto/tag | energia | método | cadeado nº | energia zero (S/N) | aplicado por"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "emi",
+      "nome": "Emissão",
+      "tipo": "emissao",
+      "origem": {
+        "pagina": 1,
+        "trecho": "3. EMISSÃO"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_emi",
+          "significado": "Emite a PT",
+          "cargo": "Supervisora de área",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 1,
+            "trecho": "Emitente (Supervisor(a) de Área): assinatura / data / hora"
+          }
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_local",
+          "titulo": "Conferência no local",
+          "itens": [
+            {
+              "ref": "emi_conf",
+              "tipo": "verificacao",
+              "rotulo": "Antes de emitir",
+              "obrigatorio": true,
+              "respostas": "confirmo",
+              "origem": {
+                "pagina": 1,
+                "trecho": "Antes de emitir, confirme:"
+              },
+              "linhas": [
+                {
+                  "ref": "etiq",
+                  "rotulo": "Cadeado e etiqueta conferidos no ponto de bloqueio",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "[ ] Cadeado e etiqueta conferidos no ponto de bloqueio"
+                  }
+                },
+                {
+                  "ref": "tensao",
+                  "rotulo": "Ausência de tensão testada no ponto de trabalho",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "[ ] Ausência de tensão testada no ponto de trabalho"
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "tensao_v",
+              "tipo": "numero",
+              "rotulo": "Tensão medida após o bloqueio",
+              "obrigatorio": true,
+              "unidade": "V",
+              "unidade_original": "volts",
+              "casas_decimais": 1,
+              "negativo": false,
+              "minimo": 0,
+              "maximo": 0,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Tensão medida após o bloqueio: ____,_ volts (deve ser 0,0)"
+              }
+            },
+            {
+              "ref": "leituras",
+              "tipo": "grupo",
+              "rotulo": "Teste de ausência de tensão por fase",
+              "obrigatorio": true,
+              "minimo_linhas": 3,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Teste de ausência de tensão por fase: fase | tensão (V) | hora"
+              },
+              "colunas": [
+                {
+                  "ref": "fase",
+                  "tipo": "marcacao",
+                  "rotulo": "Fase",
+                  "obrigatorio": true,
+                  "multipla": false,
+                  "outro": false,
+                  "opcoes": [
+                    {
+                      "rotulo": "L1"
+                    },
+                    {
+                      "rotulo": "L2"
+                    },
+                    {
+                      "rotulo": "L3"
+                    }
+                  ],
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "fase L1 / L2 / L3"
+                  }
+                },
+                {
+                  "ref": "fase_v",
+                  "tipo": "numero",
+                  "rotulo": "Tensão",
+                  "obrigatorio": true,
+                  "unidade": "V",
+                  "casas_decimais": 1,
+                  "negativo": false,
+                  "minimo": 0,
+                  "maximo": 0,
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "tensão (V)"
+                  }
+                },
+                {
+                  "ref": "fase_h",
+                  "tipo": "horario",
+                  "rotulo": "Hora",
+                  "obrigatorio": true,
+                  "segundos": false,
+                  "origem": {
+                    "pagina": 1,
+                    "trecho": "hora"
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "hora_bloq",
+              "tipo": "horario",
+              "rotulo": "Hora do bloqueio",
+              "obrigatorio": false,
+              "segundos": true,
+              "origem": {
+                "pagina": 1,
+                "trecho": "Hora do bloqueio: __:__:__"
+              }
+            },
+            {
+              "ref": "foto_bloq",
+              "tipo": "anexo",
+              "rotulo": "Foto do ponto de bloqueio",
+              "obrigatorio": true,
+              "aceita": [
+                "foto"
+              ],
+              "minimo": 1,
+              "dica": "Mostre o cadeado e a etiqueta no disjuntor.",
+              "origem": {
+                "pagina": 1,
+                "trecho": "Anexar foto do ponto de bloqueio mostrando o cadeado e a etiqueta no disjuntor"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "campo",
+      "nome": "Aceite no campo",
+      "tipo": "aceite_campo",
+      "origem": {
+        "pagina": 2,
+        "trecho": "4. ACEITE NO CAMPO"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_campo",
+          "significado": "Aceita no campo",
+          "cargo": "Líder de equipe",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 2,
+            "trecho": "Executante responsável (Líder de Equipe): li e aceito"
+          }
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_inicio",
+          "titulo": "Antes de começar",
+          "itens": [
+            {
+              "ref": "campo_check",
+              "tipo": "verificacao",
+              "rotulo": "Equipe e área",
+              "obrigatorio": true,
+              "respostas": "sim_nao_na",
+              "origem": {
+                "pagina": 2,
+                "trecho": "Equipe e área — SIM / NÃO / N/A. Se NÃO, não inicie. Se N/A, justifique."
+              },
+              "linhas": [
+                {
+                  "ref": "dds",
+                  "rotulo": "Equipe orientada sobre os riscos desta PT",
+                  "impede": [
+                    "nao"
+                  ],
+                  "justificar": [
+                    "na"
+                  ],
+                  "origem": {
+                    "pagina": 2,
+                    "trecho": "Equipe orientada sobre os riscos desta PT"
+                  }
+                },
+                {
+                  "ref": "epi",
+                  "rotulo": "EPI conferido em toda a equipe",
+                  "impede": [
+                    "nao"
+                  ],
+                  "justificar": [
+                    "na"
+                  ],
+                  "origem": {
+                    "pagina": 2,
+                    "trecho": "EPI conferido em toda a equipe"
+                  }
+                },
+                {
+                  "ref": "isol",
+                  "rotulo": "Área isolada e sinalizada",
+                  "impede": [
+                    "nao"
+                  ],
+                  "justificar": [
+                    "na"
+                  ],
+                  "origem": {
+                    "pagina": 2,
+                    "trecho": "Área isolada e sinalizada"
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "foto_area",
+              "tipo": "anexo",
+              "rotulo": "Foto da área de trabalho",
+              "obrigatorio": true,
+              "aceita": [
+                "foto"
+              ],
+              "minimo": 1,
+              "dica": "A área isolada, antes de iniciar.",
+              "origem": {
+                "pagina": 2,
+                "trecho": "Foto da área de trabalho isolada, antes de iniciar"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "ent",
+      "nome": "Entrega",
+      "tipo": "entrega",
+      "origem": {
+        "pagina": 2,
+        "trecho": "5. ENTREGA DA ÁREA"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_ent",
+          "significado": "Entrega a área",
+          "cargo": "Líder de equipe",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 2,
+            "trecho": "Entregue por (Líder de Equipe)"
+          }
+        }
+      ],
+      "secoes": [
+        {
+          "ref": "s_devolvida",
+          "titulo": "Área devolvida",
+          "itens": [
+            {
+              "ref": "ent_conf",
+              "tipo": "verificacao",
+              "rotulo": "Antes de entregar",
+              "obrigatorio": true,
+              "respostas": "confirmo",
+              "origem": {
+                "pagina": 2,
+                "trecho": "Antes de entregar, confirme:"
+              },
+              "linhas": [
+                {
+                  "ref": "pessoas",
+                  "rotulo": "Pessoas e ferramentas retiradas",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 2,
+                    "trecho": "[ ] Pessoas e ferramentas retiradas"
+                  }
+                },
+                {
+                  "ref": "prot",
+                  "rotulo": "Proteções e tampas recolocadas",
+                  "impede": [],
+                  "justificar": [],
+                  "origem": {
+                    "pagina": 2,
+                    "trecho": "[ ] Proteções e tampas recolocadas"
+                  }
+                }
+              ]
+            },
+            {
+              "ref": "foto_limpa",
+              "tipo": "anexo",
+              "rotulo": "Foto ou vídeo da área limpa",
+              "obrigatorio": true,
+              "aceita": [
+                "foto",
+                "video"
+              ],
+              "minimo": 1,
+              "dica": "",
+              "origem": {
+                "pagina": 2,
+                "trecho": "Registrar foto ou vídeo da área limpa"
+              }
+            },
+            {
+              "ref": "obs_ent",
+              "tipo": "texto",
+              "rotulo": "Observações da entrega",
+              "obrigatorio": false,
+              "longo": true,
+              "origem": {
+                "pagina": 2,
+                "trecho": "Observações da entrega: ____________________"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ref": "area",
+      "nome": "Aceite da área",
+      "tipo": "aceite_area",
+      "origem": {
+        "pagina": 2,
+        "trecho": "6. ENCERRAMENTO"
+      },
+      "assinaturas": [
+        {
+          "ref": "a_area",
+          "significado": "Encerra a PT",
+          "cargo": "Supervisora de área",
+          "minimo": 1,
+          "obrigatoria": true,
+          "origem": {
+            "pagina": 2,
+            "trecho": "Encerrada por (Supervisor(a) de Área)"
+          }
+        }
+      ],
+      "secoes": []
+    }
+  ],
+  "separacoes": [
+    {
+      "a": "a_emi",
+      "b": "a_campo",
+      "travada": true,
+      "origem": {
+        "pagina": 2,
+        "trecho": "O executante não pode ser o emitente"
+      }
+    },
+    {
+      "a": "a_iso",
+      "b": "a_ver",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Isolamento verificado por (Líder de Equipe) — não pode ser quem registrou"
+      }
+    }
+  ],
+  "campos_do_sistema": [
+    {
+      "rotulo": "PT nº",
+      "corresponde_a": "numero_pt",
+      "origem": {
+        "pagina": 1,
+        "trecho": "PT nº ______"
+      }
+    },
+    {
+      "rotulo": "Painel / gaveta",
+      "corresponde_a": "ativos",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Painel / gaveta: ______"
+      }
+    },
+    {
+      "rotulo": "Local",
+      "corresponde_a": "local",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Local: ______"
+      }
+    },
+    {
+      "rotulo": "Data",
+      "corresponde_a": "data",
+      "origem": {
+        "pagina": 1,
+        "trecho": "Data: __/__/____"
+      }
+    }
+  ],
+  "pendencias": [
+    {
+      "descricao": "Rodapé com carimbo manuscrito ilegível ao lado da assinatura do emitente.",
+      "motivo": "ilegivel",
+      "onde": "a_emi",
+      "origem": {
+        "pagina": 1,
+        "trecho": "[carimbo ilegível]"
+      }
+    }
+  ]
+}
