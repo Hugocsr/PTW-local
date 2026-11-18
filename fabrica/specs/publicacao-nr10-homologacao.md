@@ -1,6 +1,6 @@
 # Spec — publicação NR-10 na homologação
 
-Estado: validada pelo responsável pelo produto em 18/11/2026, na conversa: “Validar publicação completa com os três perfis”. Implementação e verificação em andamento.
+Estado: validada pelo responsável pelo produto em 18/11/2026, na conversa: “Validar publicação completa com os três perfis”. Implementada e verificada no Preview em 18/11/2026.
 
 Validação complementar: responsável autorizou gerar nova senha de homologação para Marina, pois a anterior é Sensitive e não pode ser recuperada. Manter a senha anterior no ambiente geral e usar a nova somente no override da branch de Preview. Corrigir o 502 de partida observado nos testes aguardando o health da API antes de expor o proxy; ocultar cabeçalhos de autenticação da plataforma nos logs do proxy.
 
@@ -42,3 +42,13 @@ Manter o deploy anterior, backup e definições anteriores das funções. A atua
 ## Limites
 
 Os dados são fictícios. A publicação não certifica atendimento integral à NR-10. Novos módulos de treinamentos, PIE, engenharia de arco e SIMOPS permanecem fora desta entrega. Nenhuma criação de projeto ou branch paga no Supabase está autorizada por esta spec.
+
+## Evidência de aceite
+
+- Código funcional publicado em `Hugocsr/PTW-local`, branch `ptw-sgi`, commit `6a3d9caa299719781f8b30b0c95607cf1cd2a223`; árvore idêntica à conferida localmente.
+- Preview `https://ptw-git-ptw-sgi-hc-4634.vercel.app`, Container Ready. A autenticação adicional da Vercel permanece habilitada; testes usam o mecanismo autorizado de automação da plataforma.
+- Preflight aprovado no PostgreSQL 17.11 hospedado. Backup de 40 tabelas restaurado em ensaio isolado; cadastros anteriores preservados e auditoria íntegra antes/depois da aplicação aditiva.
+- Login LDAP dos três perfis aprovado; escrita administrativa recusada para Rafael e Paulo. Senhas individuais fora do Git.
+- PT vigente `PT-UN01-2026-00001` e PT 2027 `PT-UN01-2026-00002` encerradas após ciclos completos, incluindo anexos S3 e conferência dos hashes, recusas, assinaturas, parada/retomada e novo aceite. Modelo 2027 inclui recusas de turno/autorizador/equipe, revalidação idempotente e novo aceite.
+- UI hospedada conferida em 390, 768, 1024 e 1440 px, sem rolagem horizontal e sem erros de JavaScript. Consulta de requisições do deploy corrigido não encontrou HTTP 5xx na janela observada.
+- Relatórios, capturas e roteiro hospedado estão no scratchpad `outputs/release-nr10-2026-11-18`; dados de acesso e backup não são distribuídos pelo repositório.
