@@ -45,6 +45,14 @@ Os dados são fictícios. A publicação não certifica atendimento integral à 
 
 ## Evidência de aceite
 
+### Aditivo proposto — conexões no ambiente Vercel
+
+A verificação do deploy de registro final detectou `EMAXCONNSESSION`: a abertura paralela da página pode iniciar instâncias suficientes para esgotar as 15 conexões do Session pooler. Os ciclos funcionais anteriores continuam válidos, mas o aceite operacional exige corrigir essa condição.
+
+Proposta: usar o pool de transações do Supabase para consultas e escritas da API, com prepared statements desligados nesse modo; manter um canal de sessão separado somente para avisos em tempo real. Iniciar LISTEN apenas quando houver assinantes e liberar o recurso quando o último sair. Manter TLS verificado, RLS, auditoria e tarefas de expiração; não aumentar plano, não ampliar privilégios e não alterar a configuração padrão do Docker local. Validar localmente a seleção dos canais e o ciclo dos assinantes e testar aberturas/reloads paralelos no Preview antes do aceite final.
+
+Estado do aditivo: validado pelo responsável na conversa, “Validar o ajuste de conexões”. Implementação e validação em andamento.
+
 - Código funcional publicado em `Hugocsr/PTW-local`, branch `ptw-sgi`, commit `6a3d9caa299719781f8b30b0c95607cf1cd2a223`; árvore idêntica à conferida localmente.
 - Preview `https://ptw-git-ptw-sgi-hc-4634.vercel.app`, Container Ready. A autenticação adicional da Vercel permanece habilitada; testes usam o mecanismo autorizado de automação da plataforma.
 - Preflight aprovado no PostgreSQL 17.11 hospedado. Backup de 40 tabelas restaurado em ensaio isolado; cadastros anteriores preservados e auditoria íntegra antes/depois da aplicação aditiva.

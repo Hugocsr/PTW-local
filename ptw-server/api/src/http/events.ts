@@ -16,14 +16,15 @@ export class EventHub {
   private readonly listeners = new Set<Listener>()
   private stop: (() => Promise<void>) | null = null
   private starting: Promise<void> | null = null
+  private stopping: Promise<void> | null = null
 
-  constructor(private readonly db: Db, private readonly onError: (err: unknown) => void = () => {}) {}
+  constructor(private readonly db: Db, private readonly onError: (err: unknown) => void = () => {}, private readonly releaseWhenUnused = false) {}
 
   /** Liga o LISTEN (uma vez). Falha não derruba a API: o app relê a cada 30 s sem os avisos. */
   start(): Promise<void> {
     if (this.stop) return Promise.resolve()
-    this.starting ??= this.db
-      .listen("ptw", (payload) => this.dispatch(payload))
+    this.starting ??= Promise.resolve(this.stopping)
+      .then(() => this.db.listen("ptw", (payload) => this.dispatch(payload)))
       .then((stop) => {
         this.stop = stop
       })
@@ -59,6 +60,7 @@ export class EventHub {
     void this.start()
     return () => {
       this.listeners.delete(l)
+      if (this.releaseWhenUnused) void this.releaseIfUnused()
     }
   }
 
@@ -68,8 +70,18 @@ export class EventHub {
 
   async close(): Promise<void> {
     this.listeners.clear()
+    await this.releaseIfUnused()
+    if (this.stopping) await this.stopping
+  }
+
+  private async releaseIfUnused(): Promise<void> {
+    if (this.starting) await this.starting
+    if (this.listeners.size > 0) return
     const stop = this.stop
     this.stop = null
-    if (stop) await stop().catch(this.onError)
+    if (stop) {
+      this.stopping = stop().catch(this.onError).finally(() => { this.stopping = null })
+      await this.stopping
+    }
   }
 }

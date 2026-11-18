@@ -17,6 +17,8 @@ docker compose stop            # pare ao terminar: a máquina tem pouca memória
 
 ## Regras
 
+- Homologação com Supabase: `PTW_DB_LISTEN_PORT` separa o canal de sessão dos avisos do pool de consultas; nessa configuração, os avisos começam no primeiro assinante e fecham ao sair o último. Pool transacional exige `PTW_DB_PREPARE=0`; TLS, RLS, trilha e expiração continuam ativos. Sem essas opções, o Docker local mantém seus padrões.
+
 - **Não há migrações:** estamos em desenvolvimento; o esquema em `db/schema/` é a fonte única; mudou, recrie o banco do zero (`sh db/reset.sh`). Não escreva migrações.
 - API: `npm run check` em `api/` (cópia do núcleo, tipos, lint, testes sem Docker), ou `sh ../check.sh api`.
 - **Tema da planta:** `tema/` é montada só leitura no `web` e servida em `/tema/` (`web/Caddyfile`); vazia, vale o tema que veio com o app. `sh tema.sh <pasta>` troca, `sh tema.sh padrao` desfaz. O conteúdo ativo não entra no git.

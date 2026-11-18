@@ -155,7 +155,7 @@ export default defineRoutes((api) => {
     try {
       await recordStarted(state)
       started = true
-      void state.events.start()
+      if (state.config.db.listenPort === undefined) void state.events.start()
     } catch (err) {
       fastify.log.warn({ err }, "banco indisponível ao iniciar: tentando de novo em 5 s")
       retry = setTimeout(() => void start(), 5000)

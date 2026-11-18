@@ -122,7 +122,7 @@ export function withCtx<T>(req: FastifyRequest, fn: (tx: Tx) => Promise<T>, over
 
 /** O driver de produção: `postgres` como `ptw_api`, pool pequeno, datas (`date`) como texto `AAAA-MM-DD`. */
 export function postgresDriver(config: Config["db"], onNotice?: (n: unknown) => void): Driver {
-  const sql = postgres({
+  const options = {
     host: config.host,
     port: config.port,
     database: config.database,
@@ -130,9 +130,10 @@ export function postgresDriver(config: Config["db"], onNotice?: (n: unknown) => 
     password: config.password,
     max: config.max,
     ...(config.tls ? { ssl: { rejectUnauthorized: true, servername: config.host } } : {}),
-    idle_timeout: 60,
+    idle_timeout: config.idleSeconds ?? 60,
+    prepare: config.prepare ?? true,
     connect_timeout: 5,
-    onnotice: onNotice ?? false,
+    onnotice: onNotice ?? (false as const),
     // O papel ptw_api tem search_path = ptw (db/init.sh), mas os gatilhos usam ltree, que mora em public.
     connection: { application_name: "ptw-api", search_path: "ptw, public" },
     types: {
@@ -142,13 +143,28 @@ export function postgresDriver(config: Config["db"], onNotice?: (n: unknown) => 
       // `date` é dia civil no fuso da unidade: nunca vira Date (que mudaria o dia).
       date: { to: 1082, from: [1082], serialize: (x: string) => x, parse: (x: string) => x },
     },
-  })
+  }
+  const sql = postgres(options)
+  const listeners = new Set<typeof sql>()
   return {
     begin: <T>(fn: (tx: Tx) => Promise<T>) => sql.begin((tx) => fn(tx as unknown as Tx)) as Promise<T>,
     listen: async (channel, onNotify) => {
-      const meta = await sql.listen(channel, onNotify)
-      return () => meta.unlisten()
+      // Transaction pooling serves queries; LISTEN requires its own persistent session.
+      const listener = config.listenPort === undefined ? sql : postgres({ ...options, port: config.listenPort, max: 1, prepare: false })
+      if (listener !== sql) listeners.add(listener)
+      const release = async (): Promise<void> => {
+        if (listener !== sql && listeners.delete(listener)) await listener.end({ timeout: 5 })
+      }
+      try {
+        const meta = await listener.listen(channel, onNotify)
+        let active = true
+        return async () => {
+          if (!active) return
+          active = false
+          try { await meta.unlisten() } finally { await release() }
+        }
+      } catch (error) { await release(); throw error }
     },
-    end: () => sql.end({ timeout: 5 }),
+    end: async () => { await Promise.all([sql, ...listeners].map((connection) => connection.end({ timeout: 5 }))) },
   }
 }

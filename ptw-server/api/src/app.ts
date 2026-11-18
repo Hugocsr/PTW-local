@@ -127,7 +127,7 @@ export async function buildApp(opts: BuildOptions): Promise<FastifyInstance> {
     validator: new ContractValidator(contract),
     db,
     sessions: opts.sessions ?? new DbSessionStore(),
-    events: new EventHub(db, (err) => app.log.warn({ err }, "avisos em tempo real (LISTEN ptw) falharam")),
+    events: new EventHub(db, (err) => app.log.warn({ err }, "avisos em tempo real (LISTEN ptw) falharam"), config.db.listenPort !== undefined),
     unit: async () => {
       if (unitId !== null) return unitId
       unitPending ??= db

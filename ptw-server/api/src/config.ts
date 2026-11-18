@@ -18,7 +18,7 @@ export interface Config {
   devLogin: boolean
   ldap: LdapConfig | null
   sessionIdleMs: number
-  db: { host: string; port: number; database: string; user: string; password: string; max: number; tls?: boolean }
+  db: { host: string; port: number; database: string; user: string; password: string; max: number; tls?: boolean; listenPort?: number; prepare?: boolean; idleSeconds?: number }
   /** Endereço do S3 (SeaweedFS) na rede interna; só a situação é conferida aqui. */
   storageUrl: string
   /** Duração máxima absoluta da sessão. */
@@ -79,6 +79,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       password: secret(env, "PTW_DB_PASSWORD", "/run/secrets/db_api"),
       max: int(env.PTW_DB_POOL, 10),
       tls: env.PTW_DB_TLS === "1",
+      ...(env.PTW_DB_LISTEN_PORT ? { listenPort: int(env.PTW_DB_LISTEN_PORT, 5432) } : {}),
+      prepare: env.PTW_DB_PREPARE !== "0",
+      idleSeconds: int(env.PTW_DB_IDLE_SECONDS, 60),
     },
     storageUrl: env.PTW_S3_URL ?? "http://storage:8333",
     sessionTtlMs: positive(env.PTW_SESSION_HOURS, 12) * 3_600_000,

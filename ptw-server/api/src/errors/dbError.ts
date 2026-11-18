@@ -53,6 +53,7 @@ export function toApiError(e: unknown): ApiError {
   if (e instanceof ApiError) return e
   const d = (e ?? {}) as DbErrorLike
   const code = typeof d.code === "string" ? d.code : ""
+  if (code === "XX000" && /EMAXCONNSESSION|Max client connections reached/i.test(d.message ?? "")) return pta.unavailable(e)
   if (DRIVER_DOWN.has(code) || (typeof d.errno === "string" && DRIVER_DOWN.has(d.errno))) return pta.unavailable(e)
   if (!isSqlState(code)) return pta.unexpected(e)
   const status = statusOfDbCode(code)

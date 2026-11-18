@@ -38,6 +38,7 @@ A preparação da versão NR-10 de 18/11/2026 está no [roteiro de publicação 
 | `PTW_UNIT` | Código da unidade já cadastrada, como `UN-01` |
 | `PTW_DB_HOST`, `PTW_DB_PASSWORD` | Host PostgreSQL e senha do papel da aplicação |
 | `PTW_DB_PORT`, `PTW_DB_NAME`, `PTW_DB_USER`, `PTW_DB_POOL` | Opcionais. Padrões `5432`, `ptw`, `ptw_api` e `10` |
+| `PTW_DB_LISTEN_PORT`, `PTW_DB_PREPARE`, `PTW_DB_IDLE_SECONDS` | No Preview com pool transacional: porta de sessão para LISTEN (`5432`), prepared statements desligados (`0`) e tempo ocioso do cliente (`5`). Sem configuração, mantêm-se os padrões locais |
 | `PTW_DB_CA_PEM` | Certificado da CA do PostgreSQL em PEM quando a CA não faz parte da lista padrão do Node |
 | `PTW_S3_URL`, `PTW_S3_KEY`, `PTW_S3_SECRET` | URL HTTPS do endpoint S3 e credenciais do bucket |
 | `PTW_S3_REGION` | Região de assinatura do S3. Padrão `us-east-1` |
@@ -47,7 +48,7 @@ A preparação da versão NR-10 de 18/11/2026 está no [roteiro de publicação 
 
 Para construir localmente, execute `docker build -f Dockerfile.vercel -t ptw-sgi .` na raiz. O contêiner usa `PORT` (padrão 3000). Para testar o login dessa imagem, sirva-o atrás de HTTPS com certificado confiável. A imagem requer os serviços externos e recusa `PTW_DEV_LOGIN=1`.
 
-Para usar Supabase a partir de uma rede IPv4, use o **Session pooler**, na porta `5432`. Configure `PTW_DB_HOST` com o host exibido no painel **Connect**, `PTW_DB_USER` com o nome do papel seguido de um ponto e da referência do projeto, e `PTW_DB_NAME` com o nome do banco provisionado. Baixe a CA em **Database Settings → SSL Configuration** e cole o PEM em `PTW_DB_CA_PEM`.
+Para usar Supabase a partir de uma rede IPv4, configure `PTW_DB_HOST` com o host exibido no painel **Connect**, `PTW_DB_USER` com o nome do papel seguido de um ponto e da referência do projeto, e `PTW_DB_NAME` com o nome do banco provisionado. Baixe a CA em **Database Settings → SSL Configuration** e cole o PEM em `PTW_DB_CA_PEM`. Na Vercel, use o **Transaction pooler** nas consultas (`PTW_DB_PORT=6543`, `PTW_DB_PREPARE=0`, `PTW_DB_POOL=1`, `PTW_DB_IDLE_SECONDS=5`) e preserve uma sessão separada apenas para avisos (`PTW_DB_LISTEN_PORT=5432`). O LISTEN é aberto quando o navegador assina os avisos e fechado ao sair o último assinante. Instâncias que servem arquivos estáticos não reservam uma sessão de avisos. Auditoria e expiração continuam ligadas. No Docker local, sem essas opções, mantém-se a conexão normal da porta 5432.
 
 Para homologar sem um diretório externo, configure `PTW_LDAP_MODE=preview` e uma senha de pelo menos 20 caracteres em `PTW_PREVIEW_LOGIN_PASSWORD` como segredo do Preview. Cadastre `marina.costa` na unidade de homologação no banco. A imagem inicia um OpenLDAP de teste em loopback, com TLS, e o login passa pela mesma API usada com LDAP externo. O contêiner recusa esse modo fora do ambiente Preview da Vercel.
 

@@ -2,6 +2,8 @@
 
 Para instalar o laboratório com LDAP local: `python tools/ptw_instalar.py --local`. Configuração da planta, manutenção, backup e recuperação: [OPERACAO.md](OPERACAO.md).
 
+Na homologação Vercel/Supabase, consultas podem usar pool transacional com uma sessão separada para LISTEN (`PTW_DB_PORT=6543`, `PTW_DB_LISTEN_PORT=5432`, `PTW_DB_PREPARE=0`, `PTW_DB_POOL=1`, `PTW_DB_IDLE_SECONDS=5`). O canal de avisos só existe enquanto houver assinantes; auditoria e expiração permanecem ligadas. Esses ajustes são do Preview e não mudam os padrões do Compose local. Consulte o [guia de publicação](../deploy/releases/2026-11-18-nr10.md).
+
 Quatro contêineres do sistema e dois de monitoramento. A configuração LDAP adiciona um repassador TCP para um único servidor da planta; só ele tem rede de saída. Só o `web` publica portas (HTTPS); API, banco e arquivos ficam em redes internas sem saída para a internet. O app lê e grava no PostgreSQL pela API.
 
 | Serviço | Imagem | Limite | Uso em repouso |
