@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { preparePreviewDirectory } from "./ldap-preview.mjs"
+import { waitForApi } from "./readiness.mjs"
 
 const env = { ...process.env }
 const previewLdap = env.PTW_LDAP_MODE === "preview"
@@ -63,11 +64,7 @@ function stop(code) {
   }, 12_000).unref()
 }
 
-for (const [command, args, childEnv] of [
-  ...(directory ? [directory.command] : []),
-  [process.execPath, ["dist/server.js"], env],
-  ["/usr/local/bin/caddy", ["run", "--config", "deploy/Caddyfile", "--adapter", "caddyfile"], { PORT: env.PORT ?? "3000", HOME: tmpdir() }],
-]) {
+function launch(command, args, childEnv) {
   const child = spawn(command, args, { env: childEnv, stdio: "inherit" })
   children.push(child)
   child.on("error", (error) => { console.error(error.message); stop(1) })
@@ -75,3 +72,9 @@ for (const [command, args, childEnv] of [
 }
 process.on("SIGTERM", () => stop(0))
 process.on("SIGINT", () => stop(0))
+if (directory) launch(...directory.command)
+launch(process.execPath, ["dist/server.js"], env)
+try {
+  await waitForApi("http://127.0.0.1:3300/api/v1/health")
+  if (!stopping) launch("/usr/local/bin/caddy", ["run", "--config", "deploy/Caddyfile", "--adapter", "caddyfile"], { PORT: env.PORT ?? "3000", HOME: tmpdir() })
+} catch (error) { console.error(error.message); stop(1) }

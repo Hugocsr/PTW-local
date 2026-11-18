@@ -17,6 +17,6 @@ if [ "$what" = "tudo" ] || [ "$what" = "api" ]; then
   (cd ptw-server/api && npm run --silent check)
 fi
 if [ "$what" = "tudo" ]; then
-  node --test deploy/preview-users.test.mjs
+  node --test deploy/*.test.mjs
 fi
 echo "== tudo certo =="

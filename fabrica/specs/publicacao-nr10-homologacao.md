@@ -2,6 +2,8 @@
 
 Estado: validada pelo responsável pelo produto em 18/11/2026, na conversa: “Validar publicação completa com os três perfis”. Implementação e verificação em andamento.
 
+Validação complementar: responsável autorizou gerar nova senha de homologação para Marina, pois a anterior é Sensitive e não pode ser recuperada. Manter a senha anterior no ambiente geral e usar a nova somente no override da branch de Preview. Corrigir o 502 de partida observado nos testes aguardando o health da API antes de expor o proxy; ocultar cabeçalhos de autenticação da plataforma nos logs do proxy.
+
 ## Objetivo
 
 Disponibilizar no Preview Vercel `ptw`, branch `ptw-sgi`, os modelos fictícios de PT elétrica vigente e preparação 2027 já validados localmente. Preservar cadastros, arquivos e trilha de auditoria hospedados. Não promover para Production.
