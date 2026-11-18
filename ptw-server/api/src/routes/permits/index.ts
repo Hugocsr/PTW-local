@@ -9,7 +9,7 @@ import { withCtx } from "../../db.js"
 import { pta } from "../../errors/apiError.js"
 import { idempotent } from "../../http/idempotency.js"
 import { requireIfMatch, setEtag } from "../../http/ifMatch.js"
-import { createDraft, extend, lockRevision, mustExist, putAnswer, reasonAct, removeAnswer, sign, signingRole, submit, updateDraft, type ReasonAct } from "../../repo/permits/acts.js"
+import { createDraft, extend, revalidate, lockRevision, mustExist, putAnswer, reasonAct, removeAnswer, sign, signingRole, submit, updateDraft, type ReasonAct } from "../../repo/permits/acts.js"
 import { countBoard, listBoard, listMine, loadDetail, permitHistory, recordOpen, resolvePermitId, type PermitDetail } from "../../repo/permits/read.js"
 import { iso, permitIdOf, personOf } from "../../repo/permits/sql.js"
 
@@ -157,5 +157,14 @@ export default defineRoutes((api) => {
       },
       { etag, reason: req.body.reason },
     )
+  })
+  api.op("revalidatePermit", (req, reply) => {
+    const rev = requireIfMatch(req)
+    const id = permitIdOf(req)
+    return idempotent(req, reply, async (tx) => {
+      await lockRevision(tx, id, rev)
+      await revalidate(tx, id, req.body)
+      return loadDetail(tx, id)
+    }, { etag, reason: req.body.reason })
   })
 })

@@ -27,7 +27,7 @@ COPY --from=api /app/dist ./dist
 COPY --from=api /app/node_modules ./node_modules
 COPY --from=api /app/package.json /app/openapi.yaml ./
 COPY --from=web /src/ptw-mockup-v2/dist /srv
-COPY deploy/Caddyfile deploy/start.mjs deploy/ldap-preview.mjs ./deploy/
+COPY deploy/Caddyfile deploy/start.mjs deploy/ldap-preview.mjs deploy/preview-users.mjs ./deploy/
 USER node
 EXPOSE 3000
 CMD ["node", "deploy/start.mjs"]

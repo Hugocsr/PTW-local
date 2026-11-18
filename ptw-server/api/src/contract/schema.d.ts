@@ -875,6 +875,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/permits/{id}/revalidations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description uuid do registro. */
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revalidar para um turno, com avaliação local e novo aceite no campo. */
+        post: operations["revalidatePermit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/blobs/{sha256}": {
         parameters: {
             query?: never;
@@ -1452,8 +1472,52 @@ export interface components {
             stageId?: components["schemas"]["Uuid"];
             items: components["schemas"]["FormItem"][];
         };
+        ElectricalPolicy: {
+            /** @enum {string} */
+            standard: "vigente2019" | "preparacao2027";
+            procedure: string;
+            riskAssessment: string;
+            authorizations: string;
+            workKind: string;
+            isolation: string[];
+            restoration: string[];
+            shift?: {
+                startDate: string;
+                startTime: string;
+                endDate: string;
+                endTime: string;
+            };
+        };
+        RevalidationInput: {
+            /** Format: date-time */
+            shiftStart: string;
+            /** Format: date-time */
+            shiftEnd: string;
+            /** Format: date-time */
+            newEnd: string;
+            reason: string;
+            conditionsUnchanged: boolean;
+            teamUnchanged: boolean;
+            assessmentConfirmed: boolean;
+        };
+        PermitRevalidation: {
+            /** Format: date-time */
+            originalStart?: string;
+            id: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            shiftStart: string;
+            /** Format: date-time */
+            shiftEnd: string;
+            /** Format: date-time */
+            newEnd: string;
+            reason: string;
+            personId: components["schemas"]["Uuid"];
+            /** Format: date-time */
+            at: string;
+        };
         FormSpec: {
             sections: components["schemas"]["FormSection"][];
+            electrical?: components["schemas"]["ElectricalPolicy"];
         };
         TemplateContent: {
             locationTypeIds: components["schemas"]["Uuid"][];
@@ -1659,6 +1723,7 @@ export interface components {
         };
         /** @description A linha de `ptw.permit`, sem as respostas (`Permit` do app menos `answers` e `answerMeta`). */
         PermitHeader: {
+            revalidation?: components["schemas"]["PermitRevalidation"] | null;
             id: components["schemas"]["Uuid"];
             /** @example PT-UN01-2026-00012 */
             number: string | null;
@@ -3872,6 +3937,35 @@ export interface operations {
                     newEnd: string;
                     reason: string;
                 };
+            };
+        };
+        responses: {
+            200: components["responses"]["PermitOk"];
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Rule"];
+            428: components["responses"]["PreconditionRequired"];
+            "4XX": components["responses"]["Error"];
+        };
+    };
+    revalidatePermit: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Revisão que o cliente leu, entre aspas: `"7"`. */
+                "If-Match": components["parameters"]["IfMatch"];
+                /** @description uuid gerado pelo cliente para esta criação; repetir a chamada não cria de novo (guardada por 24 h). */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                /** @description uuid do registro. */
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevalidationInput"];
             };
         };
         responses: {

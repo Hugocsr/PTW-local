@@ -42,12 +42,18 @@ Sistema de Permissão de Trabalho (PT) para uma planta, rodando localmente, sem 
 - **Vocabulário**: Estado (só PT) / Situação (registros e versões), Devolver, Pessoa indicada, Elegível / não elegível, Remover.
 - Endereços inválidos são normalizados; trocar de aba não cria entrada no histórico; "Voltar" nunca sai do app.
 
+## Controles elétricos versionados (2026-11-18)
+
+- `FormSpec.electrical` congela a base normativa, referências documentais, sequências e limites de turno. Base vigente e preparação 2027 são modelos independentes; PT encerrada nunca é reescrita.
+- A janela de 2027 cabe no turno explícito, inclusive Prorrogar (`PTW34`). Revalidar é ato próprio, pelo emitente original ainda elegível, com documentos/equipe válidos e confirmações de avaliação local e condições preservadas. Registra autoria/turno/justificativa/hash da equipe, invalida o aceite anterior e aguarda novo aceite por outra pessoa. Alterações exigem nova PT neste processo interno.
+- Procedimentos reais e exceções precisam de revisão/aprovação da engenharia/SST. Os modelos Actemium e seus anexos de teste são fictícios. O sistema registra evidências e impede transições; não comprova a condição física do equipamento.
+
 ## Auditoria (decidida; não reabrir)
 
 - **Tudo é registrado** numa cadeia única encadeada por SHA-256: toda escrita (PT, cadastro, configuração) com antes/depois só do que mudou, cada "Desfazer" como evento próprio, tentativas negadas, acessos (PT aberta, anexo, exportação (sempre com motivo), busca na Auditoria), sessão (login/logout, troca de pessoa simulada) e sistema (queda/volta do servidor, relógio, migrações, backup).
 - O histórico da PT lê da mesma trilha; não há segundo registro.
 - A forma canônica do hash é **uma só, a v2 do banco** (README do servidor; `core/audit.ts` no app; `ptw-server/tools/ptw_verifica.py`): `SHA-256(prev 32 bytes ‖ UTF-8(JSON canônico))`, chaves por tamanho em bytes e depois byte a byte, `", "`/`": "`, número sem expoente, `at` em µs. Os vetores de `core/audit.test.ts` vêm do próprio verificador; a exportação do app (JSONL + manifesto `ptw-auditoria/2`) passa nele como `ÍNTEGRA`.
-- O evento guarda o que o banco guarda: `data = {"de", "para"}` com nomes de coluna e valores crus (só o que mudou); nomes e frases para pessoas são montados na leitura (`eventChanges`, `auditValueText`). Recusas usam o código do banco (`core/ptwErrors.ts`, hoje `PTW01`–`PTW33`).
+- O evento guarda o que o banco guarda: `data = {"de", "para"}` com nomes de coluna e valores crus (só o que mudou); nomes e frases para pessoas são montados na leitura (`eventChanges`, `auditValueText`). Recusas usam o código do banco (`core/ptwErrors.ts`, hoje `PTW01`–`PTW34`).
 - **Desfazer** é a escrita inversa marcada: ação `<ação>.desfeito`, texto `Desfazer: …`, motivo `Desfazer` (no banco, `set_context(..., p_undo => true)`; no app, `runAsUndo`).
 - Nada apaga auditoria; a retenção mínima é 5 anos (PET pela NR-33). Um resumo diário assinado (âncora) vai para fora do servidor.
 
@@ -88,4 +94,4 @@ Sistema de Permissão de Trabalho (PT) para uma planta, rodando localmente, sem 
 - Português do Brasil em toda a interface e documentação de produto.
 - **O modelo de dados ganha.** O esquema do banco (`ptw-server/db/schema/`, resumo em `ptw-server/db/MODELO.md`) é a referência: nomes, formatos, estados e regras. Os tipos e o núcleo do app seguem o banco; divergência se resolve mudando o app.
 - Regras de negócio vão no núcleo puro (`ptw-mockup-v2/src/core`) com teste; a tela só mostra.
-- Não faça commit sem pedido. Repositório privado: github.com/joaoCarvalho1000/ptw-in-a-box. O trabalho corre em `fabrica/fase-1` e o `main` avança para ele quando o dono pede (avanço direto, sem reescrever histórico). Segredos (`ptw-server/secrets/`), material de clientes (`clientes/`) e o tema ativo (`ptw-server/tema/`) nunca entram.
+- Não faça commit sem pedido ou autorização na tarefa. Este fork usa `github.com/Hugocsr/PTW-local`; a origem de negócio é `joaoCarvalho1000/ptw-in-a-box`. Preparações de entrega usam branch local própria. O Preview Vercel `ptw` usa a branch `ptw-sgi`; `main` está configurada como Production. Conferir `deploy/releases/2026-11-18-nr10.md` antes de publicar. Segredos (`ptw-server/secrets/`), material de clientes (`clientes/`) e o tema ativo (`ptw-server/tema/`) nunca entram.

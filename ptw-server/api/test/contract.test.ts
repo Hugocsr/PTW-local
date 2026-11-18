@@ -16,7 +16,7 @@ import { testConfig } from "./helpers/app.js"
 import { FakeDriver } from "./helpers/fakeDb.js"
 
 const contract = loadContract(defaultOpenapiPath())
-const TOTAL = 81
+const TOTAL = 82
 /** As operações deste pacote (F1-01): tags `sessao` e `sistema`. */
 const BASE = ["getSession", "login", "sessionActivity", "devLogin", "listDevPeople", "logout", "getHealth", "getStatus", "streamEvents"]
 

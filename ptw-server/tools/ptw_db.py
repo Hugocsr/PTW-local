@@ -5,14 +5,28 @@ O banco não publica porta: os scripts rodam no host e falam com o psql dentro d
 concatenação de texto.
 """
 import os
+from pathlib import Path
 import subprocess
 import sys
 
 SERVER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
+def local_setting(name, default=None):
+    """Only read the requested literal setting; never execute or export a dotenv file."""
+    if name in os.environ:
+        return os.environ[name]
+    path = Path(SERVER) / '.env'
+    if path.is_file():
+        for line in reversed(path.read_text(encoding='utf-8-sig').splitlines()):
+            key, separator, value = line.partition('=')
+            if separator and key.strip() == name:
+                return value.strip().strip('"').strip("'")
+    return default
+
+
 def add_args(ap):
-    ap.add_argument('--banco', default=os.environ.get('PTW_DB_NAME', 'ptw'), help='nome do banco (padrão: ptw)')
+    ap.add_argument('--banco', default=local_setting('PTW_DB_NAME', 'ptw'), help='nome do banco (padrão: banco local selecionado ou ptw)')
     ap.add_argument('--container', default=os.environ.get('PTW_DB_CONTAINER'), help='contêiner do banco (padrão: o serviço db do compose)')
 
 

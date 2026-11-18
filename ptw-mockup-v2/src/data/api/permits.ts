@@ -102,6 +102,7 @@ export function createPermitPort(s: Shared) {
       case "refuse": return http.request({ method: "POST", path: `${path}/return`, body: { reason: a.reason }, ifMatch: p.rowVersion, undo })
       case "resume": return http.request({ method: "POST", path: `${path}/resume`, body: { reason: a.reason }, ifMatch: p.rowVersion, undo })
       case "extend": return http.request({ method: "POST", path: `${path}/extensions`, body: { newEnd: a.newEnd, reason: a.reason }, ifMatch: p.rowVersion, key, undo })
+      case "revalidate": return http.request({ method: "POST", path: `${path}/revalidations`, body: { shiftStart: a.shiftStart, shiftEnd: a.shiftEnd, newEnd: a.newEnd, reason: a.reason, conditionsUnchanged: a.conditionsUnchanged, teamUnchanged: a.teamUnchanged, assessmentConfirmed: a.assessmentConfirmed }, ifMatch: p.rowVersion, key, undo })
       case "stop": return sendStop({ permitId: p.id, reason: a.reason, key, personId: s.session.get().personId })
       case "answer": throw new Error("answer has its own path")
     }

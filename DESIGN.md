@@ -488,3 +488,7 @@ A PT impressa **não é a tela**: é um formulário de papel próprio (`work/Per
 - Preto sobre branco, legível em impressora monocromática; a cor da marca aparece só no fio do cabeçalho. Nada de cor de estado no papel: o estado vai por extenso.
 - Qualquer outra tela impressa pelo navegador sai sem menu, barra do topo e rodapé de recursos.
 - Tipo de item novo no formulário: acrescente o campo em `SheetItem.tsx` (o `switch` não compila sem ele).
+
+## Controles NR-10 na PT
+
+O painel lateral mostra a base normativa e o turno explícito. Revalidar abre diálogo com três horários locais, justificativa e três confirmações inicialmente desmarcadas. O ato aguarda confirmação do servidor e deixa a PT aguardando novo aceite. A impressão identifica a última revalidação e seu responsável; o formulário original permanece visível.

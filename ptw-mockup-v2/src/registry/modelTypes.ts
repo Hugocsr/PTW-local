@@ -153,7 +153,10 @@ export interface FormSection {
   items: FormItem[]
 }
 
-export interface FormSpec { sections: FormSection[] }
+export interface FormSpec {
+  sections: FormSection[]
+  electrical?: import("@/core/electrical").ElectricalPolicy
+}
 
 /** Two slots that must be signed by different people (ptw.separation): `slotA < slotB` (text order). */
 export interface Separation {

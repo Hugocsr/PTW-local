@@ -222,3 +222,12 @@ export async function extend(tx: Tx, id: string, body: OpBody<"extendPermit">): 
     q.params,
   )
 }
+
+/** Revalidation is authorized and audited in the database, including direct SQL guards. */
+export async function revalidate(tx: Tx, id: string, body: OpBody<"revalidatePermit">): Promise<void> {
+  const q = new Q()
+  await run(tx, `select ptw.permit_revalidate(ptw.current_unit(), ${q.p(id, "uuid")},
+    ${q.p(body.shiftStart, "timestamptz")}, ${q.p(body.shiftEnd, "timestamptz")}, ${q.p(body.newEnd, "timestamptz")},
+    ${q.p(body.reason, "text")}, ${q.p(body.conditionsUnchanged, "boolean")}, ${q.p(body.teamUnchanged, "boolean")},
+    ${q.p(body.assessmentConfirmed, "boolean")})`, q.params)
+}

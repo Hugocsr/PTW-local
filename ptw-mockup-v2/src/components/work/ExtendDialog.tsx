@@ -50,14 +50,14 @@ function Form({ permitId, onClose }: { permitId: string; onClose: () => void }) 
 
   const plan = useMemo(() => {
     if (!permit || !ver || !me) return null
-    return planExtend({ permit, ver, signer: me, people: state.people, locations: state.locations, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, serverDown: sim.serverDown, ...(newEnd || reason ? { newEnd, reason } : {}) })
+    return planExtend({ permit, ver, signer: me, people: state.people, locations: state.locations, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, ...(newEnd || reason ? { newEnd, reason } : {}) })
   }, [permit, ver, me, state, sim.now, sim.today, sim.serverDown, newEnd, reason])
 
   if (!permit || !ver || !me || !plan) return <PermitActDialog busy={feedback.busy} onClose={onClose}><DialogHeader><DialogTitle>PT não encontrada</DialogTitle></DialogHeader></PermitActDialog>
 
   const failures = plan.checks.filter((c) => !c.ok && c.id !== "entrada")
   const limit = ver.maxWindowHours
-  const latest = limit != null ? addMinutes(permit.windowStart, limit * 60) : null
+  const latest = limit != null ? addMinutes(permit.revalidation?.originalStart ?? permit.windowStart, limit * 60) : null
   const can = failures.length === 0 && !!newEnd && reason.trim().length > 0 && plan.ok
   const why = failures[0]?.text
     ?? dayProblem ?? timeProblem

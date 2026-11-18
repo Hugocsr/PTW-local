@@ -22,6 +22,7 @@ export const DENIED_ACTION: Record<string, string> = {
   stopPermit: "pt.parada",
   resumePermit: "pt.retomada",
   extendPermit: "pt.prorrogada",
+  revalidatePermit: "pt.revalidada",
   createAttachment: "pt.anexo.incluido",
   getPermit: "acesso.pt.aberta",
   recordPermitAccess: "acesso.pt.aberta",

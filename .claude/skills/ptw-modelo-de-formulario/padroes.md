@@ -113,3 +113,5 @@ Rodapé com ramal, celular, rádio, nomes de plantão: **uma** pendência, sem o
 ```json
 { "descricao": "Rodapé com contatos de emergência. Melhor como dado da unidade do que como item do modelo.", "motivo": "fora_do_produto" }
 ```
+
+`modelo.politica_eletrica` é extensão opcional para preservar os controles NR-10 de um modelo existente: base `vigente2019`/`preparacao2027`, refs documentais, classificação, sequências e turno. Não inferir política nem procedimento técnico de informações ausentes no documento. O pacote sempre importa como rascunho sujeito à revisão humana.

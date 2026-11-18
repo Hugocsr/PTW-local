@@ -48,7 +48,7 @@ function Form({ permitId, startReturning, onClose }: { permitId: string; startRe
   const plan = useMemo(() => {
     if (!permit || !ver || !me) return null
     const rail = railOf(permit, ver, store.signatures, state.people, state.locations, sim.today, sim.now)
-    return planSign({ permit, ver, rail, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: store.formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists })
+    return planSign({ permit, ver, rail, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: store.formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists })
   }, [permit, ver, me, store, state, sim.now, sim.today, sim.serverDown])
 
   if (!permit || !ver || !me || !plan) return <PermitActDialog busy={feedback.busy} onClose={onClose}><DialogHeader><DialogTitle>PT não encontrada</DialogTitle></DialogHeader></PermitActDialog>

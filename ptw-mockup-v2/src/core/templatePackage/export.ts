@@ -81,6 +81,7 @@ export function exportarModelo(tpl: PermitTemplate, cadastro: Cadastro, opcoes: 
     origem: { tipo: "exportacao", arquivos: [], gerado_por: { ferramenta: opcoes.ferramenta ?? "PTW in a Box", ...(opcoes.versaoApp ? { versao: opcoes.versaoApp } : {}) }, gerado_em: opcoes.agora },
     modelo: {
       nome: tpl.name,
+      ...(ver.form?.electrical ? { politica_eletrica: structuredClone(ver.form.electrical) } : {}),
       ...(ver.note ? { descricao: ver.note } : {}),
       ...(ver.maxWindowHours != null ? { prazo_maximo_horas: ver.maxWindowHours } : {}),
       ...(ver.holdsEquipment === false ? { prende_equipamento: false } : {}),

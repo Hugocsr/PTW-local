@@ -43,3 +43,5 @@ Antes de dar algo por pronto: `npm run check` limpo (ou `sh ../check.sh` na raiz
 - Fixtures novas de teste: dados construídos pelos próprios atos das lojas (`registryStep`, `replayPermits`), com teste de cadeia íntegra e sem regra quebrada.
 - O Testar do modelo usa o mesmo `StageCard` da PT real.
 - **Volume** (cenário `carga`): nada de `array.find`/`filter` sobre PTs, assinaturas ou ativos por linha ou por cartão; use `core/indexes` (`byId`, `signaturesOf`, `peopleInScope`, `locationPath`). O relógio anda a cada segundo: o que depende só do dia e das contas vencidas (`accountEpoch`) não recalcula no tique, e células que seguem o relógio são componentes próprios. Tabelas grandes passam `searchText`/`columns` estáveis ao `DataTable`. A fixture de carga é exercitada em testes; o app não oferece seleção de cenário.
+
+- `core/electrical.ts`: política NR-10 congelada, turno noturno no fuso da unidade, sequência e revalidação. `components/work/ElectricalPanel.tsx`: referência normativa, turno e diálogo de revalidação. Regras equivalentes em `db/schema/45_eletrica.sql`; erro `PTW34`.

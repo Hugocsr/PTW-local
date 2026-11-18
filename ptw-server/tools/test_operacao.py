@@ -1,6 +1,7 @@
 """Recusas que precisam acontecer antes de qualquer extração ou acesso ao Docker."""
 import io
 import json
+import os
 from pathlib import Path
 import tarfile
 import tempfile
@@ -8,9 +9,20 @@ import unittest
 from unittest.mock import patch
 
 import ptw_operacao as op
+import ptw_db
 
 
 class RecoveryTests(unittest.TestCase):
+    def test_operations_follow_selected_database_with_explicit_environment_priority(self):
+        with tempfile.TemporaryDirectory() as temp, patch.object(ptw_db, 'SERVER', temp), patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(ptw_db.local_setting('PTW_DB_NAME', 'ptw'), 'ptw')
+            path = Path(temp) / '.env'
+            path.write_text('OTHER=ignored\nPTW_DB_NAME=old\nPTW_DB_NAME="ptw_nr10_selected"\n', encoding='utf-8-sig')
+            self.assertEqual(ptw_db.local_setting('PTW_DB_NAME', 'ptw'), 'ptw_nr10_selected')
+            os.environ['PTW_DB_NAME'] = 'explicit_database'
+            self.assertEqual(ptw_db.local_setting('PTW_DB_NAME', 'ptw'), 'explicit_database')
+            self.assertEqual(ptw_db.local_setting('UNCONFIGURED', 'fallback'), 'fallback')
+
     def test_manifest_signature_rejects_modified_content(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

@@ -54,7 +54,7 @@ export function removedToast(title: string, description: string | undefined, und
 
 /** Applies a change to one item of the form, wherever its section is. */
 export const patchItem = (cur: TemplateContent, itemId: string, fn: (i: FormItem) => FormItem): Partial<TemplateContent> =>
-  ({ form: { sections: (cur.form?.sections ?? []).map((s) => ({ ...s, items: s.items.map((i) => (i.id === itemId ? fn(i) : i.kind === "grupo" ? { ...i, columns: i.columns.map((c) => (c.id === itemId ? fn(c) as ColumnItem : c)) } : i)) })) } })
+  ({ form: { ...cur.form, sections: (cur.form?.sections ?? []).map((s) => ({ ...s, items: s.items.map((i) => (i.id === itemId ? fn(i) : i.kind === "grupo" ? { ...i, columns: i.columns.map((c) => (c.id === itemId ? fn(c) as ColumnItem : c)) } : i)) })) } })
 
 export const ANSWER_SETS = { sim_nao_na: "Sim · Não · N/A", sim_nao: "Sim · Não", confirmo: "Confirmo", lista: "Itens de uma lista" } as const
 

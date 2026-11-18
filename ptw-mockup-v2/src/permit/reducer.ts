@@ -1,11 +1,14 @@
 import { actDenied, deny } from "@/core/permitActs"
 import { dueToExpire, EXPIRE_NOTE, nextPermitNumber, pathIds, permitContentSha256, permitFormOf, railOf, stagePositions } from "@/core/permitView"
 import { planDenied, planSign, returnDenied, signatureBlocker, STAGE, stageOfKind, stateAfterSign } from "@/core/signing"
-import { canStop, planResume, RESUME_VOID_REASON, resendVoidReason, stopEffect } from "@/core/stopResume"
+import { canStop, planResume, resumeCandidates, RESUME_VOID_REASON, resendVoidReason, stopEffect } from "@/core/stopResume"
 import { nonHoldingVersionIds, partOfKindIds } from "@/core/equipmentLock"
-import { answerProblem, formSha256, itemStageId } from "@/core/formRules"
+import { answerProblem, formSha256, itemStageId, permitBlocker } from "@/core/formRules"
+import { personIneligible } from "@/core/eligibility"
 import { DEFAULT_TZ, dayOf, instant } from "@/core/time"
 import { endText, extendDenied, planExtend } from "@/core/extension"
+import { windowLimitDenied } from "@/core/windowLimit"
+import { electricalSequenceDenied, revalidationDenied, type RevalidationInput } from "@/core/electrical"
 import { deniedEvent, extensionEvent, rowEvent, signatureEvent, type AuditCtx, type AuditDraft, type AuditTable, type Row, type RowLookups } from "@/core/audit"
 import type { RuleError } from "@/core/ptwErrors"
 import type { ItemAnswer } from "@/core/form"
@@ -31,6 +34,7 @@ export type PermitAction =
   | { kind: "expire"; permitId: string }
   /** Prorrogar: a later end of the window, with its justification (ptw.permit_extend). */
   | { kind: "extend"; permitId: string; personId: string; newEnd: string; reason: string }
+  | ({ kind: "revalidate"; permitId: string; personId: string } & RevalidationInput)
   /** A captured file: its blob (if new) and the attachment row. Insert only. */
   | { kind: "attach"; permitId: string; personId: string; attachment: PermitAttachment; blob: BlobRec }
 
@@ -63,6 +67,7 @@ function deniedAction(a: PermitAction, p: Permit): string {
     case "expire": return "pt.estado"
     case "attach": return "pt.anexo.incluido"
     case "extend": return "pt.prorrogada"
+    case "revalidate": return "pt.revalidada"
   }
 }
 
@@ -101,7 +106,7 @@ export function permitReducer(data: PermitData, a: PermitAction, ctx: PermitCtx)
   const rail = () => railOf(p, ver, data.signatures, reg.people, reg.locations, today, now)
   const plan = (signerId: string, slotId?: string) => {
     const signer = person(signerId)
-    return signer ? planSign({ permit: p, ver, rail: rail(), permits: data.permits, signer, roleLabel: (id) => id, now, today, serverDown: ctx.serverDown, equipment, people: reg.people, form, pathIds: path, slotId, lists: reg.optionLists }) : null
+    return signer ? planSign({ permit: p, ver, rail: rail(), permits: data.permits, signer, roleLabel: (id) => id, now, today, timezone: tz, serverDown: ctx.serverDown, equipment, people: reg.people, form, pathIds: path, slotId, lists: reg.optionLists }) : null
   }
   const noPerson = deny("PTW08", "Pessoa não elegível: pessoa inexistente")
 
@@ -114,6 +119,8 @@ export function permitReducer(data: PermitData, a: PermitAction, ctx: PermitCtx)
       const denied = actDenied(p, { kind: "answer", stagePos, entregaPos: entrega ? positions[entrega.id] : null }, ctx.serverDown)
         ?? (stageId === null ? deny("PTW15", `Item inexistente no formulário: ${a.itemId}`) : null)
       if (denied) return refuse(denied, { item: a.itemId })
+      const sequenceError = electricalSequenceDenied(form, p.answers, a.itemId)
+      if (sequenceError) return refuse(sequenceError)
       // Checklist lines merge, so two quick taps on different lines never overwrite each other.
       const prev = p.answers[a.itemId]
       const value: ItemAnswer | null = a.value && a.value.t === "verificacao" && prev?.t === "verificacao" ? { t: "verificacao", lines: { ...prev.lines, ...a.value.lines } } : a.value
@@ -256,10 +263,36 @@ export function permitReducer(data: PermitData, a: PermitAction, ctx: PermitCtx)
       return { data: { ...data, permits: replace(np), signatures }, events }
     }
 
+    case "revalidate": {
+      if (ctx.serverDown) return refuse(deny("sem_servidor", "Sem servidor"))
+      const denied = revalidationDenied(p, form, data.signatures, ver.stages.filter((s) => s.kind === "emissao").flatMap((s) => s.slots.map((sl) => sl.id)), a.personId, a, now)
+        ?? windowLimitDenied(ver, p.revalidation?.originalStart ?? p.windowStart, a.newEnd)
+      if (denied) return refuse(denied)
+      if (!resumeCandidates(p, ver, reg.people, reg.locations, today, now).some((c) => c.person.id === a.personId && c.ok)) return refuse(deny("PTW34", "Responsável não elegível"))
+      if (Object.entries(p.team).some(([roleId, ids]) => ids.some((id) => personIneligible(person(id), roleId, path, today, now)))) return refuse(deny("PTW34", "Equipe contém pessoa não elegível"))
+      const fieldPos = ver.stages.findIndex((s) => s.kind === "aceite_campo")
+      const blocker = permitBlocker(form, p.answers, fieldPos, stagePositions(ver), { people: reg.people, pathIds: path, today, now, optionLists: reg.optionLists })
+      if (blocker) return refuse(deny("PTW34", `Revalidação bloqueada: ${blocker}`))
+      const revalidation = { id: newId(), originalStart: p.revalidation?.originalStart ?? p.windowStart, shiftStart: a.shiftStart, shiftEnd: a.shiftEnd, newEnd: a.newEnd, reason: a.reason.trim(), personId: a.personId, at: now }
+      const np = write({ state: "suspensa", windowStart: now, windowEnd: a.newEnd, note: null, resumedReason: a.reason.trim(), resumedBy: a.personId, resumedAt: now, revalidation })
+      const fieldSlots = new Set(ver.stages.filter((s) => s.kind === "aceite_campo").flatMap((s) => s.slots.map((sl) => sl.id)))
+      const events: AuditDraft[] = []
+      const signatures = data.signatures.map((s) => {
+        if (s.permitId !== p.id || s.voidedAt || !fieldSlots.has(s.slotId)) return s
+        const reason = "Revalidação: novo aceite no campo necessário"
+        events.push(signatureEvent(s, meaningOf(s.slotId), reason, audit))
+        return { ...s, voidedAt: now, voidedReason: reason }
+      })
+      const event = permitEvent(np)
+      if (event) events.push({ ...event, action: "pt.revalidada", text: `Revalidou a PT · ${a.reason.trim()}`, data: { ...event.data,
+        turno: { inicio: a.shiftStart, fim: a.shiftEnd }, motivo: a.reason.trim(), condicoes_preservadas: a.conditionsUnchanged, equipe_preservada: a.teamUnchanged, avaliacao_local: a.assessmentConfirmed } })
+      return { data: { ...data, permits: replace(np), signatures }, events }
+    }
+
     case "extend": {
       const who = person(a.personId)
       if (!who) return refuse(noPerson)
-      const ep = planExtend({ permit: p, ver, signer: who, people: reg.people, locations: reg.locations, roleLabel: (id) => id, now, today, serverDown: ctx.serverDown, newEnd: a.newEnd, reason: a.reason })
+      const ep = planExtend({ permit: p, ver, signer: who, people: reg.people, locations: reg.locations, roleLabel: (id) => id, now, today, timezone: tz, serverDown: ctx.serverDown, newEnd: a.newEnd, reason: a.reason })
       const denied = extendDenied(ep)
       if (denied) return refuse(denied)
       const newEnd = instant(a.newEnd, tz)

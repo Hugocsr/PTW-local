@@ -12,6 +12,7 @@ import { emissionSlot, resumeCandidates } from "./stopResume"
 import { rolesText } from "./eligibility"
 import { cmpInstant, dayOf, wallOf } from "./time"
 import { windowLimitDenied } from "./windowLimit"
+import { electricalWindowDenied } from "./electrical"
 
 /** Longest justification of an extension (as Parar and Retomar). */
 export const EXTENSION_REASON_MAX = 500
@@ -41,6 +42,7 @@ export function planExtend(input: {
   roleLabel: (roleId: string) => string
   now: string
   today?: string
+  timezone?: string
   serverDown?: boolean
   newEnd?: string
   reason?: string
@@ -67,8 +69,10 @@ export function planExtend(input: {
     const okInput = later && reason.length > 0 && reason.length <= EXTENSION_REASON_MAX
     const msg = "Prorrogação precisa de justificativa e de um fim depois do atual"
     checks.push({ id: "entrada", ok: okInput, text: okInput ? "Novo fim e justificativa" : msg, ...(okInput ? {} : { deny: deny("PTW33", msg) }) })
-    const limit = later ? windowLimitDenied(ver, permit.windowStart, input.newEnd!) : null
+    const limit = later ? windowLimitDenied(ver, permit.revalidation?.originalStart ?? permit.windowStart, input.newEnd!) : null
     if (limit) checks.push({ id: "prazo", ok: false, text: limit.message, deny: limit })
+    const electrical = input.newEnd ? electricalWindowDenied(ver.form ?? { sections: [] }, { ...permit, windowEnd: input.newEnd }, input.timezone) : null
+    if (electrical) checks.push({ id: "turno", ok: false, text: electrical.message, deny: electrical })
   }
   return { checks, ok: checks.every((c) => c.ok) }
 }

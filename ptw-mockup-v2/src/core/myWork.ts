@@ -55,6 +55,7 @@ interface Input {
   now: string
   /** "AAAA-MM-DD" in the unit's zone; derived from `now` when absent. */
   today?: string
+  timezone?: string
   equipment: Equipment
   /** Frozen forms (`PermitData.formSnapshots`) and the lists a draft's form reads. */
   formSnapshots?: Record<string, FormSpec>
@@ -107,7 +108,7 @@ export function myWork(input: Input, cache?: MyWorkCache): MyWork {
   const nowMs = Date.parse(now)
 
   if (cache) {
-    const globals = [personId, people, locations, templates, equipment.relations, equipment.assets, equipment.partOf.join("|"), formSnapshots, optionLists, roleLabel]
+    const globals = [input.timezone, personId, people, locations, templates, equipment.relations, equipment.assets, equipment.partOf.join("|"), formSnapshots, optionLists, roleLabel]
     if (!sameArray(cache.globals, globals)) { cache.globals = globals; cache.entries.clear(); cache.scan = { permits: null, signatures: null, list: [] }; cache.last = null }
     if (cache.scan.permits !== permits || cache.scan.signatures !== signatures) {
       cache.scan = { permits, signatures, list: permits.filter((p) => mayLand(p, signaturesOf(signatures, p.id))) }
@@ -176,7 +177,7 @@ export function myWork(input: Input, cache?: MyWorkCache): MyWork {
 
   function placeFull(permit: Permit, ver: TemplateVersion, rail: ReturnType<typeof railOf>, resumers: ReturnType<typeof resumeCandidates>, path: string[], author: boolean, crew: boolean, signed: boolean): Placed {
     const progress = stageProgress(rail)
-    const plan = planSign({ permit, ver, rail, permits, signer: me!, roleLabel, now, today, equipment, people, form: permitFormOf(permit, ver, formSnapshots, optionLists), pathIds: path, lists: optionLists })
+    const plan = planSign({ permit, ver, rail, permits, signer: me!, roleLabel, now, today, timezone: input.timezone, equipment, people, form: permitFormOf(permit, ver, formSnapshots, optionLists), pathIds: path, lists: optionLists })
     const mineSlot = !!plan.slot && plan.slot.eligible.some((e) => e.person.id === personId) && !plan.slot.signed.some((g) => g.personId === personId)
     const next = `Aguarda ${nextLabel(permit, rail, people, resumers)}`
     // A signature may accept several cargos: name the one this person holds (else all of them).

@@ -175,11 +175,15 @@ begin
     return new;
   end if;
   perform ptw.draft_owner_check(old.state, old.author_id);
-  if new.state <> old.state and not ptw.can_move(old.state, new.state) then
+  if new.state <> old.state and not ptw.can_move(old.state, new.state)
+     and not (new.state = 'suspensa' and exists (select 1 from ptw.permit_revalidation r
+       where r.unit_id = new.unit_id and r.permit_id = new.id and r.at = now() and r.old_window = old.work_window and r.new_window = new.work_window)) then
     raise exception 'Mudança de estado não permitida: % → %', ptw.state_label(old.state), ptw.state_label(new.state)
       using errcode = 'PTW05';
   end if;
   if new.work_window is distinct from old.work_window and old.state not in ('rascunho', 'devolvida', 'em_analise')
+     and not exists (select 1 from ptw.permit_revalidation r where r.unit_id = new.unit_id and r.permit_id = new.id
+       and r.at = now() and r.old_window = old.work_window and r.new_window = new.work_window)
      and (lower(new.work_window) <> lower(old.work_window)
           or not exists (select 1 from ptw.permit_extension e
                           where e.unit_id = new.unit_id and e.permit_id = new.id and e.at = now()
@@ -189,6 +193,7 @@ begin
   if (new.state <> old.state and new.state in ('em_analise', 'emitida'))
      or (new.work_window is distinct from old.work_window and old.state not in ('rascunho', 'devolvida')) then
     perform ptw.window_check(new.unit_id, new.version_id, new.work_window);
+    perform ptw.electrical_window_check(new.unit_id, new.id, new.work_window);
   end if;
   -- A versão decide a trava de equipamento (holds_equipment): depois do rascunho ela não muda.
   if old.state <> 'rascunho' and (new.version_id, new.template_id) is distinct from (old.version_id, old.template_id) then
@@ -702,7 +707,9 @@ begin
     end if;
   end if;
   if resume then
-    if old.hold_reason is null and not (old.state = 'suspensa' and old.resumed_at is null) then
+    if old.hold_reason is null and not (old.state = 'suspensa' and old.resumed_at is null)
+      and not exists (select 1 from ptw.permit_revalidation r where r.unit_id = new.unit_id and r.permit_id = new.id
+        and r.at = now() and r.person_id = me and r.new_window = new.work_window) then
       raise exception 'Não há parada a retomar' using errcode = 'PTW26';
     end if;
     if old.resumed_at is null and new.resumed_at is not null and new.resumed_by is distinct from me then
@@ -768,6 +775,7 @@ begin
     raise exception 'Prorrogação precisa de justificativa e de um fim depois do atual' using errcode = 'PTW33';
   end if;
   perform ptw.window_check(new.unit_id, pm.version_id, tstzrange(lower(pm.work_window), new.new_end));
+  perform ptw.electrical_window_check(new.unit_id, new.permit_id, tstzrange(lower(pm.work_window), new.new_end));
   new.reason := btrim(new.reason); new.person_id := me; new.old_end := upper(pm.work_window);
   new.revision := pm.revision; new.at := now();
   return new;

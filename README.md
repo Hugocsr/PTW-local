@@ -24,6 +24,8 @@ Para conferir o frontend, rode `npm.cmd run check` e `npm.cmd run build` em `ptw
 
 ## Imagem única e implantação na Vercel
 
+A preparação da versão NR-10 de 18/11/2026 está no [roteiro de publicação de homologação](deploy/releases/2026-11-18-nr10.md), incluindo verificação do banco, destino Git/Preview e reversão. Os dados e modelos cadastrados localmente não são transportados pelo Git.
+
 `Dockerfile.vercel` gera uma imagem com a interface, Caddy e a API Fastify. O navegador acessa a interface e a API no mesmo endereço. A Vercel termina o HTTPS. O laboratório local continua disponível pelo Compose para testar com OpenLDAP e dados fictícios.
 
 1. Prepare um PostgreSQL de homologação com o esquema de `ptw-server/db/schema`, a unidade e um papel de aplicação com os privilégios do `ptw_api`. Use o [script de inicialização](ptw-server/db/init.sh) como referência e valide as extensões, papéis e a conexão direta com TLS. A API usa `LISTEN`, então a conexão precisa preservar a sessão do PostgreSQL.
@@ -48,5 +50,7 @@ Para construir localmente, execute `docker build -f Dockerfile.vercel -t ptw-sgi
 Para usar Supabase a partir de uma rede IPv4, use o **Session pooler**, na porta `5432`. Configure `PTW_DB_HOST` com o host exibido no painel **Connect**, `PTW_DB_USER` com o nome do papel seguido de um ponto e da referência do projeto, e `PTW_DB_NAME` com o nome do banco provisionado. Baixe a CA em **Database Settings → SSL Configuration** e cole o PEM em `PTW_DB_CA_PEM`.
 
 Para homologar sem um diretório externo, configure `PTW_LDAP_MODE=preview` e uma senha de pelo menos 20 caracteres em `PTW_PREVIEW_LOGIN_PASSWORD` como segredo do Preview. Cadastre `marina.costa` na unidade de homologação no banco. A imagem inicia um OpenLDAP de teste em loopback, com TLS, e o login passa pela mesma API usada com LDAP externo. O contêiner recusa esse modo fora do ambiente Preview da Vercel.
+
+Para o fluxo com pessoas distintas, `PTW_PREVIEW_USERS_JSON` pode conter as senhas individuais dos logins fictícios `rafael.nunes` e `paulo.lima`. Cada senha exige pelo menos 20 caracteres e deve diferir das demais, inclusive da senha de Marina. O valor fica somente nos segredos do Preview. Apenas Marina recebe os grupos administrativos; cargos e escopos de assinatura continuam no cadastro. Sem essa variável, o acesso de Marina permanece compatível com a configuração anterior. Ver [spec validada da publicação](fabrica/specs/publicacao-nr10-homologacao.md).
 
 Antes de publicar no Git, confira `git status --short` e revise o primeiro commit. Os segredos, arquivos de ambiente e certificados gerados no laboratório ficam fora do repositório. Configure manutenção, backups e verificação da auditoria no ambiente de operação conforme o [guia](ptw-server/OPERACAO.md).

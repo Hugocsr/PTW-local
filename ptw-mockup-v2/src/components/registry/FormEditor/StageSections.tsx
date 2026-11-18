@@ -17,7 +17,7 @@ import { InlineName, KINDS, KindIcon, blockCount, conditionText, insertAt, itemM
 /** The sections filled in one stage, edited inside that stage's card in the Fluxo editor. */
 export function StageSections({ tpl, set, stageId, stageName }: { tpl: TemplateContent; set: SetTpl; stageId: string; stageName: string }) {
   const form: FormSpec = tpl.form ?? { sections: [] }
-  const setForm = (sections: FormSection[]) => set({ form: { sections } })
+  const setForm = (sections: FormSection[]) => set({ form: { ...tpl.form, sections } })
   /** A section without a stage (from the database or a file) is shown, and filled, with the first stage. */
   const inStage = (s: FormSection, id: string) => s.stageId === id || (s.stageId === undefined && id === tpl.stages[0]?.id)
   const mine = form.sections.filter((s) => inStage(s, stageId))
@@ -54,7 +54,7 @@ export function StageSections({ tpl, set, stageId, stageName }: { tpl: TemplateC
             const at = form.sections.findIndex((x) => x.id === s.id)
             setForm(form.sections.filter((x) => x.id !== s.id))
             // A section with questions was confirmed first; an empty one goes at once, with "Desfazer".
-            if (s.items.length === 0) removedToast("Seção removida", s.title.trim(), () => set((cur) => ({ form: { sections: insertAt(cur.form?.sections ?? [], at, s) } })))
+            if (s.items.length === 0) removedToast("Seção removida", s.title.trim(), () => set((cur) => ({ form: { ...cur.form, sections: insertAt(cur.form?.sections ?? [], at, s) } })))
           }}
           onMove={(d) => {
             const i = form.sections.findIndex((x) => x.id === s.id)
@@ -140,7 +140,7 @@ function SectionEditor({ section, number, canUp, canDown, onChange, onRemove, on
           const remove = () => {
             setItems(section.items.filter((x) => x.id !== item.id))
             if (expanded) setOpen(null)
-            removedToast("Item removido", name, () => setTpl((cur) => ({ form: { sections: (cur.form?.sections ?? []).map((s) => (s.id === section.id ? { ...s, items: insertAt(s.items, i, item) } : s)) } })))
+            removedToast("Item removido", name, () => setTpl((cur) => ({ form: { ...cur.form, sections: (cur.form?.sections ?? []).map((s) => (s.id === section.id ? { ...s, items: insertAt(s.items, i, item) } : s)) } })))
           }
           return (
             <li key={item.id}>

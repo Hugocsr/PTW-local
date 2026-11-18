@@ -9,7 +9,7 @@ export type PtwCode =
   | "PTW01" | "PTW02" | "PTW03" | "PTW04" | "PTW05" | "PTW06" | "PTW07" | "PTW08" | "PTW09" | "PTW10"
   | "PTW11" | "PTW12" | "PTW13" | "PTW14" | "PTW15" | "PTW16" | "PTW17" | "PTW18" | "PTW19" | "PTW20"
   | "PTW21" | "PTW22" | "PTW23" | "PTW24" | "PTW25" | "PTW26" | "PTW27" | "PTW28" | "PTW29" | "PTW30"
-  | "PTW31" | "PTW32" | "PTW33"
+  | "PTW31" | "PTW32" | "PTW33" | "PTW34"
   | "42501" | "23503" | "23505" | "23514"
 
 /**
@@ -57,6 +57,7 @@ export const PTW_MESSAGE: Record<PtwCode, string> = {
   PTW31: "A janela passa do prazo máximo deste modelo",
   PTW32: "Só quem pode emitir esta PT prorroga",
   PTW33: "Prorrogação não permitida",
+  PTW34: "Controle elétrico ou revalidação não atendido",
   "42501": "Sem permissão",
   "23503": "Registro em uso ou inexistente",
   "23505": "Já existe um registro igual",

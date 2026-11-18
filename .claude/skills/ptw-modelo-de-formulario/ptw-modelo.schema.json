@@ -123,6 +123,98 @@
           "minLength": 1,
           "maxLength": 120
         },
+        "politica_eletrica": {
+          "description": "Controles elétricos versionados; referências aos itens do pacote, preservadas na importação.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "standard",
+            "procedure",
+            "riskAssessment",
+            "authorizations",
+            "workKind",
+            "isolation",
+            "restoration"
+          ],
+          "properties": {
+            "standard": {
+              "enum": [
+                "vigente2019",
+                "preparacao2027"
+              ]
+            },
+            "procedure": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "riskAssessment": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "authorizations": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "workKind": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "isolation": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "minItems": 1
+            },
+            "restoration": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "minItems": 1
+            },
+            "shift": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "startDate",
+                "startTime",
+                "endDate",
+                "endTime"
+              ],
+              "properties": {
+                "startDate": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "startTime": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "endDate": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "endTime": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              }
+            }
+          }
+        },
         "nome_original": {
           "type": "string",
           "minLength": 1

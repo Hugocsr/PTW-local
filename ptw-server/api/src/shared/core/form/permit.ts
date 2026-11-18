@@ -23,6 +23,7 @@ export function stageGate(form: FormSpec | undefined, stageId: string, answers: 
  */
 export function freezeForm(form: FormSpec | undefined, lists: OptionList[]): FormSpec {
   return {
+    ...(form?.electrical ? { electrical: structuredClone(form.electrical) } : {}),
     sections: (form?.sections ?? []).map((s) => ({
       ...s,
       items: s.items.map((i) => (i.kind === "grupo" ? { ...i, columns: i.columns.map((c) => freezeItem(c, lists)) } : freezeItem(i, lists))),

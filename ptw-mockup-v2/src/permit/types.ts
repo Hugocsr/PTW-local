@@ -46,6 +46,19 @@ export interface Permit {
   updatedAt: string
   /** Optimistic concurrency (`row_version`): +1 at every write. Not the signed revision. */
   rowVersion: number
+  /** Most recent immutable shift revalidation; previous records remain in the audit trail. */
+  revalidation?: PermitRevalidation | null
+}
+
+export interface PermitRevalidation {
+  id: string
+  originalStart?: string
+  shiftStart: string
+  shiftEnd: string
+  newEnd: string
+  reason: string
+  personId: string
+  at: string
 }
 
 /** `ptw.signature`: never changes nor disappears; it can only be voided, once, with a reason. */

@@ -140,3 +140,5 @@ Em poucas linhas, em português:
 - as regras do modelo que você decidiu (prende ou não o equipamento, prazo máximo, escopo) e por quê, em uma linha cada;
 - pendências, uma por linha, começando pelas que impedem ativar (lista vazia, assinatura sem cargo, escopo vazio);
 - **lembrete**: importar no app (Configuração › Modelos), revisar item a item contra o papel, resolver as pendências e só então uma pessoa **ativa** a versão. O pacote nunca ativa nada.
+
+`modelo.politica_eletrica` é extensão opcional para preservar os controles NR-10 de um modelo existente: base `vigente2019`/`preparacao2027`, refs documentais, classificação, sequências e turno. Não inferir política nem procedimento técnico de informações ausentes no documento. O pacote sempre importa como rascunho sujeito à revisão humana.

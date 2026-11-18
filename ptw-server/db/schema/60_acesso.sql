@@ -426,7 +426,7 @@ begin
     'type_def', 'location', 'asset', 'asset_location', 'asset_relation', 'asset_part', 'person', 'person_role',
     'option_list', 'option_item', 'template', 'template_version', 'version_location_type', 'version_asset_type',
     'stage', 'sign_slot', 'separation', 'form_snapshot', 'permit_counter', 'permit', 'permit_asset', 'permit_team',
-    'permit_answer', 'blob', 'attachment', 'permit_revision', 'permit_extension', 'signature',
+    'permit_answer', 'blob', 'attachment', 'permit_revision', 'permit_extension', 'permit_revalidation', 'signature',
     'api_session', 'api_idempotency', 'login_attempt',
     'audit_event', 'audit_head', 'audit_anchor', 'audit_export', 'audit_archive']
   loop
@@ -476,7 +476,7 @@ grant insert, update, delete on
 grant insert, update on ptw.permit, ptw.permit_counter to ptw_app;
 grant insert, update, delete on ptw.permit_asset, ptw.permit_team, ptw.permit_answer to ptw_app;
 -- Somente inclusão.
-grant insert on ptw.form_snapshot, ptw.blob, ptw.attachment, ptw.permit_revision, ptw.permit_extension to ptw_app;
+grant insert on ptw.form_snapshot, ptw.blob, ptw.attachment, ptw.permit_revision, ptw.permit_extension, ptw.permit_revalidation to ptw_app;
 -- Assinatura: inclui; da linha, só anula.
 grant insert, update (voided_at, voided_reason) on ptw.signature to ptw_app;
 -- Sessão: inclui, renova e encerra; idempotência: reserva e guarda a resposta. Nunca apaga.

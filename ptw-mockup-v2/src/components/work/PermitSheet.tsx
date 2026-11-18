@@ -58,6 +58,7 @@ export function PermitSheet({ permit, form, rail, registry, tplName, versionNumb
       {!blank && permit.holdReason !== null && (
         <p className="sheet-stop">Trabalho parado{permit.holdAt ? ` em ${dmHms(permit.holdAt)}` : ""}: {permit.holdReason}</p>
       )}
+      {!blank && permit.revalidation && <p className="sheet-stop">Revalidação de turno em {dmHms(permit.revalidation.at)} · {person(permit.revalidation.personId)} · turno de {dmHms(permit.revalidation.shiftStart)} a {dmHms(permit.revalidation.shiftEnd)} · {permit.revalidation.reason}. Confira o novo aceite no campo.</p>}
 
       <dl className="sheet-ident">
         <div className="sheet-c4 sheet-main"><dt>Serviço</dt><dd>{permit.scope}</dd></div>

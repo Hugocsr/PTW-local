@@ -422,6 +422,7 @@ begin
     ['permit_team',           'pt.equipe.incluida',             'pt.equipe.alterada',               'pt.equipe.removida',               'Equipe',               'person_id'],
     ['permit_answer',         'pt.resposta',                    'pt.resposta',                      'pt.resposta.removida',             'Resposta',             'permit_id'],
     ['attachment',            'pt.anexo.incluido',              'pt.anexo.alterado',                'pt.anexo.removido',                'Anexo',                'id'],
+    ['permit_revalidation',   'pt.revalidada',                   'pt.revalidada',                    'pt.revalidada',                    'Revalidação',          'id'],
     ['permit_revision',       'pt.revisao',                     'pt.revisao',                       'pt.revisao',                       'Revisão',              'permit_id']]
   loop
     execute format('create trigger audit_row after insert or update or delete on ptw.%I for each row '

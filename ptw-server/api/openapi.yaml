@@ -62,7 +62,7 @@ security:
 x-ptw-error-map:
   description: "Classe de erro (SQLSTATE do banco ou código da API) → status HTTP."
   "422":
-    - "PTW01–PTW09, PTW11, PTW15–PTW33 (recusa de regra; a mensagem é a do banco)"
+    - "PTW01–PTW09, PTW11, PTW15–PTW34 (recusa de regra; a mensagem é a do banco)"
     - "23514 (restrição de coluna)"
     - "PTA08 (Idempotency-Key reutilizada com outro corpo)"
     - "PTA09 (arquivo: SHA-256 ou tamanho não confere com o enviado)"
@@ -1112,6 +1112,27 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "4XX": { $ref: "#/components/responses/Error" }
 
+  /permits/{id}/revalidations:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    post:
+      tags: [pt]
+      operationId: revalidatePermit
+      summary: "Revalidar para um turno, com avaliação local e novo aceite no campo."
+      x-ptw-codes: [PTW34, PTW31]
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }, { $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RevalidationInput" }
+      responses:
+        "200": { $ref: "#/components/responses/PermitOk" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
+
   # ------------------------------------------------------------------ anexos
   /blobs/{sha256}:
     parameters: [{ name: sha256, in: path, required: true, schema: { $ref: "#/components/schemas/Sha256" } }]
@@ -1817,12 +1838,58 @@ components:
         title: { type: string }
         stageId: { $ref: "#/components/schemas/Uuid" }
         items: { type: array, items: { $ref: "#/components/schemas/FormItem" } }
+    ElectricalPolicy:
+      type: object
+      additionalProperties: false
+      required: [standard, procedure, riskAssessment, authorizations, workKind, isolation, restoration]
+      properties:
+        standard: { type: string, enum: [vigente2019, preparacao2027] }
+        procedure: { type: string }
+        riskAssessment: { type: string }
+        authorizations: { type: string }
+        workKind: { type: string }
+        isolation: { type: array, minItems: 1, uniqueItems: true, items: { type: string } }
+        restoration: { type: array, minItems: 1, uniqueItems: true, items: { type: string } }
+        shift:
+          type: object
+          additionalProperties: false
+          required: [startDate, startTime, endDate, endTime]
+          properties:
+            startDate: { type: string }
+            startTime: { type: string }
+            endDate: { type: string }
+            endTime: { type: string }
+    RevalidationInput:
+      type: object
+      additionalProperties: false
+      required: [shiftStart, shiftEnd, newEnd, reason, conditionsUnchanged, teamUnchanged, assessmentConfirmed]
+      properties:
+        shiftStart: { type: string, format: date-time }
+        shiftEnd: { type: string, format: date-time }
+        newEnd: { type: string, format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        conditionsUnchanged: { type: boolean }
+        teamUnchanged: { type: boolean }
+        assessmentConfirmed: { type: boolean }
+    PermitRevalidation:
+      type: object
+      required: [id, shiftStart, shiftEnd, newEnd, reason, personId, at]
+      properties:
+        originalStart: { type: string, format: date-time }
+        id: { $ref: "#/components/schemas/Uuid" }
+        shiftStart: { type: string, format: date-time }
+        shiftEnd: { type: string, format: date-time }
+        newEnd: { type: string, format: date-time }
+        reason: { type: string }
+        personId: { $ref: "#/components/schemas/Uuid" }
+        at: { type: string, format: date-time }
     FormSpec:
       type: object
       additionalProperties: false
       required: [sections]
       properties:
         sections: { type: array, items: { $ref: "#/components/schemas/FormSection" } }
+        electrical: { $ref: "#/components/schemas/ElectricalPolicy" }
     TemplateContent:
       type: object
       required: [locationTypeIds, assetTypeIds, stages, separation]
@@ -1998,6 +2065,7 @@ components:
       description: "A linha de `ptw.permit`, sem as respostas (`Permit` do app menos `answers` e `answerMeta`)."
       required: [id, number, templateId, versionId, state, authorId, locationId, assetIds, team, windowStart, windowEnd, scope, snapshotSha256, snapshotAt, revision, note, holdReason, holdBy, holdAt, resumedReason, resumedBy, resumedAt, createdAt, updatedAt, rowVersion]
       properties:
+        revalidation: { oneOf: [{ $ref: "#/components/schemas/PermitRevalidation" }, { type: "null" }] }
         id: { $ref: "#/components/schemas/Uuid" }
         number: { type: [string, "null"], examples: [PT-UN01-2026-00012] }
         templateId: { $ref: "#/components/schemas/Uuid" }

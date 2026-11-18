@@ -3,6 +3,7 @@
  * The package `ptw.modelo/1` as TypeScript, and what an import returns.
  */
 import type { AttachKind, FormItemKind, Location, OptionList, Person, PermitTemplate, StageKind, TemplateVersion, TypeDef } from "@/registry/types"
+import type { ElectricalPolicy } from "../electrical.ts"
 
 export const FORMATO = "ptw.modelo/1"
 
@@ -84,7 +85,7 @@ export interface PacoteModelo {
    * `prende_equipamento`: the model's PTs take part in the equipment lock (absent = true); false for a
    * permit that coexists with another open PT on the same equipment (e.g. disabling an interlock).
    */
-  modelo: { nome: string; nome_original?: string; descricao?: string; prazo_maximo_horas?: number; prende_equipamento?: boolean; escopo: { tipos_de_local: string[]; tipos_de_ativo: string[] } }
+  modelo: { nome: string; nome_original?: string; descricao?: string; prazo_maximo_horas?: number; prende_equipamento?: boolean; politica_eletrica?: ElectricalPolicy; escopo: { tipos_de_local: string[]; tipos_de_ativo: string[] } }
   listas: ListaPacote[]
   etapas: EtapaPacote[]
   separacoes: SeparacaoPacote[]

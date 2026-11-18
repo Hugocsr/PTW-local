@@ -1644,13 +1644,13 @@ reset role;
 select t.expect('23514', 'tipo do sistema: nem o dono remove', $$delete from ptw.type_def where id = t.id('a5')$$);
 select t.check((select system_key = 'parte_de' from ptw.type_def where id = t.id('a5')), 'tipo do sistema: continua com a chave');
 
--- Os códigos PTW que o esquema levanta são exatamente os da tabela do README (PTW01–PTW33).
+-- Os códigos PTW que o esquema levanta são exatamente os da tabela do README (PTW01–PTW34).
 -- Código novo: entra no esquema, no README, em db/MODELO.md e aqui (e db/tests/ptw_codes.sh confere o README).
 select t.check((select array_agg(distinct c order by c) from (
                   select (regexp_matches(p.prosrc, 'errcode\s*=\s*''(PTW\d\d)''', 'g'))[1] as c
                     from pg_proc p where p.pronamespace = 'ptw'::regnamespace) x)
-               = (select array_agg('PTW' || lpad(g::text, 2, '0') order by g) from generate_series(1, 33) g),
-               'códigos PTW do esquema = tabela do README (PTW01–PTW33)');
+               = (select array_agg('PTW' || lpad(g::text, 2, '0') order by g) from generate_series(1, 34) g),
+               'códigos PTW do esquema = tabela do README (PTW01–PTW34)');
 
 -- Âncora, adulteração de um byte e reescrita completa.
 select t.check(ptw.audit_verify(:U) is null, 'cadeia íntegra');
@@ -1686,6 +1686,111 @@ update ptw.audit_head h set last_hash = b.last_hash from bakhead b where h.unit_
 alter table ptw.audit_event enable always trigger audit_frozen;
 alter event trigger audit_ddl_end enable always;
 select t.check(ptw.audit_verify(:U) is null and not exists (select 1 from ptw.audit_check(:U)), 'trilha restaurada');
+
+-- Run by invariants.sql on a disposable database; a separate unit keeps fixtures independent.
+reset role;
+insert into ptw.unit(id,code,name) values(t.id('ee01'),'UN-EL','Ensaios NR-10');
+select set_config('ptw.unit_id',t.id('ee01')::text,false);
+select set_config('ptw.person_id','',false);
+insert into ptw.type_def(unit_id,id,family,label) values
+(t.id('ee01'),t.id('ee11'),'local','Sala'),(t.id('ee01'),t.id('ee12'),'ativo','Painel'),(t.id('ee01'),t.id('ee13'),'cargo','Autorizado');
+insert into ptw.location(unit_id,id,type_id,code,name) values(t.id('ee01'),t.id('ee21'),t.id('ee11'),'EL','Sala de ensaio');
+insert into ptw.asset(unit_id,id,type_id,code,name) values(t.id('ee01'),t.id('ee41'),t.id('ee12'),'EL-01','Painel de ensaio');
+insert into ptw.person(unit_id,id,name,login) values
+(t.id('ee01'),t.id('ee31'),'Solicitante','el.tech'),(t.id('ee01'),t.id('ee32'),'Emitente','el.issuer'),(t.id('ee01'),t.id('ee33'),'Líder','el.leader');
+insert into ptw.person_role(unit_id,person_id,role_id,valid_until)
+select t.id('ee01'),t.id(x),t.id('ee13'),current_date+365 from unnest(array['ee31','ee32','ee33']) x;
+insert into ptw.template(unit_id,id,name) values(t.id('ee01'),t.id('ee100'),'Teste NR-10');
+create function t.el_form() returns jsonb language sql immutable return $json${"electrical": {"standard": "preparacao2027", "procedure": "proc", "riskAssessment": "apr", "authorizations": "auth", "workKind": "kind", "isolation": ["iso1", "iso2"], "restoration": ["ret1", "ret2"], "shift": {"startDate": "sd", "startTime": "st", "endDate": "ed", "endTime": "et"}}, "sections": [{"id": "request", "title": "Planejamento", "stageId": "00000000-0000-7000-8000-0000000ee110", "items": [{"id": "proc", "label": "proc", "kind": "documento", "required": true, "attach": true, "validity": true}, {"id": "apr", "label": "apr", "kind": "documento", "required": true, "attach": true, "validity": true}, {"id": "auth", "label": "auth", "kind": "documento", "required": true, "attach": true, "validity": true}, {"id": "kind", "kind": "marcacao", "label": "Classificação", "required": true, "multiple": false, "other": false, "options": [{"id": "rotineiro", "label": "Rotineiro"}, {"id": "nao_rotineiro", "label": "Não rotineiro"}]}, {"id": "sd", "label": "sd", "required": true, "kind": "data", "notBeforeToday": false}, {"id": "ed", "label": "ed", "required": true, "kind": "data", "notBeforeToday": false}, {"id": "st", "label": "st", "required": true, "kind": "horario", "seconds": false}, {"id": "et", "label": "et", "required": true, "kind": "horario", "seconds": false}]}, {"id": "prep", "title": "Preparação", "stageId": "00000000-0000-7000-8000-0000000ee111", "items": [{"id": "iso1", "label": "iso1", "kind": "verificacao", "required": true, "answers": "sim_nao", "lines": [{"id": "ok", "label": "iso1", "blockOn": ["nao"], "noteOn": []}]}, {"id": "iso2", "label": "iso2", "kind": "verificacao", "required": true, "answers": "sim_nao", "lines": [{"id": "ok", "label": "iso2", "blockOn": ["nao"], "noteOn": []}]}]}, {"id": "return", "title": "Reenergização", "stageId": "00000000-0000-7000-8000-0000000ee115", "items": [{"id": "ret1", "label": "ret1", "kind": "verificacao", "required": true, "answers": "sim_nao", "lines": [{"id": "ok", "label": "ret1", "blockOn": ["nao"], "noteOn": []}]}, {"id": "ret2", "label": "ret2", "kind": "verificacao", "required": true, "answers": "sim_nao", "lines": [{"id": "ok", "label": "ret2", "blockOn": ["nao"], "noteOn": []}]}]}]}$json$::jsonb;
+insert into ptw.template_version(unit_id,id,template_id,number,form,max_window)
+values(t.id('ee01'),t.id('ee101'),t.id('ee100'),1,t.el_form(),interval '8 hours');
+insert into ptw.stage(unit_id,id,version_id,position,name,kind,locked)
+select t.id('ee01'),t.id('ee11'||n),t.id('ee101'),n,label,kind::ptw.stage_kind,kind is not null from (values
+(0,'Solicitação','solicitacao'),(1,'Preparação',null),(2,'Emissão','emissao'),(3,'Aceite no campo','aceite_campo'),(4,'Entrega','entrega'),(5,'Aceite da área','aceite_area')) s(n,label,kind);
+insert into ptw.sign_slot(unit_id,id,version_id,stage_id,position,meaning,role_ids)
+select t.id('ee01'),t.id('ee21'||n),t.id('ee101'),t.id('ee11'||n),0,'Assina '||n,array[t.id('ee13')] from generate_series(0,5) n;
+insert into ptw.separation(unit_id,version_id,slot_a,slot_b,locked) values(t.id('ee01'),t.id('ee101'),t.id('ee212'),t.id('ee213'),true);
+select ptw.version_activate(t.id('ee01'),t.id('ee101'));
+select t.check(ptw.electrical_policy_problem(t.el_form()) is null,'NR10: política válida');
+select t.check(ptw.electrical_policy_problem(jsonb_set(t.el_form(),'{electrical,isolation}','[]')) is not null,'NR10: sequência vazia recusada');
+select t.check(ptw.electrical_policy_problem(t.el_form() #- '{electrical,shift}') is not null,'NR10: turno obrigatório no modelo 2027');
+select t.check(ptw.electrical_policy_problem(jsonb_set(t.el_form(),'{electrical,standard}','"vigente2019"') #- '{electrical,shift}') is null,'NR10: base vigente sem obrigação nova de turno');
+set role ptw_api_test;
+select set_config('ptw.person_id',t.id('ee31')::text,false);
+insert into ptw.permit(unit_id,id,template_id,version_id,author_id,location_id,work_window,scope)
+values(t.id('ee01'),t.id('ee301'),t.id('ee100'),t.id('ee101'),t.id('ee31'),t.id('ee21'),tstzrange(now()-interval '30 min',now()+interval '1 hour','[)'),'Intervenção elétrica');
+insert into ptw.permit_asset(unit_id,permit_id,asset_id) values(t.id('ee01'),t.id('ee301'),t.id('ee41'));
+insert into ptw.permit_team(unit_id,permit_id,person_id,role_id) select t.id('ee01'),t.id('ee301'),t.id(x),t.id('ee13') from unnest(array['ee31','ee32','ee33']) x;
+select t.expect('PTW34','NR10: envio sem turno recusado',$$select ptw.permit_submit(t.id('ee01'),t.id('ee301'))$$);
+insert into ptw.permit_answer(unit_id,permit_id,item_id,value,answered_by)
+select t.id('ee01'),t.id('ee301'),id,jsonb_build_object('t',kind,'v',v),t.id('ee31') from (values
+('sd','data',to_char((now()-interval '1 hour') at time zone 'America/Sao_Paulo','YYYY-MM-DD')),
+('st','horario',to_char((now()-interval '1 hour') at time zone 'America/Sao_Paulo','HH24:MI')),
+('ed','data',to_char((now()+interval '2 hour') at time zone 'America/Sao_Paulo','YYYY-MM-DD')),
+('et','horario',to_char((now()+interval '2 hour') at time zone 'America/Sao_Paulo','HH24:MI'))) a(id,kind,v);
+select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'kind','{"t":"marcacao","ids":["nao_rotineiro"]}');
+select t.expect('PTW16','NR10: documentos ausentes impedem envio',$$select ptw.permit_submit(t.id('ee01'),t.id('ee301'))$$);
+insert into ptw.blob(unit_id,sha256,size,mime) values(t.id('ee01'),decode(repeat('ab',32),'hex'),1,'application/pdf');
+insert into ptw.attachment(unit_id,id,permit_id,item_id,kind,sha256,file_name,captured_by)
+select t.id('ee01'),t.id('ee5'||n),t.id('ee301'),i,'arquivo',decode(repeat('ab',32),'hex'),'FICTICIO.pdf',t.id('ee31') from (values(0,'proc'),(1,'apr'),(2,'auth')) a(n,i);
+insert into ptw.permit_answer(unit_id,permit_id,item_id,value,answered_by)
+select t.id('ee01'),t.id('ee301'),i,jsonb_build_object('t','documento','code',i||'-REV02','files',jsonb_build_array(t.id('ee5'||n)),'validUntil',(current_date+365)::text),t.id('ee31') from (values(0,'proc'),(1,'apr'),(2,'auth')) a(n,i);
+delete from ptw.permit_team where unit_id=t.id('ee01') and permit_id=t.id('ee301');
+select t.expect('PTW34','NR10: equipe vazia impede envio',$$select ptw.permit_submit(t.id('ee01'),t.id('ee301'))$$);
+insert into ptw.permit_team(unit_id,permit_id,person_id,role_id) select t.id('ee01'),t.id('ee301'),t.id(x),t.id('ee13') from unnest(array['ee31','ee32','ee33']) x;
+update ptw.person_role set valid_until=current_date-1 where unit_id=t.id('ee01') and person_id=t.id('ee33');
+select t.expect('PTW34','NR10: autorização vencida de integrante impede envio',$$select ptw.permit_submit(t.id('ee01'),t.id('ee301'))$$);
+update ptw.person_role set valid_until=current_date+365 where unit_id=t.id('ee01') and person_id=t.id('ee33');
+select ptw.permit_submit(t.id('ee01'),t.id('ee301'));
+select t.expect('PTW34','NR10: não pula isolamento',$$select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'iso2','{"t":"verificacao","lines":{"ok":{"a":"sim"}}}')$$);
+select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'iso1','{"t":"verificacao","lines":{"ok":{"a":"nao"}}}');
+select t.expect('PTW34','NR10: passo negativo bloqueia o próximo',$$select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'iso2','{"t":"verificacao","lines":{"ok":{"a":"sim"}}}')$$);
+select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'iso1','{"t":"verificacao","lines":{"ok":{"a":"sim"}}}');
+select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'iso2','{"t":"verificacao","lines":{"ok":{"a":"sim"}}}');
+select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee211'),1);
+select set_config('ptw.person_id',t.id('ee32')::text,false);
+select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee212'),1);
+select set_config('ptw.person_id',t.id('ee33')::text,false);
+select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee213'),1);
+select t.check((select ptw.work_released(p) from ptw.permit p where id=t.id('ee301')),'NR10: trabalho ativo dentro do turno');
+select set_config('ptw.person_id',t.id('ee32')::text,false);
+select t.expect('PTW34','NR10: prorrogação além do turno recusada',$$select ptw.permit_extend(t.id('ee01'),t.id('ee301'),now()+interval '3 hour','Mais tempo')$$);
+select t.expect('PTW31','NR10: revalidar não reinicia prazo máximo',$$select ptw.permit_revalidate(t.id('ee01'),t.id('ee301'),now()-interval '1 hour',now()+interval '10 hour',now()+interval '9 hour','Reavaliação',true,true,true)$$);
+select t.expect('PTW34','NR10: mudança de equipe exige nova PT',$$select ptw.permit_revalidate(t.id('ee01'),t.id('ee301'),now()-interval '1 hour',now()+interval '4 hour',now()+interval '3 hour','Reavaliação',true,false,true)$$);
+select set_config('ptw.person_id',t.id('ee31')::text,false);
+select t.expect('PTW34','NR10: outro autorizador recusado',$$select ptw.permit_revalidate(t.id('ee01'),t.id('ee301'),now()-interval '1 hour',now()+interval '4 hour',now()+interval '3 hour','Reavaliação',true,true,true)$$);
+reset role;
+set session_replication_role=replica;
+update ptw.permit set work_window=tstzrange(now()-interval '2 hour',now()-interval '1 hour','[)') where id=t.id('ee301');
+set session_replication_role=origin;
+set role ptw_api_test;
+select ptw.expire_due(t.id('ee01'));
+select t.check((select state='expirada' and not ptw.work_released(p) from ptw.permit p where id=t.id('ee301')),'NR10: fim da validade interrompe liberação');
+select set_config('ptw.person_id',t.id('ee32')::text,false);
+select ptw.permit_revalidate(t.id('ee01'),t.id('ee301'),now()-interval '1 hour',now()+interval '4 hour',now()+interval '3 hour','Reavaliação no local',true,true,true);
+select t.check((select state='suspensa' and not ptw.work_released(p) from ptw.permit p where id=t.id('ee301')),'NR10: revalidação aguarda novo aceite');
+select t.check((select count(*)=1 and bool_and(voided_at is not null) from ptw.signature where permit_id=t.id('ee301') and slot_id=t.id('ee213')),'NR10: aceite anterior anulado');
+select t.check((select count(*)=1 and bool_and(person_id=t.id('ee32') and octet_length(team_sha256)=32) from ptw.permit_revalidation where permit_id=t.id('ee301')),'NR10: autoria e equipe da revalidação preservadas');
+select t.check((select count(*)=1 from ptw.audit_event where unit_id=t.id('ee01') and action='pt.revalidada'),'NR10: revalidação na trilha');
+select t.expect('42501','NR10: API não apaga revalidação',$$delete from ptw.permit_revalidation where permit_id=t.id('ee301')$$);
+select t.expect('PTW22','NR10: autorizador não faz o novo aceite',$$select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee213'),1)$$);
+select set_config('ptw.person_id',t.id('ee33')::text,false);
+select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee213'),1);
+select t.check((select state='ativa' and ptw.work_released(p) from ptw.permit p where id=t.id('ee301')),'NR10: novo aceite libera no turno revalidado');
+select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee214'),1);
+select set_config('ptw.person_id',t.id('ee32')::text,false);
+select t.expect('PTW16','NR10: entrega não autoriza encerramento sem reenergização',$$select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee215'),1)$$);
+select t.expect('PTW34','NR10: não pula a sequência de reenergização',$$select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'ret2','{"t":"verificacao","lines":{"ok":{"a":"sim"}}}')$$);
+select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'ret1','{"t":"verificacao","lines":{"ok":{"a":"sim"}}}');
+select ptw.permit_answer_put(t.id('ee01'),t.id('ee301'),'ret2','{"t":"verificacao","lines":{"ok":{"a":"sim"}}}');
+select ptw.permit_sign(t.id('ee01'),t.id('ee301'),t.id('ee215'),1);
+select t.check((select state='encerrada' from ptw.permit where id=t.id('ee301')),'NR10: ciclo encerrado');
+select t.expect('PTW34','NR10: PT encerrada não revalida',$$select ptw.permit_revalidate(t.id('ee01'),t.id('ee301'),now()-interval '1 hour',now()+interval '4 hour',now()+interval '3 hour','Reavaliação',true,true,true)$$);
+reset role;
+select t.check(ptw.audit_verify(t.id('ee01')) is null,'NR10: cadeia íntegra');
+select set_config('ptw.unit_id',t.id('1')::text,false);
+select set_config('ptw.person_id',t.id('d2')::text,false);
+
 
 \set QUIET off
 select 'OK: ' || count(*) || ' verificações' as resultado from t.ok;

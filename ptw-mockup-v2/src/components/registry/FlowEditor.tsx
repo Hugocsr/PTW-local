@@ -118,7 +118,7 @@ export function FlowEditor({ tpl, set }: { tpl: TemplateContent; set: SetTpl }) 
     set({
       stages: tpl.stages.filter((s) => s.id !== st.id),
       separation: tpl.separation.filter((p) => !st.slots.some((x) => x.id === p.slotA || x.id === p.slotB)),
-      form: { sections: (tpl.form?.sections ?? []).filter((s) => s.stageId !== st.id) },
+      form: { ...tpl.form, sections: (tpl.form?.sections ?? []).filter((s) => s.stageId !== st.id) },
     })
   /** One stage open at a time: the rail above picks it. */
   const [openId, setOpenId] = useState<string | undefined>(tpl.stages[0]?.id)

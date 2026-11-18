@@ -109,7 +109,7 @@ describe("rotas da PT × contrato", () => {
     t = await start()
     const { withRoute } = coverage(t.app)
     expect(PT_OPS.filter((op) => !withRoute.includes(op))).toEqual([])
-    expect(PT_OPS).toHaveLength(17)
+    expect(PT_OPS).toHaveLength(18)
   })
 })
 
@@ -274,6 +274,23 @@ describe("atos: cada um a sua função do banco, com a pessoa da sessão", () =>
     expect(far.statusCode).toBe(422)
     expect(far.json()).toMatchObject({ code: "PTW31" })
     expect(calls(/select ptw\.audit_denied\(/).at(-1)!.statement.params[0]).toBe("pt.prorrogada")
+  })
+
+  it("Revalidar: If-Match, campos estruturados, idempotência e recusa auditada", async () => {
+    t = await start()
+    const s = await t.login()
+    const body = { shiftStart: "2026-11-10T12:00:00Z", shiftEnd: "2026-11-10T23:00:00Z", newEnd: "2026-11-10T22:00:00Z", reason: "Avaliação local", conditionsUnchanged: true, teamUnchanged: true, assessmentConfirmed: true }
+    expect((await post("/revalidations", s.headers, body)).statusCode).toBe(428)
+    const h = { ...s.headers, "if-match": '"4"', "idempotency-key": "018f3b2a-7c11-7000-8000-00000000ddde" }
+    expect((await post("/revalidations", h, body)).statusCode).toBe(200)
+    expect((await post("/revalidations", h, body)).headers["idempotency-replayed"]).toBe("true")
+    expect(calls(/select ptw\.permit_revalidate\(/)).toHaveLength(1)
+    expect(calls(/select ptw\.permit_revalidate\(/)[0]!.statement.params).toEqual([PERMIT, body.shiftStart, body.shiftEnd, body.newEnd, body.reason, true, true, true])
+    t.driver.fail(/select ptw\.permit_revalidate\(/, { code: "PTW34", message: "Equipe alterada" })
+    const denied = await post("/revalidations", { ...s.headers, "if-match": '"4"' }, { ...body, teamUnchanged: false })
+    expect(denied.statusCode).toBe(422)
+    expect(denied.json()).toMatchObject({ code: "PTW34" })
+    expect(calls(/select ptw\.audit_denied\(/).at(-1)!.statement.params[0]).toBe("pt.revalidada")
   })
 
   it("id fora do formato num ato → 404, sem chamar o banco", async () => {

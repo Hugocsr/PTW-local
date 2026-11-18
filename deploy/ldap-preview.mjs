@@ -2,16 +2,15 @@ import { execFileSync } from "node:child_process"
 import { createHash, randomBytes } from "node:crypto"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { previewEntries } from "./preview-users.mjs"
 
-export function preparePreviewDirectory(dir, password) {
+export function preparePreviewDirectory(dir, password, extraPasswordsJson) {
   if (!password || password.length < 20) throw new Error("Defina uma senha forte em PTW_PREVIEW_LOGIN_PASSWORD")
   const reader = randomBytes(32).toString("hex")
   const suffix = "dc=ptw,dc=test"
   const people = `ou=people,${suffix}`
   const groups = `ou=groups,${suffix}`
-  const person = `uid=marina.costa,${people}`
   const readerDn = `cn=reader,${suffix}`
-  const adminGroup = `cn=ptw-admins,${groups}`
   const cert = join(dir, "ldap.crt")
   const key = join(dir, "ldap.key")
   const conf = join(dir, "slapd.conf")
@@ -27,6 +26,7 @@ export function preparePreviewDirectory(dir, password) {
     const digest = createHash("sha1").update(value).update(salt).digest()
     return "{SSHA}" + Buffer.concat([digest, salt]).toString("base64")
   }
+  const entries = previewEntries(password, extraPasswordsJson, hash)
   writeFileSync(conf, `include /etc/ldap/schema/core.schema
 include /etc/ldap/schema/cosine.schema
 include /etc/ldap/schema/inetorgperson.schema
@@ -58,18 +58,7 @@ dn: ${groups}
 objectClass: organizationalUnit
 ou: groups
 
-dn: ${person}
-objectClass: inetOrgPerson
-cn: Marina Costa
-sn: Costa
-uid: marina.costa
-entryUUID: 00000001-0000-4000-8000-000000000001
-userPassword: ${hash(password)}
-
-dn: ${adminGroup}
-objectClass: groupOfNames
-cn: ptw-admins
-member: ${person}
+${entries.ldif}
 ` })
   return {
     command: ["/usr/sbin/slapd", ["-f", conf, "-h", "ldaps://127.0.0.1:1636", "-d", "0"], {}],
@@ -78,8 +67,8 @@ member: ${person}
     config: {
       url: "ldaps://127.0.0.1:1636", serverName: "localhost", bindDn: readerDn,
       baseDn: people, loginAttribute: "uid", guidAttribute: "entryUUID",
-      groupBaseDn: groups, accessGroup: adminGroup,
-      grantGroups: Object.fromEntries(["cadastro", "modelos", "auditoria", "exportacao"].map((grant) => [grant, adminGroup])),
+      groupBaseDn: groups, accessGroup: entries.accessGroup,
+      grantGroups: Object.fromEntries(["cadastro", "modelos", "auditoria", "exportacao"].map((grant) => [grant, entries.adminGroup])),
     },
   }
 }

@@ -29,7 +29,7 @@ function save(name, value) {
   writeFileSync(file, value, { mode: 0o600 })
   return file
 }
-const directory = previewLdap ? preparePreviewDirectory(dir, env.PTW_PREVIEW_LOGIN_PASSWORD) : null
+const directory = previewLdap ? preparePreviewDirectory(dir, env.PTW_PREVIEW_LOGIN_PASSWORD, env.PTW_PREVIEW_USERS_JSON) : null
 let ldap
 try { ldap = directory?.config ?? JSON.parse(env.PTW_LDAP_CONFIG_JSON) } catch {
   throw new Error("PTW_LDAP_CONFIG_JSON deve conter JSON válido")
@@ -46,7 +46,7 @@ if (dbCa) env.NODE_EXTRA_CA_CERTS = save("db-ca.pem", dbCa + "\n")
 delete env.PTW_DB_CA_PEM
 env.PTW_API_HOST = "127.0.0.1"
 env.PTW_API_PORT = "3300"
-for (const name of ["PTW_LDAP_CONFIG_JSON", "PTW_LDAP_BIND_PASSWORD", "PTW_LDAP_CA_PEM", "PTW_PREVIEW_LOGIN_PASSWORD", "PTW_S3_KEY", "PTW_S3_SECRET"]) {
+for (const name of ["PTW_LDAP_CONFIG_JSON", "PTW_LDAP_BIND_PASSWORD", "PTW_LDAP_CA_PEM", "PTW_PREVIEW_LOGIN_PASSWORD", "PTW_PREVIEW_USERS_JSON", "PTW_S3_KEY", "PTW_S3_SECRET"]) {
   delete env[name]
 }
 

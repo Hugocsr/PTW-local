@@ -13,6 +13,7 @@ import { freezeForm, slotRequired, stageGate, type FormAnswers } from "./form"
 import { permitBlocker } from "./formRules"
 import { NO_LOGIN_REASON, personIneligible, rolesText } from "./eligibility"
 import { windowLimitDenied } from "./windowLimit"
+import { electricalTeamDenied, electricalWindowDenied } from "./electrical"
 import { cmpInstant, dayOf, dmHms, hms } from "./time"
 import type { RuleError } from "./ptwErrors"
 import { deny, G7 } from "./permitActs"
@@ -73,6 +74,7 @@ interface PlanInput {
   now: string
   /** "AAAA-MM-DD" in the unit's zone; derived from `now` when absent. */
   today?: string
+  timezone?: string
   serverDown?: boolean
   /** Registry facts for the equipment lock. */
   equipment: Equipment
@@ -197,6 +199,10 @@ function planSubmit(input: PlanInput): SignPlan {
     if (why) checks.push({ id: "elegivel", ok: false, text: why, deny: deny("PTW08", why) })
   }
   checks.push(...fillChecks(input, st.id))
+  const electrical = electricalWindowDenied(input.form ?? ver.form ?? { sections: [] }, permit, input.timezone)
+  if (electrical) checks.push({ id: "turno", ok: false, text: electrical.message, deny: electrical, fill: true })
+  const teamError = electricalTeamDenied(input.form ?? ver.form ?? { sections: [] }, permit.team, input.people ?? [], input.pathIds ?? [], input.today ?? dayOf(input.now), input.now)
+  if (teamError) checks.push({ id: "equipe", ok: false, text: teamError.message, deny: teamError })
   // Only the author has this act: for anyone else the slot lists nobody, so no screen offers it to them.
   const slot: SlotView = { slot: slot0, signed: [], struck: [], satisfied: false, eligible: author ? [{ person: signer, ok: true, reasons: [] }] : [] }
   return finish({ stageName: st.name, stageKind: st.kind ?? null, stageId: st.id, slot, checks, sealed: false })
@@ -242,6 +248,12 @@ export function planSign(input: PlanInput): SignPlan {
   const { slot } = picked
   const stageName = picked.stage.name
   const stageKind = picked.stage.kind ?? null
+  if (stageKind === "emissao" || stageKind === "aceite_campo") {
+    const electrical = electricalWindowDenied(input.form ?? ver.form ?? { sections: [] }, permit, input.timezone)
+    if (electrical) checks.push({ id: "turno", ok: false, text: electrical.message, deny: electrical })
+    const teamError = electricalTeamDenied(input.form ?? ver.form ?? { sections: [] }, permit.team, input.people ?? [], input.pathIds ?? [], input.today ?? dayOf(now), now)
+    if (teamError) checks.push({ id: "equipe", ok: false, text: teamError.message, deny: teamError })
+  }
   // PTW20: only the current stage signs.
   if (!cur || cur.stage.id !== picked.stage.id) {
     const text = cur ? `Só a etapa atual (${cur.stage.name}) aceita assinatura` : "Nenhuma assinatura pendente"

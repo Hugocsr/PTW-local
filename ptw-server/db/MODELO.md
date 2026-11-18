@@ -266,7 +266,19 @@ Seção sem `stageId` vale para todas as etapas. Ids de item únicos no formulá
 | `PTW31` | A janela passa do prazo máximo do modelo (enviar, emitir, prorrogar) |
 | `PTW32` | Prorrogar sem poder emitir esta PT, ou em nome de outra pessoa |
 | `PTW33` | Prorrogação sem justificativa, com fim que não passa do atual, ou fora de emitida/ativa dentro da janela |
+| `PTW34` | Controle elétrico: política/referências, ordem do procedimento, limite do turno ou revalidação não atendidos |
 | `42501` | Sem permissão (ex.: a API tentou apagar PT, assinatura, anexo ou auditoria, ou assinar em nome de outra pessoa) |
 | `23503` / `23505` / `23514` | Chave estrangeira (inclui PT inexistente num ato), unicidade (inclui o mesmo id de assinatura em outra assinatura), restrição de coluna (ex.: versão sugerida sem pacote; ato sem motivo ou com motivo acima de 500; tipo do sistema removido ou com a chave mudada) |
 | `23502` | Responder sem pessoa na sessão (`permit_answer_put`) |
 | `40P01` | Travas cruzadas entre duas transações (só se uma transação escrever em duas PTs); a API repete |
+
+
+## Política elétrica e revalidação de turno
+
+`template_version.form.electrical` referencia itens obrigatórios: `procedure`, `riskAssessment`, `authorizations` (documentos com anexo e validade), `workKind` (classificação), `isolation` e `restoration` (listas ordenadas de verificações Sim/Não de uma linha). `standard` é `vigente2019` ou `preparacao2027`. `shift` referencia `startDate`, `startTime`, `endDate`, `endTime`; obrigatório para 2027. A política permanece no `form_snapshot`, na cópia da versão e no pacote `ptw.modelo/1` (`modelo.politica_eletrica`, refs remapeadas na importação).
+
+O modelo ativo confere documentos/classificação na Solicitação, isolamento antes da Emissão e reenergização no Aceite da área. O banco recusa etapa fora da sequência e janela/prorrogação fora do turno (`PTW34`). Modelos sem política preservam o comportamento anterior.
+
+`permit_revalidation`: `(unit_id,id)`; `permit_id`, `revision`, `old_window`, `new_window`, `shift_window`, `reason`, `conditions_unchanged`, `team_unchanged`, `assessment_confirmed`, `team_sha256`, `person_id`, `at`. Linha imutável, com RLS, somente inclusão pela API e evento `pt.revalidada`. O gatilho força revisão, autoria, horário, janela anterior e hash da equipe; não confia nos valores do cliente.
+
+`permit_revalidate(unit,pt,inicio_turno,fim_turno,fim_atividade,motivo,condicoes_preservadas,equipe_preservada,avaliacao_local)` aceita emitida/ativa/suspensa/expirada, sem parada pendente; exige o emitente original elegível, documentos válidos e equipe elegível. O turno precisa incluir o instante atual; a nova janela começa no instante do servidor e termina até o fim do turno, respeitando o prazo máximo do modelo contado desde o início original, inclusive após revalidações. Atualiza a janela por prova da linha da revalidação na mesma transação, anula o aceite de campo e põe a PT em suspensa aguardando outro aceitante. Entrega/encerramento continuam disponíveis após expiração, sem revalidação obrigatória. A leitura `PermitHeader.revalidation` expõe o último registro; os anteriores permanecem na trilha e na tabela.

@@ -19,6 +19,9 @@ type PermitState = Schemas["PermitState"]
 
 /** A linha de `ptw.permit` (alias `p`) como `PermitHeader`, em JSON montado pelo banco. */
 export const HEADER_JSON = `jsonb_build_object(
+  'revalidation', (select jsonb_build_object('id', r.id, 'originalStart', (select min(lower(r0.old_window)) from ptw.permit_revalidation r0 where r0.unit_id=p.unit_id and r0.permit_id=p.id), 'shiftStart', lower(r.shift_window), 'shiftEnd', upper(r.shift_window),
+    'newEnd', upper(r.new_window), 'reason', r.reason, 'personId', r.person_id, 'at', r.at)
+    from ptw.permit_revalidation r where r.unit_id = p.unit_id and r.permit_id = p.id order by r.at desc, r.id desc limit 1),
   'id', p.id, 'number', p.number, 'templateId', p.template_id, 'versionId', p.version_id, 'state', p.state,
   'authorId', p.author_id, 'locationId', p.location_id,
   'assetIds', coalesce((select jsonb_agg(pa.asset_id order by pa.asset_id) from ptw.permit_asset pa

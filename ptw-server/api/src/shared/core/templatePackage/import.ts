@@ -6,6 +6,7 @@ import type { CheckLine, ColumnItem, Condition, FormItem, FormItemKind, FormSect
 import { answersOf, lineChoices, optionsOf, validateForm } from "../form.ts"
 import { signatureIssues, STRUCTURAL } from "../templateChecks.ts"
 import { formProblem, isoDate } from "../formRules.ts"
+import { remapElectricalPolicy } from "../electrical.ts"
 import { normalizeSeparation, separationKey } from "../templateVersions.ts"
 import { sha256Hex } from "../audit.ts"
 import { uuidv7 } from "../../lib/id.ts"
@@ -441,7 +442,7 @@ export function importarModelo(entrada: unknown, cadastro: Cadastro, opcoes: Opc
   }
 
   /* ---- the app's own checks ---- */
-  const form = { sections }
+  const form = { sections, ...(pkg.modelo.politica_eletrica ? { electrical: remapElectricalPolicy(pkg.modelo.politica_eletrica, (ref) => itemByRef.get(ref)?.item.id ?? ref) } : {}) }
   // A marcação whose list is still empty: the plant fills the list before activating (warning, not error).
   const waiting = new Set([...emptyListItems].map((id) => sections.flatMap((s) => s.items).find((i) => i.id === id)?.label).filter(Boolean).map((l) => `${l}: marcação sem opções`))
   for (const m of validateForm(form, stages, allLists)) { if (waiting.has(m)) aviso("Formulário", `${m.replace(": marcação sem opções", "")}: a lista ainda não tem itens; inclua-os antes de ativar`); else erro("Formulário", m) }

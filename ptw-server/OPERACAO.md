@@ -8,7 +8,15 @@ Requisitos no host: Docker Compose atual e Python 3.10 ou superior. A construç�
 python tools/ptw_instalar.py --local
 ```
 
-Abra **https://localhost**. O laboratório só publica em `127.0.0.1` e contém pessoas fictícias:
+Abra o endereço HTTPS mostrado pelo instalador (por padrão, **https://localhost**). No Windows, aguarde o motor Linux do Docker Desktop iniciar e execute o instalador no PowerShell da mesma conta. O instalador verifica o acesso ao motor antes de preparar os segredos. Se o Docker informar que a porta está ocupada, escolha portas livres para o laboratório:
+
+```powershell
+$env:PTW_HTTP_PORT = '8080'
+$env:PTW_HTTPS_PORT = '8443'
+python tools/ptw_instalar.py --local
+```
+
+O laboratório só publica em `127.0.0.1` e contém pessoas fictícias:
 
 | Login | Permissões administrativas | Senha exclusivamente de teste |
 |---|---|---|
@@ -81,6 +89,39 @@ No PowerShell, use `$env:PTW_RESTORE_DB='ptw_restore_ensaio'` e `$env:PTW_RESTOR
 A ativação de uma recuperação é uma operação separada: com os serviços parados, configure a API para o banco recuperado e associe `storage`/`web` aos volumes retornados, em um override do Compose. Confira o esquema/imagens correspondentes ao backup antes de abrir o acesso. Não substitua os volumes originais durante o ensaio.
 
 ## Testes locais
+
+### Cenário Actemium fictício
+
+Com o laboratório LDAP integrado em execução, rode na raiz do projeto:
+
+```powershell
+node ptw-server/tools/actemium-local.mjs
+```
+
+Para criar e testar o segundo modelo comparativo, baseado na NR-10 vigente consolidada em 2019:
+
+```powershell
+node ptw-server/tools/actemium-local.mjs --base-vigente
+```
+
+Esse modo reutiliza locais e ativos e cria um modelo e PT próprios. Preserva os controles comuns de APR, equipe e isolamento. A verificação de portas/arco específica do modelo de preparação 2027 é substituída por uma conferência geral de identificação de circuitos, sinalização e acesso. O resultado fica em `resultado-base-vigente.json`. A comparação dos dois checklists fica em `comparacao-modelos-nr10.md`, no mesmo diretório das evidências.
+
+O comando usa HTTPS com a CA local, a unidade fictícia `UN-01` e as contas do laboratório. Cadastra locais `ACT-*`, nove ativos, suas relações e um modelo de homologação derivado do checklist existente. Executa o ciclo da PT, testa recusas e confere anexos e auditoria. A primeira execução cria a PT e a encerra. Reexecuções reaproveitam os cadastros e a PT encerrada, conferindo o estado e os arquivos.
+
+O modelo Actemium é um cenário fictício de homologação sujeito à revisão da engenharia e de SST. O roteiro, a matriz de requisitos e os limites identificados ficam em `outputs/actemium` no diretório acima do projeto. As evidências JSON são gravadas nesse diretório; `PTW_EVIDENCE_DIR` permite escolher outro destino. O teste completo roda pela API autenticada usada pelo aplicativo.
+
+O teste de navegador usa o laboratório integrado em execução e cria um rascunho fictício identificável pelo texto `Teste de navegador`. O Chrome precisa confiar na CA local do Caddy, conforme as instruções no [README](README.md). Na pasta `ptw-mockup-v2`:
+
+```powershell
+npm.cmd install --no-save --package-lock=false playwright@1.62.1
+node --test scripts/teste-navegador.mjs
+```
+
+Para exercitar também o envio, defina `$env:PTW_E2E_SUBMIT = '1'` antes de executar o teste. O cenário usa o modelo **Intervenção desenergizada em painel** e o ativo fictício **CCM-L2-01**, que deve estar livre. A PT enviada fica **Em análise** e ocupa o ativo até o encerramento ou a liberação prevista pelo fluxo. Para voltar ao teste de rascunho, execute `Remove-Item Env:PTW_E2E_SUBMIT`.
+
+Com uma PT fictícia já enviada por esse cenário, defina `PTW_E2E_RESUME_ID` com o identificador dela e `PTW_E2E_PREPARE=1` para testar as assinaturas da Preparação. O teste reaproveita as assinaturas corretas já registradas na revisão atual e verifica a passagem para a etapa **Emissão**.
+
+Se o laboratório estiver em outra porta HTTPS, ajuste `PTW_E2E_URL` para o endereço em `localhost`. O teste permite apontar para uma instalação existente do Playwright usando `PTW_PLAYWRIGHT_ENTRY` e usar o Edge com `PTW_BROWSER_CHANNEL=msedge`.
 
 ```sh
 sh test.sh banco auditoria arquivos app recursos

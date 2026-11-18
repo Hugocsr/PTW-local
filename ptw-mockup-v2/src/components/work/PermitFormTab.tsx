@@ -36,7 +36,7 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
   const me = state.people.find((p) => p.id === sim.personId)
   const form = store.formOf(permit, ver)
   const path = useMemo(() => pathIds(state.locations, permit.locationId), [state.locations, permit.locationId])
-  const plan = me ? planSign({ permit, ver, rail, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form, pathIds: path, lists: state.optionLists }) : null
+  const plan = me ? planSign({ permit, ver, rail, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form, pathIds: path, lists: state.optionLists }) : null
   // The PT's files: answers keep attachment ids; a capture is stored (SHA-256 of its bytes) before it is answered.
   const files = useMemo<FormFiles>(() => ({
     attachments: store.attachments.filter((a) => a.permitId === permit.id),

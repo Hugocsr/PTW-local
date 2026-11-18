@@ -59,6 +59,11 @@ export const ESQUEMA_PTW_MODELO: Esquema = {
     idioma: objeto(["documento", "rotulos"], { documento: { type: "string", maxLength: 35, pattern: IDIOMA }, rotulos: { type: "string", maxLength: 35, pattern: IDIOMA } }, "Idioma do documento e dos rótulos (padrão pt-BR). Rótulos traduzidos guardam o texto original em *_original."),
     modelo: objeto(["nome", "escopo"], {
       nome: texto(120),
+      politica_eletrica: objeto(["standard", "procedure", "riskAssessment", "authorizations", "workKind", "isolation", "restoration"], {
+        standard: { enum: ["vigente2019", "preparacao2027"] }, procedure: texto(64), riskAssessment: texto(64), authorizations: texto(64), workKind: texto(64),
+        isolation: lista(texto(64), 1), restoration: lista(texto(64), 1),
+        shift: objeto(["startDate", "startTime", "endDate", "endTime"], { startDate: texto(64), startTime: texto(64), endDate: texto(64), endTime: texto(64) }),
+      }, "Controles elétricos versionados; referências aos itens do pacote, preservadas na importação."),
       nome_original: ORIG,
       descricao: { type: "string" },
       prazo_maximo_horas: { type: "number", minimum: 1, maximum: 8784 },

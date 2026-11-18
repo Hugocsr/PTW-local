@@ -38,6 +38,7 @@ export interface PermitActs {
   resume(a: Args<"resume">): Promise<RuleError | null>
   /** Prorrogar. */
   extend(a: Args<"extend">): Promise<RuleError | null>
+  revalidate(a: Args<"revalidate">): Promise<RuleError | null>
   /** One answer of the form (null removes it). */
   answer(a: Args<"answer">): Promise<RuleError | null>
 }
@@ -54,6 +55,7 @@ export function usePermitActs(): PermitActs {
     stop: (a) => permits.act({ kind: "stop", ...a }).done,
     resume: (a) => permits.act({ kind: "resume", ...a }).done,
     extend: (a) => permits.act({ kind: "extend", ...a }).done,
+    revalidate: (a) => permits.act({ kind: "revalidate", ...a }).done,
     answer: (a) => permits.act({ kind: "answer", ...a }).done,
   }), [permits])
 }

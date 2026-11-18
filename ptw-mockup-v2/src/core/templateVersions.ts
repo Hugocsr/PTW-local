@@ -9,6 +9,7 @@ import type { FormItem, OptionList, PermitTemplate, Separation, SignSlot, Stage,
 import type { RuleError } from "./ptwErrors.ts"
 import { uuidv7 } from "../lib/id.ts"
 import { formProblem } from "./formRules.ts"
+import { electricalActivationProblem } from "./electrical.ts"
 
 /** A separation as the database stores it: `slotA < slotB` (text order of the uuids). */
 export function normalizeSeparation(a: string, b: string, locked = false): Separation {
@@ -34,7 +35,7 @@ export function copyVersion(from: TemplateVersion, number: number, now: string):
     }
   })
   const form = from.form
-    ? { sections: from.form.sections.map((s) => ({ ...structuredClone(s), ...(s.stageId !== undefined ? { stageId: stageIds.get(s.stageId) ?? s.stageId } : {}) })) }
+    ? { ...structuredClone(from.form), sections: from.form.sections.map((s) => ({ ...structuredClone(s), ...(s.stageId !== undefined ? { stageId: stageIds.get(s.stageId) ?? s.stageId } : {}) })) }
     : undefined
   return {
     id: uuidv7(), number, status: "rascunho", createdAt: now, activatedAt: null,
@@ -75,6 +76,8 @@ function slotProblem(sl: SignSlot): string | null {
  * database's messages.
  */
 export function activationDenied(v: TemplateVersion, lists?: OptionList[]): RuleError | null {
+  const electrical = v.form ? electricalActivationProblem(v.form, v.stages) : null
+  if (electrical) return deny("PTW34", electrical)
   for (const st of v.stages) {
     for (let k = 0; k < st.slots.length; k++) {
       const sl = st.slots[k]

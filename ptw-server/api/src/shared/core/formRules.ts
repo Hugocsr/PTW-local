@@ -15,6 +15,7 @@ import { isUuid } from "../lib/id.ts"
 import { canonicalJson, sha256Hex, type Json } from "./audit.ts"
 import { personIneligible } from "./eligibility.ts"
 import type { FormAnswers, ItemAnswer } from "./form.ts"
+import { electricalPolicyProblem } from "./electrical.ts"
 
 type J = Record<string, unknown>
 const isObj = (v: unknown): v is J => typeof v === "object" && v !== null && !Array.isArray(v)
@@ -128,7 +129,7 @@ export function formProblem(form: unknown): string | null {
   for (const { item } of items) {
     if (isObj(item.showWhen) && !items.some((x) => x.item.id === (item.showWhen as J).itemId)) return `${item.id}: a condição aponta para um item que não existe`
   }
-  return null
+  return electricalPolicyProblem(form as unknown as FormSpec)
 }
 
 /** Where an item sits: its section's stage id; undefined = section without a stage; null = not in the form. */
@@ -181,6 +182,7 @@ export function normalizeForm(json: unknown): FormSpec {
   if (p) throw new Error(`Formulário inválido: ${p}`)
   const f = json as { sections: J[] }
   return {
+    ...((json as FormSpec).electrical ? { electrical: (json as FormSpec).electrical } : {}),
     sections: f.sections.map((s): FormSection => ({
       id: String(s.id ?? ""), title: typeof s.title === "string" ? s.title : "",
       ...(typeof s.stageId === "string" ? { stageId: s.stageId } : {}),

@@ -36,6 +36,7 @@ import { AssinarDialog } from "./AssinarDialog"
 import { PermitFormTab } from "./PermitFormTab"
 import { ResumeDialog } from "./ResumeDialog"
 import { ExtendDialog } from "./ExtendDialog"
+import { ElectricalPanel } from "./ElectricalPanel"
 import { planExtend } from "@/core/extension"
 import { StopSheet } from "./StopSheet"
 import { DownBanner, EstadoAutorizacao } from "./state"
@@ -393,7 +394,7 @@ function ActionPanel({ permit, rail, ver, next, nextMine }: { permit: Permit; ra
   const me = state.people.find((p) => p.id === sim.personId)
 
   // Assinar / Enviar / Entregar…
-  const plan = me && !isFinalState(permit.state) ? planSign({ permit, ver, rail, permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists }) : null
+  const plan = me && !isFinalState(permit.state) ? planSign({ permit, ver, rail, permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists }) : null
   const mine = !!me && !!plan?.slot && plan.slot.eligible.some((e) => e.person.id === me.id) && !plan.slot.signed.some((g) => g.personId === me.id)
   const signFail = mine && plan && !plan.fillOnly ? plan.checks.find((c) => !c.ok) : undefined
   const pending = mine && plan ? plan.checks.filter((c) => c.fill && !c.ok) : []
@@ -412,7 +413,7 @@ function ActionPanel({ permit, rail, ver, next, nextMine }: { permit: Permit; ra
   const resume = waiting && me ? planResume({ permit, ver, signer: me, people: state.people, locations: state.locations, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, serverDown: sim.serverDown }) : null
   const resumeFail = resume?.checks.find((c) => !c.ok)
   // Prorrogar: only for whoever may issue it, while emitida or ativa and the window has not ended; without the server, disabled with the reason.
-  const ext = me ? planExtend({ permit, ver, signer: me, people: state.people, locations: state.locations, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, serverDown: sim.serverDown }) : null
+  const ext = me ? planExtend({ permit, ver, signer: me, people: state.people, locations: state.locations, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown }) : null
   const showExtend = !!ext && ext.checks.every((c) => c.ok || c.id === "server")
   const extendFail = ext?.checks.find((c) => !c.ok)
   // In the field and no stop already waiting for its Retomada (disabled only when the person has no active login).
@@ -421,6 +422,7 @@ function ActionPanel({ permit, rail, ver, next, nextMine }: { permit: Permit; ra
   return (
     <div className="flex flex-col gap-4">
       <EstadoAutorizacao permit={permit} serverDown={sim.serverDown} now={sim.now} />
+      <ElectricalPanel permit={permit} ver={ver} form={formOf(permit, ver)} />
       {next !== "—" && <NextLine next={next} mine={nextMine} />}
 
       {(waiting || mine || showStop || showExtend) && (
