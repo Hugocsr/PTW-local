@@ -1376,8 +1376,11 @@ export interface components {
         DelegationInput: {
             /** Format: uuid */
             id: string;
-            /** Format: uuid */
-            slotId: string;
+            /**
+             * Format: uuid
+             * @description Nula = todas as aprovações administrativas delegáveis do delegante (mandato geral).
+             */
+            slotId: string | null;
             /** Format: uuid */
             delegatorId: string;
             /** Format: uuid */
@@ -1394,7 +1397,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            slotId: string;
+            slotId: string | null;
             /** Format: uuid */
             delegatorId: string;
             /** Format: uuid */
@@ -1550,12 +1553,20 @@ export interface components {
         TypePage: components["schemas"]["PageMeta"] & {
             items: components["schemas"]["TypeDef"][];
         };
+        /** @description Ficha do registro no padrão SGI Forces (`attrs`, até 8 KiB). Planta: `fuso`, `werks`, `iwerk`, `bukrs`, `regio`. Área: `tplnr`, `beber`, `kostl`. Equipamento: `equnr`, `fabricante`, `modelo`, `nserie`, `statusOp`, `tplnr`, `catSap`, `ninv`, `kostl`, `iwerk`, `ingrp`, `dataAquis`, `matnr` e `protecao` (objeto: `tipo`, `principio`, `bypass`, `sistema`, `classeRisco`, `protegidos`). Ausente na escrita = não muda; `{}` limpa. */
+        RecordAttrs: {
+            [key: string]: components["schemas"]["AttrValue"];
+        };
+        AttrValue: null | string | boolean | number | string[] | {
+            [key: string]: null | string | boolean | number | string[];
+        };
         LocationFields: {
             parentId?: components["schemas"]["Uuid"] | null;
             typeId: components["schemas"]["Uuid"];
             code: string;
             name: string;
             aliases?: string[];
+            attrs?: components["schemas"]["RecordAttrs"];
         };
         Location: components["schemas"]["RegistryRecord"] & components["schemas"]["LocationFields"];
         LocationInput: components["schemas"]["LocationFields"] & components["schemas"]["RecordInputMeta"];
@@ -1573,6 +1584,7 @@ export interface components {
             code: string;
             name: string;
             aliases?: string[];
+            attrs?: components["schemas"]["RecordAttrs"];
             /** @description Uma linha de `asset_location` cada. */
             locationIds?: components["schemas"]["Uuid"][];
         };

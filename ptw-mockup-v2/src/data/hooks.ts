@@ -158,12 +158,13 @@ export function useLocationAssetCounts(ids: string[]) {
 /** The most assets of one place the server gives at once (the contract's largest page). */
 const LOCATION_ASSETS_MAX = 1000
 
-/** The assets linked to a place or to anything under it (the place's page), in the registry's order. */
+/** The assets linked to a place or to anything under it (the place's page), in the registry's order. "" = none. */
 export function useLocationAssets(locationId: string): { items: Asset[]; total: number } & Loading {
   const port = useData()
   const { assets, locations } = useRegistry().state
   const here = useMemo(() => (port.whole ? assetsUnder(assets, locations, locationId) : null), [port.whole, assets, locations, locationId])
-  const remote = useRemote(!port.whole, locationId, () => port.queries.assets({ q: "", filters: { locationId }, sort: null, page: 0, pageSize: LOCATION_ASSETS_MAX }), "assets")
+  // An empty id asks nothing (a form whose place is not chosen yet).
+  const remote = useRemote(!port.whole && locationId !== "", locationId, () => port.queries.assets({ q: "", filters: { locationId }, sort: null, page: 0, pageSize: LOCATION_ASSETS_MAX }), "assets")
   return here ? { items: here, total: here.length, loading: false, error: null } : { items: remote.data?.items ?? NO_ROWS, total: remote.data?.total ?? 0, loading: remote.loading, error: remote.error }
 }
 

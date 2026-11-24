@@ -36,7 +36,7 @@ docker compose -f compose.yaml -f compose.demo.yaml up -d --build
 docker compose stop
 ```
 
-A carga é explícita: 10 pessoas, 15 ativos e 3 modelos de exemplo, pelas mesmas regras de escrita da API. Só a criação da unidade usa `ptw_owner`; os registros usam `ptw_api` com `auth=servico`. A segunda execução não altera os cadastros já carregados. Não importa PTs antigas nem desliga gatilhos. O arquivo `api/seed/dados/exemplo.json` é um pacote local de carga, não um cenário executado pelo navegador.
+A carga é explícita: 10 pessoas, 3 plantas com 7 áreas, 12 equipamentos (4 aninhados, 3 dispositivos de proteção) no formato do SGI Forces e 3 modelos de exemplo, pelas mesmas regras de escrita da API. Só a criação da unidade usa `ptw_owner`; os registros usam `ptw_api` com `auth=servico`. A segunda execução não altera os cadastros já carregados. Não importa PTs antigas nem desliga gatilhos. O arquivo `api/seed/dados/exemplo.json` é um pacote local de carga, não um cenário executado pelo navegador; ele sai de `ptw-mockup-v2/src/demo/sgi/registry.ts` por `node scripts/export-seed.mjs`.
 
 Na demonstração **não há senha**: a pessoa é escolhida e recebe uma sessão real. Trocar de pessoa encerra a sessão anterior e registra a nova na auditoria. Contas desativadas, vencidas ou sem login continuam inelegíveis. A lista pública de nomes e logins (`GET /api/v1/session/dev-people`) e a entrada sem senha só existem com `PTW_DEV_LOGIN=1`, definido por `compose.demo.yaml`; no Compose normal respondem 404. LDAP/AD com TLS e grupos está disponível em configuração separada; laboratório local e instalação em [OPERACAO.md](OPERACAO.md).
 

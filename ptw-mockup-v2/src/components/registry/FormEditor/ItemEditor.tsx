@@ -46,7 +46,7 @@ export function ItemEditor({ item, sources, onChange, onDuplicate, setTpl, colum
             <span className="type-field" id={id("acc")}>Aceita</span>
             <ToggleGroup type="multiple" variant="outline" spacing={0} value={item.accept} aria-labelledby={id("acc")} className="w-full sm:w-fit"
               onValueChange={(v) => v.length && onChange({ ...item, accept: attachOrder(v as AttachKind[]) })}>
-              {(Object.keys(ATTACH) as AttachKind[]).map((k) => <ToggleGroupItem key={k} value={k} className="min-h-11 flex-1 px-4 data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">{ATTACH[k]}</ToggleGroupItem>)}
+              {(Object.keys(ATTACH) as AttachKind[]).map((k) => <ToggleGroupItem key={k} value={k} className="min-h-11 flex-1 px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">{ATTACH[k]}</ToggleGroupItem>)}
             </ToggleGroup>
           </div>
           <Stepper label="Mínimo" value={item.min} onChange={(n) => onChange({ ...item, min: n })} />
@@ -74,8 +74,8 @@ export function ItemEditor({ item, sources, onChange, onDuplicate, setTpl, colum
                 if (v === "lista" && !item.listId) onChange({ ...item, listId: lists[0]?.id, options: [], blockOptionIds: undefined })
                 if (v === "digitar" && item.listId) onChange({ ...item, listId: undefined, blockOptionIds: undefined, options: [{ id: uuidv7(), label: "" }] })
               }}>
-              <ToggleGroupItem value="digitar" className="min-h-11 flex-1 px-4 data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">Digitar opções</ToggleGroupItem>
-              <ToggleGroupItem value="lista" disabled={lists.length === 0} className="min-h-11 flex-1 px-4 data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">Usar lista</ToggleGroupItem>
+              <ToggleGroupItem value="digitar" className="min-h-11 flex-1 px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">Digitar opções</ToggleGroupItem>
+              <ToggleGroupItem value="lista" disabled={lists.length === 0} className="min-h-11 flex-1 px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">Usar lista</ToggleGroupItem>
             </ToggleGroup>
           </div>
           {item.listId ? (

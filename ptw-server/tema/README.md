@@ -13,8 +13,8 @@ Exemplo pronto: `sh tema.sh tema-exemplos/floresta`.
   "nome": "PTW Local",
   "sigla": "PT",
   "logo": "logo.svg",
-  "cores": { "marca": "#0b5d3b", "fundo": "#f2f5f1", "tinta": "#10201a" },
-  "fonte": { "familia": "Inter", "arquivo": "inter.woff2" }
+  "cores": { "marca": "#1068eb", "fundo": "#f8fafc", "tinta": "#0f172a" },
+  "fonte": { "familia": "system-ui" }
 }
 ```
 
@@ -26,10 +26,10 @@ Tudo é opcional; o que faltar fica no padrão.
 | `sigla` | Letras da marca quando não há logotipo | 1 a 3 caracteres |
 | `logo` | Logotipo largo (símbolo + nome), numa linha própria no menu e na entrada | arquivo `svg`, `png` ou `webp` nesta pasta |
 | `simbolo` | Símbolo quadrado (ex.: só a folha) no lugar das letras, ao lado do nome | arquivo `svg`, `png` ou `webp` nesta pasta |
-| `cores.marca` | Botão principal, marca e foco | `#rrggbb`; texto branco ou escuro tem de ler sobre ela (4,5:1) |
-| `cores.fundo` | Fundo da página e do menu; os outros cinzas (blocos, linhas, texto secundário) saem dele e da tinta | `#rrggbb` bem claro; o texto tem de ler sobre ele (7:1) |
-| `cores.tinta` | Cor do texto | `#rrggbb` escuro (7:1 sobre branco) |
-| `fonte.familia` | Fonte do texto | nome da fonte |
+| `cores.marca` | Botão principal, item ativo do menu, marca e foco | `#rrggbb`; texto branco ou escuro tem de ler sobre ela (4,5:1). Use um template do SGI Forces Design System: Indigo `#4f46e5` (padrão), Azul `#1068eb`, Verde `#0a7a50`, Vermelho `#d81e1e`, Preto `#2a2a2a` |
+| `cores.fundo` | Fundo da página (padrão slate-50 `#f8fafc`); bordas, blocos e texto secundário ficam sempre na escala slate do design system | `#rrggbb` bem claro; o texto tem de ler sobre ele (7:1) |
+| `cores.tinta` | Cor do texto (padrão slate-900 `#0f172a`) | `#rrggbb` escuro (7:1 sobre branco) |
+| `fonte.familia` | Fonte do texto (padrão `system-ui`, a fonte do sistema) | nome da fonte |
 | `fonte.arquivo` | Arquivo da fonte | `woff2`, `woff` ou `ttf` nesta pasta; sem ele, a fonte precisa existir no aparelho |
 
 **O tema não muda as cores de estado** (verde concluído, azul sua vez, âmbar atenção, vermelho parado):

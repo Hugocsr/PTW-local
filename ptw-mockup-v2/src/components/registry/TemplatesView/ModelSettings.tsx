@@ -70,8 +70,8 @@ export function WindowLimit({ hours, disabled, onChange }: { hours: number | nul
             <NumberInput id="ver-max-window" value={shown} decimals={0} onChange={(n) => put(n)} describedBy="ver-max-window-help" className="w-28" />
             <ToggleGroup type="single" variant="outline" spacing={0} value={unit} aria-label="Unidade do prazo" className="w-fit"
               onValueChange={(v) => { if (!v) return; const u = v as typeof unit; setUnit(u); if (shown !== undefined) put(shown, u) }}>
-              <ToggleGroupItem value="horas" className="min-h-11 px-4 data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">Horas</ToggleGroupItem>
-              <ToggleGroupItem value="dias" className="min-h-11 px-4 data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">Dias</ToggleGroupItem>
+              <ToggleGroupItem value="horas" className="min-h-11 px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">Horas</ToggleGroupItem>
+              <ToggleGroupItem value="dias" className="min-h-11 px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">Dias</ToggleGroupItem>
             </ToggleGroup>
           </div>
           <p id="ver-max-window-help" className="type-meta">{hours === null ? "Vazio: sem prazo máximo." : `${cap(maxWindowText(hours))}, do início ao fim, contando prorrogações.`}</p>

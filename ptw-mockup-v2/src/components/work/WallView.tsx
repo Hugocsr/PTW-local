@@ -50,7 +50,7 @@ export function WallView() {
   return (
     <div className="dark flex min-h-svh flex-col bg-background text-foreground">
       <Feed key={tick} onRows={setRows} />
-      <header className="relative flex flex-wrap items-end justify-between gap-x-8 gap-y-2 border-b-[3px] border-double border-foreground py-4 pr-16 pl-6 lg:pr-20 lg:pl-10">
+      <header className="relative flex flex-wrap items-end justify-between gap-x-8 gap-y-2 border-b-2 border-border py-4 pr-16 pl-6 lg:pr-20 lg:pl-10">
         <div className="flex flex-col">
           <span className="type-label">{state.units[0]?.name ?? "Unidade"} · Permissões de trabalho</span>
           <span className="text-4xl leading-none font-bold tracking-[-0.03em] tabular-nums lg:text-6xl">{hms(sim.now)}</span>
@@ -93,7 +93,7 @@ export function WallView() {
                   const w = windowLeft(r.p, sim.now)
                   const over = w?.tone === "stop"
                   return (
-                    <li key={r.p.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 border-t border-border py-4 first:border-t-2 first:border-foreground">
+                    <li key={r.p.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 border-t border-border py-4 first:border-t-2 first:border-border-strong">
                       <div className="flex min-w-0 flex-col gap-1">
                         <span className="text-2xl leading-8 font-semibold">{r.p.scope}</span>
                         <span className="flex flex-wrap items-center gap-x-3 type-data-title text-muted-foreground"><span className="flex items-center gap-2 text-foreground"><AssetIcon id={r.p.assetIds[0]} className="size-5 text-foreground" />{where(r)}</span><span className="type-data self-center">{r.p.number}</span></span>
@@ -116,7 +116,7 @@ export function WallView() {
           {groups.waiting.length === 0 ? <p className="text-xl text-muted-foreground">Nada aguardando.</p> : (
             <ul className="flex flex-col">
               {groups.waiting.map((r) => (
-                <li key={r.p.id} className="flex flex-col gap-0.5 border-t border-border py-3 first:border-t-2 first:border-foreground">
+                <li key={r.p.id} className="flex flex-col gap-0.5 border-t border-border py-3 first:border-t-2 first:border-border-strong">
                   <span className="text-lg leading-6 font-medium">{r.p.scope}</span>
                   <span className="flex flex-wrap items-baseline gap-x-3 text-sm text-muted-foreground"><span className="font-semibold tracking-[0.06em] text-foreground uppercase">{PERMIT_STATE_LABEL[r.p.state]}</span><span>{r.next}</span></span>
                   <span className="flex items-center gap-1.5 type-data text-muted-foreground"><AssetIcon id={r.p.assetIds[0]} className="size-3.5" />{where(r)} · {r.p.number}</span>

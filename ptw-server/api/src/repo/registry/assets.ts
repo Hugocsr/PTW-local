@@ -10,7 +10,7 @@ type Asset = Schemas["Asset"]
 type Hold = Schemas["EquipmentHold"]
 
 const LOCS = `coalesce((select jsonb_agg(al.location_id order by al.location_id) from ptw.asset_location al where al.unit_id = a.unit_id and al.asset_id = a.id), '[]'::jsonb)`
-const COLUMNS = `a.id, a.unit_id, a.type_id, a.code, a.name, to_jsonb(a.aliases) as aliases, a.origin, a.status, a.revision, a.updated_at, ${LOCS} as location_ids`
+const COLUMNS = `a.id, a.unit_id, a.type_id, a.code, a.name, to_jsonb(a.aliases) as aliases, a.attrs, a.origin, a.status, a.revision, a.updated_at, ${LOCS} as location_ids`
 interface Row {
   id: string
   unit_id: string
@@ -18,6 +18,7 @@ interface Row {
   code: string
   name: string
   aliases: string[]
+  attrs: Asset["attrs"]
   origin: Asset["origin"]
   status: Asset["status"]
   revision: number
@@ -26,7 +27,7 @@ interface Row {
 }
 const mapAsset = (r: Row): Asset => ({
   id: r.id, unitId: r.unit_id, revision: Number(r.revision), updatedAt: iso(r.updated_at), origin: r.origin, status: r.status,
-  typeId: r.type_id, code: r.code, name: r.name, aliases: r.aliases, locationIds: r.location_ids,
+  typeId: r.type_id, code: r.code, name: r.name, aliases: r.aliases, attrs: r.attrs ?? {}, locationIds: r.location_ids,
 })
 
 const SORT = { code: "lower(a.code)", name: "lower(a.name)", updatedAt: "a.updated_at" }
@@ -75,9 +76,9 @@ export async function createAsset(tx: Tx, body: OpBody<"createAsset">): Promise<
   const q = new Q()
   const rows = await run<{ id: string }>(
     tx,
-    `insert into ptw.asset (unit_id, id, type_id, code, name, aliases, origin, status)
+    `insert into ptw.asset (unit_id, id, type_id, code, name, aliases, attrs, origin, status)
      values (ptw.current_unit(), coalesce(${q.p(body.id, "uuid")}, uuidv7()), ${q.p(body.typeId, "uuid")}, ${q.p(body.code, "text")}, ${q.p(body.name, "text")},
-             array(select jsonb_array_elements_text(${q.json(body.aliases ?? [])})),
+             array(select jsonb_array_elements_text(${q.json(body.aliases ?? [])})), ${q.json(body.attrs ?? {})},
              coalesce(${q.p(body.origin, "ptw.record_origin")}, 'manual'), coalesce(${q.p(body.status, "ptw.record_status")}, 'ativo'))
      returning id`,
     q.params,
@@ -93,6 +94,7 @@ export async function updateAsset(tx: Tx, id: string, rev: number, body: OpBody<
     tx,
     `update ptw.asset set type_id = ${q.p(body.typeId, "uuid")}, code = ${q.p(body.code, "text")}, name = ${q.p(body.name, "text")},
         aliases = case when ${q.p(body.aliases !== undefined, "boolean")} then array(select jsonb_array_elements_text(${q.json(body.aliases ?? [])})) else aliases end,
+        attrs = case when ${q.p(body.attrs !== undefined, "boolean")} then ${q.json(body.attrs ?? {})} else attrs end,
         origin = coalesce(${q.p(body.origin, "ptw.record_origin")}, origin), status = coalesce(${q.p(body.status, "ptw.record_status")}, status)
       where unit_id = ptw.current_unit() and id = ${q.p(id, "uuid")} and revision = ${q.p(rev, "integer")} returning id`,
     q.params,

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils"
  */
 export type { StatusTone }
 
-/** Soft badge: tinted surface + coloured text (≥ 4.5:1). */
+/** Soft badge (SGI · Status): pílula com superfície suave + texto da cor (≥ 4.5:1). */
 export const TONE_BADGE: Record<StatusTone, string> = {
   ok: "bg-st-ok-surface text-st-ok-fg",
   pending: "bg-st-pending-surface text-st-pending-fg",
@@ -41,7 +41,7 @@ export const TONE_SOLID: Record<StatusTone, string> = {
 /** Icon + word, coloured by tone. Never colour alone. */
 export function StatusBadge({ tone, icon: Icon, children, className }: { tone: StatusTone; icon?: LucideIcon; children: ReactNode; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 type-meta font-medium whitespace-nowrap", TONE_BADGE[tone], className)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 type-meta font-semibold whitespace-nowrap", TONE_BADGE[tone], className)}>
       {Icon && <Icon className="size-3.5 shrink-0" aria-hidden />}
       {children}
     </span>

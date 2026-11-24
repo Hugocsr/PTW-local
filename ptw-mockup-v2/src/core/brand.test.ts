@@ -50,8 +50,9 @@ describe("tema da planta", () => {
     expect(vars["--primary"]).toBe("#0b5d3b")
     expect(vars["--primary-foreground"]).toBe("#ffffff")
     expect(vars["--app-font"]).toBe("'Inter'")
-    // The greys follow the canvas and the ink of the theme.
-    expect(vars["--surface-well"]).toBe("color-mix(in srgb, #f6f8fc 96%, #16213b)")
+    // The neutrals stay the slate scale of the design system in every plant.
+    expect(Object.keys(vars).filter((k) => ["--border", "--muted", "--muted-foreground", "--surface-well", "--secondary"].includes(k))).toEqual([])
+    expect(brandVars(DEFAULT_BRAND)["--app-font"]).toBe("system-ui")
     expect(Object.keys(vars).filter((k) => k.startsWith("--st-") || k.includes("destructive") || k.includes("ok-"))).toEqual([])
   })
 

@@ -116,7 +116,7 @@ export function FillItem({ item, answer, onChange, actor, scope = "", notices = 
     const options = optionsOf(item, state.optionLists)
     // Up to six options: buttons, all in sight. More: a searchable picker, never a wall of buttons.
     const long = options.length > MAX_CHIPS
-    const chip = "min-h-11 bg-background data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9"
+    const chip = "min-h-11 bg-background data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9"
     // The chosen option named like one of the section's notices ("Classe 4") shows that notice here.
     const picked = !item.multiple && ids[0] ? options.find((o) => o.id === ids[0]) : undefined
     const note = picked ? noticeForChoice(notices, picked.label) : undefined
@@ -322,8 +322,8 @@ export function FillItem({ item, answer, onChange, actor, scope = "", notices = 
                   <div className="flex flex-col gap-1.5">
                     <span className={SUB_LABEL} id={f("zl")}>Energia zero verificada</span>
                     <ToggleGroup type="single" variant="outline" spacing={0} value={r.zero ?? ""} aria-labelledby={f("zl")} className="w-full sm:w-fit" onValueChange={(v) => patch(r.id, { zero: (v || undefined) as IsolationRow["zero"] })}>
-                      <ToggleGroupItem value="sim" className="min-h-11 flex-1 bg-background px-4 data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">Sim</ToggleGroupItem>
-                      <ToggleGroupItem value="nao" className="min-h-11 flex-1 bg-background px-4 data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">Não</ToggleGroupItem>
+                      <ToggleGroupItem value="sim" className="min-h-11 flex-1 bg-background px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">Sim</ToggleGroupItem>
+                      <ToggleGroupItem value="nao" className="min-h-11 flex-1 bg-background px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">Não</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -404,7 +404,7 @@ export function FillItem({ item, answer, onChange, actor, scope = "", notices = 
                   {blocks && <OctagonXIcon role="img" aria-label="Impede a etapa" className="mt-0.5 size-4 shrink-0" />}{line.label}
                 </span>
                 <ToggleGroup type="single" variant="outline" spacing={0} value={ans?.a ?? ""} onValueChange={(v) => (v ? setLine(line.id, { a: v }) : clearLine(line.id))} aria-label={line.label} className="w-full sm:w-auto">
-                  {choices.map((c) => <ToggleGroupItem key={c.id} value={c.id} className="min-h-11 flex-1 bg-background px-4 data-[state=on]:bg-foreground data-[state=on]:text-background sm:flex-none md:min-h-9">{c.label}</ToggleGroupItem>)}
+                  {choices.map((c) => <ToggleGroupItem key={c.id} value={c.id} className="min-h-11 flex-1 bg-background px-4 data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold sm:flex-none md:min-h-9">{c.label}</ToggleGroupItem>)}
                 </ToggleGroup>
               </div>
               {needsNote && <DeferredText aria-label={`Justificativa: ${line.label}`} placeholder="Justificativa" value={ans?.note ?? ""} onCommit={(note) => setLine(line.id, { note })} className={FIELD} />}

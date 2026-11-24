@@ -2,8 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "./workspace.css";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -37,8 +35,18 @@
     --color-ok-surface: var(--ok-surface);
     --color-ok-foreground: var(--ok-foreground);
     --font-heading: var(--font-sans);
-    --font-sans: var(--app-font), ui-sans-serif, system-ui, sans-serif;
-    --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    /* SGI Forces Design System · Tipografia: fonte do sistema para texto, monoespaçada para protocolos, TAG, datas e IDs. */
+    --font-sans: var(--app-font), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    --color-border-strong: var(--border-strong);
+    --color-primary-soft: var(--primary-soft);
+    --color-primary-hover: var(--primary-hover);
+    --color-brand-navy: var(--brand-navy);
+    /* Níveis da árvore de ativos (SGI · Árvore de ativos): planta = primária, área = teal, equipamento = âmbar. */
+    --color-kind-area: var(--kind-area);
+    --color-kind-area-surface: var(--kind-area-surface);
+    --color-kind-equip: var(--kind-equip);
+    --color-kind-equip-surface: var(--kind-equip-surface);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -77,12 +85,12 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
-    /* Elevation (DESIGN.md · Sistema): translucent shadows tinted with the ink hue, never opaque black.
-       L1 rests with a 1px ring and no shadow; L2 = card in play; L3 = popover / menu; L4 = dialog / sheet. */
+    /* Elevation (SGI Forces Design System · Raio e sombra): L1 = 1px ring, no shadow; L2 = card (shadow-sm);
+       L3 = popover / menu (shadow-lg); L4 = modal / sheet. */
     --shadow-elev-1: 0 0 0 1px var(--border);
-    --shadow-elev-2: 0 1px 2px oklch(0.2 0.02 265 / 6%), 0 6px 16px -6px oklch(0.2 0.02 265 / 10%);
-    --shadow-elev-3: 0 8px 24px -8px oklch(0.2 0.02 265 / 16%), 0 0 0 1px var(--border);
-    --shadow-elev-4: 0 24px 48px -16px oklch(0.2 0.02 265 / 24%);
+    --shadow-elev-2: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-elev-3: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1), 0 0 0 1px var(--border);
+    --shadow-elev-4: 0 24px 60px rgb(0 0 0 / 0.3);
     /* Motion easings: `ease-standard` (stays), `ease-enter` (appears), `ease-exit` (leaves). */
     --ease-standard: cubic-bezier(0.2, 0, 0.38, 0.9);
     --ease-enter: cubic-bezier(0, 0, 0.38, 0.9);
@@ -90,79 +98,95 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: #16213b;
-    --card: oklch(1 0 0);
-    --card-foreground: #16213b;
-    --popover: oklch(1 0 0);
-    --popover-foreground: #16213b;
-    --primary: #635bff;
+    /* ------------------------------------------------------------------
+       SGI Forces Design System v2.0 (FORCE-SGI/PTW-digital-design-system.html): paleta Tailwind v3.
+       Primária indigo-600, neutros slate, semânticas green/amber/red/blue, superfícies brancas.
+       ------------------------------------------------------------------ */
+    /* Marca */
+    --brand-navy: #0a2540;
+    --brand-blue: #1068eb;
+    /* Níveis da árvore de ativos: teal-700/50 (área) e amber-700/50 (equipamento). Sempre com ícone e nome. */
+    --kind-area: #0f766e;
+    --kind-area-surface: #f0fdfa;
+    --kind-equip: #b45309;
+    --kind-equip-surface: #fffbeb;
+    --background: #ffffff;
+    --foreground: #0f172a;            /* slate-900 · text-primary */
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+    --primary: #4f46e5;               /* indigo-600 · color-primary */
+    --primary-hover: #4338ca;         /* indigo-700 */
+    --primary-soft: #eef2ff;          /* indigo-50 */
     --primary-foreground: #ffffff;
-    --secondary: oklch(0.955 0.006 265);
-    --secondary-foreground: oklch(0.24 0.03 265);
-    --muted: oklch(0.965 0.005 265);
-    --muted-foreground: #52627a;
-    --accent: oklch(0.955 0.008 265);
-    --accent-foreground: oklch(0.24 0.03 265);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: #e2e8f0;
-    /* field outline: >= 3:1 against white and the well, so an editable field reads at a glance */
-    --input: oklch(0.66 0.015 265);
-    /* Brand focus is distinct from semantic state; see the two-colour `focus-ring`. */
-    --ring: #635bff;
+    --secondary: #f1f5f9;             /* slate-100 */
+    --secondary-foreground: #334155;  /* slate-700 */
+    --muted: #f1f5f9;                 /* slate-100 · surface-sunken */
+    --muted-foreground: #64748b;      /* slate-500 · text-muted (P2: nunca slate-400 em texto) */
+    --accent: #f1f5f9;
+    --accent-foreground: #0f172a;
+    --destructive: #dc2626;           /* red-600 · color-danger */
+    --border: #e2e8f0;                /* slate-200 · border-default */
+    --border-strong: #cbd5e1;         /* slate-300 · campos de formulário */
+    --input: #cbd5e1;
+    --ring: #6366f1;                  /* indigo-500 · ring-color */
     /* motion durations (DESIGN.md · Sistema) */
     --dur-press: 90ms;
     --dur-fast: 150ms;
     --dur-base: 240ms;
     --dur-slow: 400ms;
-    /* tonal surfaces: canvas < well < row; fixed is the darker well for product-fixed items */
-    --surface-canvas: #f6f8fc;
-    --surface-well: #f1f4fa;
-    --surface-fixed: #e8edf5;
-    --surface-row: oklch(1 0 0);
-    --destructive-text: oklch(0.5 0.2 27);
-    --ok-surface: oklch(0.94 0.06 150);
-    --ok-foreground: oklch(0.32 0.09 150);
-    /* Status palette — ok: concluído / liberado · pending: sua vez, em andamento · attention: revisar, vence, devolvida
-       stop: falhou, bloqueado, parado · neutral: aguardando outros, rascunho, encerrado sem destaque. */
-    --st-ok-surface: oklch(0.955 0.045 150);
-    --st-ok-border: oklch(0.83 0.09 150);
-    --st-ok-fg: oklch(0.40 0.11 150);
-    --st-ok-solid: oklch(0.5 0.14 150);
-    --st-pending-surface: oklch(0.955 0.03 250);
-    --st-pending-border: oklch(0.82 0.08 250);
-    --st-pending-fg: oklch(0.42 0.15 255);
-    --st-pending-solid: oklch(0.5 0.19 255);
-    --st-attention-surface: oklch(0.965 0.05 85);
-    --st-attention-border: oklch(0.84 0.11 80);
-    --st-attention-fg: oklch(0.45 0.11 60);
-    --st-attention-solid: oklch(0.72 0.16 70);
-    --st-stop-surface: oklch(0.955 0.03 27);
-    --st-stop-border: oklch(0.82 0.09 27);
-    --st-stop-fg: oklch(0.48 0.19 27);
-    --st-stop-solid: oklch(0.577 0.245 27.325);
-    --st-neutral-surface: oklch(0.955 0.006 265);
-    --st-neutral-border: oklch(0.885 0.008 265);
-    --st-neutral-fg: oklch(0.42 0.02 265);
-    --st-neutral-solid: oklch(0.6 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
+    /* superfícies: canvas (slate-50, fundo do conteúdo) < well (slate-100) < row (branco); fixed = slate-200 */
+    --surface-canvas: #f8fafc;
+    --surface-well: #f1f5f9;
+    --surface-fixed: #e2e8f0;
+    --surface-row: #ffffff;
+    --destructive-text: #b91c1c;      /* red-700 */
+    --ok-surface: #f0fdf4;
+    --ok-foreground: #15803d;
+    /* Cor de estado (SGI · Cores semânticas, par sólida + suave). Independe do tema da planta.
+       ok: concluído / liberado (green) · pending: sua vez, em andamento (blue · info)
+       attention: revisar, vence, aguardando (amber) · stop: falhou, bloqueado, parado (red)
+       neutral: rascunho, aguardando outros, encerrado (slate). Texto sempre >= 4,5:1 sobre a superfície. */
+    --st-ok-surface: #f0fdf4;
+    --st-ok-border: #bbf7d0;
+    --st-ok-fg: #15803d;
+    --st-ok-solid: #16a34a;
+    --st-pending-surface: #eff6ff;
+    --st-pending-border: #bfdbfe;
+    --st-pending-fg: #1d4ed8;
+    --st-pending-solid: #2563eb;
+    --st-attention-surface: #fffbeb;
+    --st-attention-border: #fde68a;
+    --st-attention-fg: #92400e;
+    --st-attention-solid: #f59e0b;
+    --st-stop-surface: #fef2f2;
+    --st-stop-border: #fecaca;
+    --st-stop-fg: #b91c1c;
+    --st-stop-solid: #dc2626;
+    --st-neutral-surface: #f1f5f9;
+    --st-neutral-border: #e2e8f0;
+    --st-neutral-fg: #475569;
+    --st-neutral-solid: #94a3b8;
+    --chart-1: #4f46e5;
+    --chart-2: #06b6d4;
+    --chart-3: #16a34a;
+    --chart-4: #f59e0b;
+    --chart-5: #db2777;
+    /* raio: lg = 8px (cards e blocos), md = 6.4px (botões, campos), xl = 11px */
+    --radius: 0.5rem;
     /* the look of the plant (core/brand.ts sets these and --primary, --foreground, --surface-canvas, --sidebar) */
-    --app-font: 'Geist Variable';
-    --brand-mark-from: #635bff;
-    --brand-glow: #eeedff;
+    --app-font: system-ui;
+    --brand-mark-from: #4f46e5;
+    --brand-glow: #eef2ff;
     --sidebar: #ffffff;
-    --sidebar-foreground: #52627a;
-    --sidebar-primary: #635bff;
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: #eeedff;
-    --sidebar-accent-foreground: #5146d8;
+    --sidebar-foreground: #475569;    /* slate-600 */
+    --sidebar-primary: #4f46e5;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #eef2ff;        /* primária suave: item ativo */
+    --sidebar-accent-foreground: #4338ca;
     --sidebar-border: #e2e8f0;
-    --sidebar-ring: #635bff;
+    --sidebar-ring: #6366f1;
 }
 
 .dark {
@@ -254,14 +278,14 @@
 }
 /* ------------------------------------------------------------------
    Type roles (Operate surface: dense, stable, fixed scale on a 4px grid).
-   One sans (Geist) for text, one mono (Geist Mono) for data only.
+   SGI Forces Design System: system sans for text, system mono for data only.
    Sizes are rem so browser zoom and user font settings still apply.
    ------------------------------------------------------------------ */
 @utility type-page {
   font-size: 1.75rem;
   line-height: 2.125rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 @utility type-title {

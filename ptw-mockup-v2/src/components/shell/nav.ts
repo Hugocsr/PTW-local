@@ -1,4 +1,4 @@
-import { BoxIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, InboxIcon, ListIcon, MapPinIcon, PaletteIcon, SettingsIcon, ShieldOffIcon, UsersIcon } from "lucide-react"
+import { BoxIcon, LayoutGridIcon, ListTreeIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, ListIcon, PaletteIcon, SettingsIcon, UsersIcon } from "lucide-react"
 import type { NavigationGroup, NavigationView } from "@/core/navigation"
 
 /**
@@ -6,11 +6,9 @@ import type { NavigationGroup, NavigationView } from "@/core/navigation"
  * consultation using the session's existing grants. Keys are canonical hashes; do not rename.
  */
 export const NAV = {
-  "minha-area": { title: "Minha área", icon: InboxIcon },
+  dashboard: { title: "Dashboard", icon: LayoutGridIcon },
   quadro: { title: "Quadro de PTs", icon: ClipboardListIcon },
-  desabilitados: { title: "Desabilitados agora", icon: ShieldOffIcon },
-  locais: { title: "Locais", icon: MapPinIcon },
-  ativos: { title: "Ativos", icon: BoxIcon },
+  ativos: { title: "Gestão de Ativos", icon: ListTreeIcon },
   pessoas: { title: "Pessoas", icon: UsersIcon },
   modelos: { title: "Modelos de PT", icon: FileTextIcon },
   tipos: { title: "Tipos", icon: SettingsIcon },

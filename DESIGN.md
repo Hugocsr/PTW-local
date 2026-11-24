@@ -1,110 +1,116 @@
 ---
 name: PTW — Permissão de Trabalho
-description: Aplicação de Permissão de Trabalho; superfícies claras, marca azul-violeta, estados semânticos e menu único por permissões.
+description: Aplicação de Permissão de Trabalho no SGI Forces Design System v2.0 — paleta Tailwind (indigo, slate), superfícies brancas, estados semânticos e menu único por permissões.
 colors:
-  primary: "#635bff"
+  primary: "#4f46e5"
   primary-foreground: "#ffffff"
-  background: "oklch(1 0 0)"
-  foreground: "#16213b"
-  card: "oklch(1 0 0)"
-  secondary: "oklch(0.97 0 0)"
-  muted: "oklch(0.97 0 0)"
-  muted-foreground: "#52627a"
+  background: "#ffffff"
+  foreground: "#0f172a"
+  card: "#ffffff"
+  secondary: "#f1f5f9"
+  muted: "#f1f5f9"
+  muted-foreground: "#64748b"
   border: "#e2e8f0"
-  input: "oklch(0.63 0 0)"
-  ring: "#635bff"
-  surface-canvas: "#f6f8fc"
-  surface-well: "#f1f4fa"
-  surface-fixed: "#e8edf5"
-  surface-row: "oklch(1 0 0)"
-  destructive: "oklch(0.577 0.245 27.325)"
-  destructive-text: "oklch(0.5 0.2 27)"
-  st-ok-surface: "oklch(0.955 0.045 150)"
-  st-ok-border: "oklch(0.83 0.09 150)"
-  st-ok-fg: "oklch(0.40 0.11 150)"
-  st-ok-solid: "oklch(0.5 0.14 150)"
-  st-pending-surface: "oklch(0.955 0.03 250)"
-  st-pending-border: "oklch(0.82 0.08 250)"
-  st-pending-fg: "oklch(0.42 0.15 255)"
-  st-pending-solid: "oklch(0.5 0.19 255)"
-  st-attention-surface: "oklch(0.965 0.05 85)"
-  st-attention-border: "oklch(0.84 0.11 80)"
-  st-attention-fg: "oklch(0.45 0.11 60)"
-  st-attention-solid: "oklch(0.72 0.16 70)"
-  st-stop-surface: "oklch(0.955 0.03 27)"
-  st-stop-border: "oklch(0.82 0.09 27)"
-  st-stop-fg: "oklch(0.48 0.19 27)"
-  st-stop-solid: "oklch(0.577 0.245 27.325)"
-  st-neutral-surface: "oklch(0.95 0 0)"
-  st-neutral-border: "oklch(0.88 0 0)"
-  st-neutral-fg: "oklch(0.42 0 0)"
-  st-neutral-solid: "oklch(0.6 0 0)"
+  input: "#cbd5e1"
+  ring: "#6366f1"
+  surface-canvas: "#f8fafc"
+  surface-well: "#f1f5f9"
+  surface-fixed: "#e2e8f0"
+  surface-row: "#ffffff"
+  destructive: "#dc2626"
+  destructive-text: "#b91c1c"
+  st-ok-surface: "#f0fdf4"
+  st-ok-border: "#bbf7d0"
+  st-ok-fg: "#15803d"
+  st-ok-solid: "#16a34a"
+  st-pending-surface: "#eff6ff"
+  st-pending-border: "#bfdbfe"
+  st-pending-fg: "#1d4ed8"
+  st-pending-solid: "#2563eb"
+  st-attention-surface: "#fffbeb"
+  st-attention-border: "#fde68a"
+  st-attention-fg: "#92400e"
+  st-attention-solid: "#f59e0b"
+  st-stop-surface: "#fef2f2"
+  st-stop-border: "#fecaca"
+  st-stop-fg: "#b91c1c"
+  st-stop-solid: "#dc2626"
+  st-neutral-surface: "#f1f5f9"
+  st-neutral-border: "#e2e8f0"
+  st-neutral-fg: "#475569"
+  st-neutral-solid: "#94a3b8"
+  primary-hover: "#4338ca"
+  primary-soft: "#eef2ff"
+  border-strong: "#cbd5e1"
+  brand-navy: "#0a2540"
+  brand-blue: "#1068eb"
 typography:
   page:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "1.75rem"
     fontWeight: 700
     lineHeight: "2.125rem"
-    letterSpacing: "-0.03em"
+    letterSpacing: "-0.02em"
   title:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: "1.5rem"
     letterSpacing: "-0.01em"
   heading:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.9375rem"
     fontWeight: 600
     lineHeight: "1.375rem"
   subtitle:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "1rem"
     fontWeight: 600
     lineHeight: "1.5rem"
     letterSpacing: "-0.005em"
   section:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 600
     lineHeight: "1.25rem"
   body:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: "1.25rem"
   field:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: "1.25rem"
   label:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: "1rem"
   meta:
-    fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: "1rem"
   data:
-    fontFamily: "Geist Mono Variable, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontFamily: "ui-monospace, SF Mono, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace"
     fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: "1rem"
     fontFeature: "tnum"
   data-title:
-    fontFamily: "Geist Mono Variable, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+    fontFamily: "ui-monospace, SF Mono, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace"
     fontSize: "1.125rem"
     fontWeight: 600
     lineHeight: "1.5rem"
     fontFeature: "tnum"
 rounded:
-  sm: "6px"
-  md: "8px"
-  lg: "10px"
-  xl: "14px"
+  sm: "4px"
+  md: "6px"
+  lg: "8px"
+  xl: "12px"
+  full: "9999px"
 spacing:
   "1": "4px"
   "2": "8px"
@@ -117,7 +123,7 @@ components:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.primary-foreground}"
     typography: "{typography.field}"
-    rounded: "{rounded.lg}"
+    rounded: "{rounded.md}"
     padding: "0 10px"
     height: "36px"
   button-primary-touch:
@@ -125,70 +131,72 @@ components:
   button-outline:
     backgroundColor: "{colors.background}"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.lg}"
+    rounded: "{rounded.md}"
     padding: "0 10px"
     height: "36px"
   button-stop:
     backgroundColor: "{colors.destructive}"
     textColor: "{colors.primary-foreground}"
-    rounded: "{rounded.lg}"
+    rounded: "{rounded.md}"
     height: "44px"
   input:
     backgroundColor: "{colors.background}"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.lg}"
+    rounded: "{rounded.md}"
     padding: "4px 10px"
     height: "36px"
   status-badge-ok:
     backgroundColor: "{colors.st-ok-surface}"
     textColor: "{colors.st-ok-fg}"
     typography: "{typography.label}"
-    rounded: "{rounded.md}"
-    padding: "2px 6px"
+    rounded: "{rounded.full}"
+    padding: "2px 8px"
   status-badge-pending:
     backgroundColor: "{colors.st-pending-surface}"
     textColor: "{colors.st-pending-fg}"
-    rounded: "{rounded.md}"
-    padding: "2px 6px"
+    rounded: "{rounded.full}"
+    padding: "2px 8px"
   status-badge-attention:
     backgroundColor: "{colors.st-attention-surface}"
     textColor: "{colors.st-attention-fg}"
-    rounded: "{rounded.md}"
-    padding: "2px 6px"
+    rounded: "{rounded.full}"
+    padding: "2px 8px"
   status-badge-stop:
     backgroundColor: "{colors.st-stop-surface}"
     textColor: "{colors.st-stop-fg}"
-    rounded: "{rounded.md}"
-    padding: "2px 6px"
+    rounded: "{rounded.full}"
+    padding: "2px 8px"
   status-badge-neutral:
     backgroundColor: "{colors.st-neutral-surface}"
     textColor: "{colors.st-neutral-fg}"
-    rounded: "{rounded.md}"
-    padding: "2px 6px"
+    rounded: "{rounded.full}"
+    padding: "2px 8px"
   card:
     backgroundColor: "{colors.card}"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.xl}"
-    padding: "16px"
+    rounded: "{rounded.lg}"
+    padding: "20px"
 ---
 
 # Design System: PTW — Permissão de Trabalho
 
 ## Overview
 
-**Direção visual: Operação clara, com identidade SGI Forces (validada em 23/11/2026)**
+**Direção visual: SGI Forces Design System v2.0 (adotado em 24/11/2026)**
+
+> **Fonte visual:** `FORCE-SGI/PTW-digital-design-system.html` (SGI Forces — Design System v2.0, derivado dos protótipos Backoffice e Front-Office). Onde este arquivo e aquele divergirem em cor, tipografia, raio, sombra ou componente, vale o design system SGI; a seção "SGI Forces Design System" no fim deste arquivo lista o mapeamento para o código e o que ficou de fora.
 
 Ferramenta de segurança operacional com fundo claro, cartões brancos, bordas suaves e marca azul-violeta nas ações e na navegação. A paleta de estados conserva seu significado próprio (liberado, sua vez, revisar, parado). Quem abre uma PT precisa achar a próxima ação no mesmo lugar em toda tela, ler o estado sem interpretar e não se enganar sobre o que é perigoso.
 
 A densidade é de produto operacional: escala tipográfica fixa em rem, grade de 4 px, uma moldura de página única encostada à esquerda, quatro modelos de tela e nenhum outro. Hierarquia vem de estrutura (h1 → h2 → h3, linhas com divisória, painel lateral) e não de texto explicativo ou decoração. Tema claro.
 
 **Key Characteristics:**
-- Fundo `#F6F8FC`, tinta `#16213B`, ações `#635BFF`, seleção lavanda `#EEEDFF` com texto `#5146D8`; cores configuradas pela planta continuam válidas.
+- Fundo slate-50 `#F8FAFC`, cartões brancos, tinta slate-900 `#0F172A`, ações indigo-600 `#4F46E5` (hover indigo-700 `#4338CA`), seleção indigo-50 `#EEF2FF` com texto indigo-700; a planta troca a marca escolhendo um template (Indigo, Azul, Verde, Vermelho, Preto).
 - Cinco tons de estado, sempre acompanhados de ícone ou palavra.
 - Moldura de 72rem encostada à esquerda, título na mesma borda em todas as telas.
 - Uma primária preenchida por região; destrutivo nunca no lugar da primária.
 - Alvos de toque ≥ 44 px abaixo de `md`.
-- Geist para texto; Geist Mono só para identificadores.
+- Fonte do sistema para texto; monoespaçada do sistema só para protocolos, TAG, EQUNR, datas e IDs.
 
 ## Colors
 
@@ -224,8 +232,8 @@ Cada tom tem quatro papéis: `surface` (fundo suave), `border` (borda de bloco),
 ## Typography
 
 **Display Font:** nenhuma; o sistema não tem tipo de exibição.
-**Body Font:** Geist Variable (com ui-sans-serif, system-ui)
-**Label/Mono Font:** Geist Mono Variable (com ui-monospace, Menlo, Consolas), algarismos tabulares.
+**Body Font:** fonte do sistema (system-ui, Segoe UI, Roboto…), conforme o SGI Forces Design System
+**Label/Mono Font:** monoespaçada do sistema (ui-monospace, Consolas, Menlo), algarismos tabulares.
 
 **Character:** Uma sans neutra e estável para tudo que se lê; a mono aparece só onde um código precisa ser comparado caractere a caractere.
 
@@ -245,7 +253,7 @@ Os papéis são utilitários `type-*`; use-os em vez de combinar tamanho e peso 
 Títulos usam `text-wrap: balance`; parágrafos `pretty`. Datas, contagens, células de tabela e selos usam algarismos tabulares.
 
 ### Named Rules
-**The Mono Só Para Código Rule.** Geist Mono apenas para identificadores (número da PT, tag de ativo). Nunca para nomes de serviço, títulos ou texto.
+**The Mono Só Para Código Rule.** A monoespaçada apenas para identificadores (número da PT, tag de ativo). Nunca para nomes de serviço, títulos ou texto.
 
 **The Escala Fixa Rule.** Tamanhos em rem e fixos; nada de `clamp` ou escala fluida. O zoom do navegador continua valendo.
 
@@ -428,7 +436,7 @@ Faixa fina no fim de toda tela, abaixo do `main` (borda superior de 1 px, mesmo 
 - **Don't** usar cor sozinha para comunicar estado.
 - **Don't** escrever "Trabalho liberado" fora de `EstadoAutorizacao`; só o núcleo decide quando o trabalho está liberado.
 - **Don't** permitir abrir uma PT em equipamento que está com outra PT aberta.
-- **Don't** usar Geist Mono para títulos, nomes de serviço ou texto.
+- **Don't** usar a monoespaçada para títulos, nomes de serviço ou texto.
 - **Don't** pôr cartão em volta de tabelas, listas ou árvores; nunca cartão dentro de cartão.
 - **Don't** colocar abas e barra de ferramentas no mesmo nível, nem a contagem "N de M" fora da barra.
 - **Don't** esconder ações de linha atrás do hover.
@@ -512,3 +520,78 @@ Extensão SGI-11A/07/08: `Identidade visual` em Configuração (`modelos`), `Gru
 `core/navigation.ts` é a política única de destinos: Operação sempre disponível à conta autenticada; Locais/Ativos/Pessoas em Cadastros com `cadastro`; Modelos em Configuração com `modelos`; Tipos/Listas em Configuração com `cadastro`; Auditoria em Governança e sistema com `auditoria`. Cada referência sem grant de gestão permanece em Consultas, conforme sua leitura já autorizada. Nenhum grupo vazio, duplicação ou link para módulo não implementado.
 
 Sidebar, busca Ctrl+K e breadcrumbs usam a mesma classificação; a busca identifica o grupo de cada destino. A rota consulta a mesma política de leitura, além da autorização efetiva do servidor. Se houver perda de leitura enquanto uma tela está aberta, a pessoa volta à Minha área com aviso. Nenhum estado de área é salvo no navegador. Drawer mantém foco contido, Escape e retorno ao botão; mudar de tela o fecha.
+
+
+## SGI Forces Design System (24/11/2026)
+
+O app segue o **SGI Forces Design System v2.0** (`FORCE-SGI/PTW-digital-design-system.html`). Tokens em `src/index.css` (`:root`), superfícies em `src/workspace.css`.
+
+| SGI | Token no app | Valor |
+|---|---|---|
+| Primária (indigo-600) / hover / ativa suave | `--primary` / `--primary-hover` / `--primary-soft` | `#4f46e5` / `#4338ca` / `#eef2ff` |
+| Foco (`ring-color`) | `--ring` | `#6366f1` |
+| Texto principal / secundário / muted | `--foreground` / `--secondary-foreground` / `--muted-foreground` | slate-900 / slate-700 / slate-500 (nunca slate-400 em texto, P2) |
+| Superfícies página · cartão · recuada | `--surface-canvas` · `--card` · `--surface-well` | slate-50 · branco · slate-100 |
+| Bordas sutil/padrão/forte | `--border` / `--border-strong` (`--input`) | slate-200 / slate-300 |
+| Perigo | `--destructive` / `--destructive-text` | red-600 / red-700 |
+| Navy da marca | `--brand-navy` | `#0a2540` (fundo do login) |
+| Raio | `--radius` = 8px → `rounded-md` 6px (botões, campos), `rounded-lg` 8px (cartões), `rounded-full` (badges, avatares) | |
+| Sombra | `--shadow-elev-2` = shadow-sm (cartão), `-3` = shadow-lg (menus), `-4` = modal `0 24px 60px rgb(0 0 0/.3)` | |
+| Fonte | `--font-sans` / `--font-mono` = pilhas do sistema | |
+
+**Cor de estado.** Continua fora do tema e usa as semânticas SGI (par sólida + suave): `ok` green (`#f0fdf4`/`#15803d`/`#16a34a`), `pending` blue/info (`#eff6ff`/`#1d4ed8`/`#2563eb`), `attention` amber (`#fffbeb`/`#92400e`/`#f59e0b`), `stop` red (`#fef2f2`/`#b91c1c`/`#dc2626`), `neutral` slate (`#f1f5f9`/`#475569`/`#94a3b8`). Todos os textos ≥ 4,5:1 sobre a superfície. "Sua vez / em andamento" fica em azul (info), não na primária, para não mudar de cor quando a planta troca o template.
+
+**Componentes.**
+- Botão: `rounded-md`, peso 600. Primário indigo; `outline` = secundário SGI (branco, borda slate-300, texto slate-700); `stop` = perigo sólido (hover red-700); `destructive` = contorno vermelho; `ghost` para "Limpar".
+- `StatusBadge` e `Badge`: pílula (`rounded-full`), 12px/600, superfície suave + texto da cor.
+- Cartão (`Card`, `.app-list-panel`): branco, borda slate-200, raio 8px, shadow-sm, padding 20px.
+- Tabela: cabeçalho em caixa alta 11px sobre slate-50, borda fina; linha selecionada `#eff6ff`.
+- Abas: sublinhadas (`TabsList` padrão `variant="line"`), ativa em primária. `variant="default"` mantém o segmentado onde for preciso.
+- Seleção em grupos de opção (Sim/Não, chips, segmentado): primária suave com borda e texto indigo (antes: preenchido em tinta).
+- Números de etapa/nível: círculo indigo com número branco.
+- Menu lateral: branco, grupos em caixa alta, item ativo em primária suave com ícone e texto indigo-700, contagem em pílula indigo.
+- Avatar de iniciais: círculo na primária.
+- Diálogo: raio 12px, sombra de modal, rodapé slate-50 com borda fina; ação destrutiva à direita.
+- Marca: quadrado na primária, raio 10px, cadeado aberto branco (símbolo da planta, se houver, substitui; uma sigla diferente de "PT" aparece no lugar do cadeado).
+- Login: fundo navy → primária, cartão branco central (raio 16px, sombra `0 24px 70px rgb(7 20 50/.45)`), logo + nome + subtítulo, botão primário em largura total.
+
+**Tema da planta (Identidade visual).** O editor oferece os templates do design system — Indigo (padrão do sistema) e os quatro da Axians: Azul `#1068eb`, Verde `#0a7a50`, Vermelho `#d81e1e`, Preto `#2a2a2a` — sem edição livre de cor. Foi usada a cor da escala aplicada (`themeRamps --primary`); no Verde vale o degrau 700, porque `#0e8e5e` não chega a 4,5:1 com texto branco nem escuro. O tema muda marca, fundo e tinta; os neutros (bordas, poços, texto secundário) ficam sempre na escala slate (`core/brand.ts · brandVars`). `tema.json` antigo com `fundo`/`tinta` próprios continua aceito. Prévia ao vivo: barra do sistema, tela de login e elementos da interface.
+
+**Fora do escopo desta adoção (decisão consciente).**
+- Ícones: o SGI usa Material Design Icons; o app mantém `lucide-react` (traço equivalente). Trocar a biblioteca exige mexer em ~130 pontos e fica para uma etapa própria.
+- Modo escuro (`.dark`) não existe no SGI e ficou como estava.
+- A PT impressa (`PermitSheet`) segue preto no branco; só a régua do cabeçalho usa a primária.
+- Pendências do próprio design system (P1, P5, P12, P17, P18…) não foram decididas aqui; onde foi preciso escolher, a escolha está registrada acima.
+
+## Gestão de Ativos (SGI Forces · UC-BACK-01, 24/11/2026)
+
+Locais e ativos são cadastrados numa tela só (`#ativos`, componente `registry/AssetManagement`), no padrão do Backoffice do SGI Forces. "Locais" e "Ativos" deixaram de ser itens do menu; `#locais` abre esta tela.
+
+**Cadeia.** Planta → Área → Equipamento → Equipamento aninhado. O botão primário do cabeçalho cria o próximo nível do que está selecionado: nada ou planta → "Nova área" (com planta selecionada), área → "Novo equipamento", equipamento → "Equip. aninhado". "Nova planta" fica sempre como botão secundário. O modelo é o que o PTW já tinha: planta e área são locais (tipos com `systemKey` `planta`/`area`, criados na primeira planta se faltarem), equipamento é ativo numa área, aninhado é ativo "é parte de" outro (a mesma relação da trava de equipamento). A ficha SGI fica em `attrs` (`core/assetAttrs.ts`).
+
+**Layout.** Duas colunas a partir de `lg`: árvore à esquerda (cartão com busca "Buscar por nome, código ou TAG" no topo, até 25rem, fixa ao rolar) e detalhe à direita; abaixo de `lg`, uma sobre a outra.
+
+**Árvore.** Linha de 36px (44px no toque), recuo de 1,9rem por nível, chevron para abrir/fechar (para a direita fechado, para baixo aberto), ícone e cor por nível — planta `FactoryIcon` na primária, área `MapPinIcon` em teal (`--kind-area`), equipamento `CogIcon` em âmbar (`--kind-equip`) — e contador em pílula cinza à direita (planta: áreas; área: equipamentos; equipamento: aninhados). Dispositivo de proteção mostra o escudo âmbar. Selecionado: fundo `primary-soft`, texto indigo-700 600. Inativo: texto cinza. Plantas ativas antes das inativas. A busca mantém os ancestrais do que achou; no servidor ela inclui EQUNR e TPLNR.
+
+**Detalhe.** Cartão com cabeçalho: migalhas (Gestão de Ativos › planta › área › equipamento pai), tile de 44px com o ícone do nível, nome em 20/600, linha mono "Nível · código" (EQUNR no equipamento), à direita a pílula de estado (● ativa/ativo), "Editar" (contorno) e "Desativar" (contorno verde, como o SGI) ou "Reativar"; desativar pede confirmação e tem Desfazer. Corpo: grade de duas colunas com rótulo em caixa alta 11/600 e valor; códigos SAP em mono; datas em dd/mm/aaaa. Equipamento ainda tem "É dispositivo de proteção" (bloco âmbar com tipo, princípio, bypass, sistema, classe de risco e protegidos) e "PTs abertas neste equipamento". Um link leva à página completa antiga (`#ativo/<id>`, `#local/<id>`: relações, pessoas com cargo, histórico).
+
+**Formulários.** Diálogo largo (`FormDialog wide`), duas colunas, rótulo acima e ajuda `[SAP] …` abaixo; data com máscara própria dd/mm/aaaa (`DateInput`, nunca o campo nativo, P19). Equipamento: planta e área obrigatórias (no aninhado vêm do nó pai, travadas), código/TAG, nome, tipo, ficha SAP, chave "É dispositivo de proteção?" que abre o bloco de proteção, e "Equipamento ativo".
+
+
+## Delegações (SGI Forces · Aprovação › Delegações, 24/11/2026)
+
+- Cabeçalho "Delegações" com subtítulo "Transferência temporária de poderes de aprovação"; ação primária "Nova delegação".
+- Cartão com barra de filtros (Todos os status / Ativa / Agendada / Expirada / Revogada, "Período de … até …" em dd/mm/aaaa, Limpar, contador "n de m") e tabela: Delegante (avatar índigo) → Delegado (avatar navy), Período "10 jan 2024 — 20 jan 2024", Escopo (planta; segunda linha "Todas as aprovações" ou "Só: <aprovação>"), Motivo, Status em pílula (ativa verde, agendada índigo, expirada cinza, revogada vermelha) e Ações (ícone vermelho de revogar). No celular a tabela vira lista de cartões.
+- Modal Nova delegação em duas colunas: Delegante, Delegado, Início, Fim, Escopo (planta), Aprovação (só quando o delegante tem mais de uma) e Observação. Datas em dias: início hoje = agora; fim inclusivo; até 7 dias corridos.
+- Diferenças do SGI, para manter as regras do PTW: o delegado precisa ter o cargo da aprovação no escopo (o SGI aceita qualquer usuário); só aparecem como delegantes os aprovadores nominais de aprovação delegável; a delegação não é apagada, é revogada com motivo e preserva as assinaturas já feitas.
+
+
+## Dashboard (SPEC 001, 24/11/2026)
+
+Substitui as telas "Minha área" e "Desabilitados agora" (as seções acima descrevem o conteúdo que foi para os painéis). Spec: `specs/001-dashboard.md`.
+
+- `#dashboard` é a tela inicial. O menu Operação tem Dashboard (número de "Sua vez") e Quadro de PTs. As rotas antigas são apelidos: `#minha-area`→`#dashboard`, `#minha-area/pts`→`#dashboard/pts` (rola até Aguardando), `#minha-area/eu`→`#dashboard/eu` (Seus cargos e conta), `#desabilitados`→`#dashboard/protecoes`.
+- Cabeçalho: ícone em quadrado índigo suave, "Dashboard", subtítulo "Visão geral das operações e Permissões de Trabalho", "Nova PT" e "⋯ Seus cargos e conta". Avisos (servidor, bloqueios de cargo, cargos vencendo) acima dos painéis.
+- Painéis em cartão com cabeçalho próprio (ícone, h2, linha suave). A partir de `lg`: Desabilitados agora (2/3) à esquerda e Minha Área (1/3) à direita. Abaixo de `lg`: uma coluna com Minha Área primeiro; no tablet os três blocos lado a lado; no celular "Em campo" primeiro.
+- Desabilitados agora: três contadores (vermelho, âmbar, índigo) com ↗ que abre e rola até o grupo; "Detalhamento das proteções" com três grupos recolhíveis (contador em pílula, todos abertos ao entrar, estado vazio em caixa cinza com ícone).
+- Minha Área: Sua vez (azul), Aguardando (cinza), Em campo (verde), cada um com número grande, frase e até 3 cartões (2 no tablet). ↗ e "Ver todas (n)" abrem o bloco expandido `#dashboard/<bloco>` (todos os cartões, "Mostrar mais" de 30 em 30, "← Dashboard"). Sem servidor, os números mostram "—" em cinza e Parar continua ativo.

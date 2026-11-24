@@ -1,37 +1,44 @@
-/* Shared workspace surfaces. Paper output keeps its independent PermitSheet styles. */
+/* Shared workspace surfaces (SGI Forces Design System · Cards e tabelas, Navegação).
+   Paper output keeps its independent PermitSheet styles. */
 @media screen {
   .app-shell { --sidebar-width: 16rem; }
   .app-shell main { scroll-margin-top: 5rem; }
   .app-page-header { padding-bottom: 0.25rem; }
+  /* Card: branco, borda slate-200, raio 8px, shadow-sm, padding 20px. */
   .app-list-panel {
     border: 1px solid var(--border);
-    border-radius: 1rem;
+    border-radius: var(--radius);
     background: var(--card);
-    padding: 1rem;
+    padding: 1.25rem;
     box-shadow: var(--shadow-elev-2);
   }
-  .app-table { border: 1px solid var(--border); border-radius: 0.75rem; overflow: hidden; }
+  /* Tabela: cabeçalho em caixa alta sobre slate-50, linhas separadas por borda fina. */
+  .app-table { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
   .app-table thead { background: var(--surface-canvas); }
-  .app-table th { border-color: var(--border); height: 3rem; }
+  .app-table th { border-color: var(--border); height: 2.75rem; }
   .app-table td { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+  .app-table tbody tr[data-state="selected"],
+  .app-table tbody tr[aria-selected="true"] { background: #eff6ff; }
   .app-shell .doc-block {
     border: 1px solid var(--border);
-    border-radius: 1rem;
+    border-radius: var(--radius);
     overflow: hidden;
     background: var(--card);
   }
   .app-shell .doc-cell { border-color: var(--border); padding: 1rem; }
-  .app-shell .stamp { border-width: 1px; outline: none; border-radius: 0.75rem; box-shadow: none; transform: none; }
+  .app-shell .stamp { border-width: 1px; outline: none; border-radius: 0.375rem; box-shadow: none; transform: none; }
   .app-shell .stamp-in { animation: none; }
   .app-shell [data-slot="dialog-content"],
   .app-shell [data-slot="alert-dialog-content"] { border-color: var(--border); }
   .work-column { scroll-margin-top: 5rem; }
   .app-sidebar [data-slot="sidebar-menu-button"]:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-  .app-login { background-image: radial-gradient(ellipse at 12% 15%, var(--brand-glow), transparent 50%); }
-  .app-shell [data-slot="button"][data-variant="default"]:hover:not(:disabled),
-  .app-login [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
-    background-color: var(--primary);
-    box-shadow: var(--shadow-elev-2);
+  /* Login (SGI · Identidade visual, preview "Tela de login"): fundo da marca em degradê, cartão branco. */
+  .app-login {
+    background-color: var(--brand-navy);
+    background-image:
+      radial-gradient(60rem 40rem at 85% -10%, color-mix(in srgb, var(--primary) 55%, transparent), transparent 70%),
+      radial-gradient(40rem 30rem at 0% 110%, color-mix(in srgb, var(--primary) 35%, transparent), transparent 70%),
+      linear-gradient(135deg, var(--brand-navy), color-mix(in srgb, var(--primary) 70%, var(--brand-navy)));
   }
   @media (max-width: 767px) {
     .app-list-panel { padding: 0.75rem; }

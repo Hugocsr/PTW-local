@@ -132,13 +132,16 @@ export function uniqueDenied(list: RecordList | TypeList, state: RegistryState, 
 
 /* ---------- rows, as the audit trigger sees them (columns it strips are left out) ---------- */
 
+/** `attrs` goes in when the record has a sheet (the database row always has one; older fixtures do not). */
+const withAttrs = (row: Row, attrs: unknown): Row => (attrs === undefined ? row : { ...row, attrs: structuredClone(attrs) as Row[string] })
+
 export function locationRow(l: Location): Row {
-  return { id: l.id, parent_id: l.parentId, type_id: l.typeId, code: l.code, name: l.name, aliases: [...l.aliases], origin: l.origin, status: l.status }
+  return withAttrs({ id: l.id, parent_id: l.parentId, type_id: l.typeId, code: l.code, name: l.name, aliases: [...l.aliases], origin: l.origin, status: l.status }, l.attrs)
 }
 
 /** The asset itself; where it is goes in asset_location (assetLocationRow), one row per place. */
 export function assetRow(a: Asset): Row {
-  return { id: a.id, type_id: a.typeId, code: a.code, name: a.name, aliases: [...a.aliases], origin: a.origin, status: a.status }
+  return withAttrs({ id: a.id, type_id: a.typeId, code: a.code, name: a.name, aliases: [...a.aliases], origin: a.origin, status: a.status }, a.attrs)
 }
 
 export function assetLocationRow(assetId: string, locationId: string): Row {

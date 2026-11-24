@@ -30,8 +30,17 @@ export function brandImageUrl(file: string | null): string | null {
   return file === null ? null : /^[0-9a-f]{64}\.png$/.test(file) ? `/api/v1/appearance/assets/${file}` : `/tema/${file}`
 }
 
+/**
+ * Templates de identidade visual (SGI Forces Design System · Identidade visual): o cliente escolhe um, sem
+ * edição livre de cor. "Indigo" é a primária da interface do design system; Azul, Verde, Vermelho e Preto são
+ * os quatro templates definidos pela Axians, com a cor da escala aplicada (`themeRamps --primary`; ver P18). No Verde vale o degrau 700
+ * (#0a7a50, o `fg-info` do template): o 600 (#0e8e5e) não chega a 4,5:1 com texto branco nem escuro.
+ * Fundo slate-50 e texto slate-900 em todos.
+ */
 export const BRAND_PRESETS = [
-  { name: "Violeta", colors: { brand: "#635bff", canvas: "#f6f8fc", ink: "#16213b" } },
-  { name: "Azul industrial", colors: { brand: "#1d4ed8", canvas: "#f1f5f9", ink: "#172033" } },
-  { name: "Verde", colors: { brand: "#166534", canvas: "#f4f8f5", ink: "#15251c" } },
+  { name: "Indigo", note: "Padrão do sistema", colors: { brand: "#4f46e5", canvas: "#f8fafc", ink: "#0f172a" } },
+  { name: "Azul", note: "Axians Blue", colors: { brand: "#1068eb", canvas: "#f8fafc", ink: "#0f172a" } },
+  { name: "Verde", note: "Operacional", colors: { brand: "#0a7a50", canvas: "#f8fafc", ink: "#0f172a" } },
+  { name: "Vermelho", note: "Alerta", colors: { brand: "#d81e1e", canvas: "#f8fafc", ink: "#0f172a" } },
+  { name: "Preto", note: "Neutro", colors: { brand: "#2a2a2a", canvas: "#f8fafc", ink: "#0f172a" } },
 ] as const

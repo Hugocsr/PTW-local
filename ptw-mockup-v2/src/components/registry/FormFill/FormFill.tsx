@@ -62,7 +62,7 @@ export const sameText = (a: string, b: string) => a.trim().toLocaleLowerCase("pt
 
 export function FormSectionHeader({ id, title, aside }: { id?: string; title: ReactNode; aside?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-foreground/20 pb-2">
+    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border pb-2">
       <h4 id={id} className="type-subtitle">{title}</h4>
       {aside}
     </div>

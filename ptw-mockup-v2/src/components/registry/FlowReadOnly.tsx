@@ -36,7 +36,7 @@ export function FlowReadOnly({ tpl }: { tpl: TemplateContent }) {
           <li key={st.id}>
             <section aria-label={`Etapa ${i + 1}: ${st.name}`} className={cn("flex flex-col gap-4 rounded-lg p-3 md:p-4", st.locked ? "bg-surface-fixed" : "bg-surface-well")}>
               <header className="flex min-h-9 flex-wrap items-center gap-2">
-                <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-foreground bg-background type-meta tabular-nums" aria-hidden>{i + 1}</span>
+                <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-primary bg-primary font-semibold text-primary-foreground type-meta tabular-nums" aria-hidden>{i + 1}</span>
                 <h3 className="type-title min-w-0 flex-1 break-words">{st.name}</h3>
                 {(st.locked || st.kind) && <span className="flex items-center gap-1 type-meta"><LockIcon className="size-3.5" aria-hidden />Fixa</span>}
               </header>
@@ -44,7 +44,7 @@ export function FlowReadOnly({ tpl }: { tpl: TemplateContent }) {
               {sections.some((s) => s.items.length > 0) && <div className="flex flex-col gap-3 border-t pt-3">
                 <h4 className="flex items-center gap-1.5 type-subtitle"><ClipboardListIcon className="size-4 text-muted-foreground" aria-hidden />Preencher</h4>
                 {sections.map((s, k) => (
-                  <section key={s.id} aria-label={`Seção ${k + 1}: ${s.title}`} className="flex min-w-0 flex-col gap-1 border-l-2 border-foreground/25 pl-2 sm:pl-3">
+                  <section key={s.id} aria-label={`Seção ${k + 1}: ${s.title}`} className="flex min-w-0 flex-col gap-1 border-l-2 border-border-strong pl-2 sm:pl-3">
                     <span className="type-label tabular-nums">Seção {k + 1} · {s.items.length} {s.items.length === 1 ? "item" : "itens"}</span>
                     <h5 className="break-words text-[0.9375rem] leading-[1.375rem] font-semibold">{s.title.trim() || "Sem título"}</h5>
                     {s.items.length > 0 && (
@@ -76,7 +76,7 @@ export function FlowReadOnly({ tpl }: { tpl: TemplateContent }) {
                 {st.slots.map((sl) => {
                   const rules = tpl.separation.filter((r) => r.slotA === sl.id || r.slotB === sl.id)
                   return (
-                    <div key={sl.id} className="flex min-w-0 flex-col gap-1 border-l-2 border-foreground/25 pl-2 sm:pl-3">
+                    <div key={sl.id} className="flex min-w-0 flex-col gap-1 border-l-2 border-border-strong pl-2 sm:pl-3">
                       <span className="break-words type-body font-medium">{sl.meaning?.trim() || "Sem descrição"}</span>
                       <span className="break-words type-meta">{slotText(sl)}</span>
                       {rules.map((r) => (

@@ -1,0 +1,1020 @@
+{
+ "formato": "ptw.modelo/1",
+ "idioma": {
+  "documento": "pt-BR",
+  "rotulos": "pt-BR"
+ },
+ "origem": {
+  "tipo": "documento",
+  "arquivos": [
+   {
+    "arquivo": "modelo-pt-nr10-paineis-especificacao.md",
+    "sha256": "d225099720a8b2c74f2b32308236ee64d4089a42fc79b02b1f1a6fd95a104ee6",
+    "paginas": 1
+   }
+  ],
+  "gerado_por": {
+   "ferramenta": "Claude (Cowork) · modelo NR-10 para painéis",
+   "modelo": "claude-opus-5-5",
+   "versao": "1"
+  },
+  "gerado_em": "2026-11-24T15:00:00-03:00"
+ },
+ "modelo": {
+  "nome": "PT elétrica NR-10 — Painéis BT/MT",
+  "descricao": "Intervenção desenergizada em painéis elétricos de baixa e média tensão (CCM/CDC CM4, cubículos PA3/PA4, eletrocentros, inversores, CLP, retificadores). Base: NR-10 vigente (10.5.1 desenergização, 10.5.2 reenergização, 10.7, 10.8, 10.10, 10.11). Trabalho em instalação energizada não é coberto por este modelo.",
+  "prazo_maximo_horas": 12,
+  "escopo": {
+   "tipos_de_local": [
+    "Área"
+   ],
+   "tipos_de_ativo": [
+    "Painel / CCM",
+    "Cubículo de média tensão",
+    "Gaveta de CCM",
+    "Transformador de força",
+    "Painel de inversores",
+    "Retificador / serviços auxiliares"
+   ]
+  },
+  "politica_eletrica": {
+   "standard": "vigente2019",
+   "procedure": "proc",
+   "riskAssessment": "apr",
+   "authorizations": "aut",
+   "workKind": "cond",
+   "isolation": [
+    "d1",
+    "d2",
+    "d3",
+    "d4",
+    "d5",
+    "d6"
+   ],
+   "restoration": [
+    "r1",
+    "r2",
+    "r3",
+    "r4",
+    "r5"
+   ]
+  }
+ },
+ "listas": [],
+ "etapas": [
+  {
+   "ref": "sol",
+   "nome": "Solicitação",
+   "tipo": "solicitacao",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Solicitação — NR-10 10.11.2 ordens de serviço específicas"
+   },
+   "assinaturas": [
+    {
+     "ref": "a_sol",
+     "significado": "Solicita a PT elétrica",
+     "cargo": "Técnico de manutenção",
+     "minimo": 1,
+     "obrigatoria": true,
+     "origem": {
+      "pagina": 1,
+      "trecho": "Solicita a PT elétrica — NR-10 10.11.2"
+     }
+    }
+   ],
+   "secoes": [
+    {
+     "ref": "s_serv",
+     "titulo": "Serviço",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Serviço — NR-10 10.11.2"
+     },
+     "itens": [
+      {
+       "ref": "desc",
+       "tipo": "texto",
+       "rotulo": "Descrição detalhada do serviço no painel",
+       "obrigatorio": true,
+       "longo": true,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Descrição detalhada do serviço no painel — NR-10 10.11.2 tipo de serviço"
+       }
+      },
+      {
+       "ref": "os",
+       "tipo": "documento",
+       "rotulo": "Ordem de serviço (10.11.2)",
+       "obrigatorio": true,
+       "anexo": false,
+       "validade": false,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Ordem de serviço (10.11.2) — NR-10 10.11.2 ordens de serviço específicas"
+       }
+      }
+     ]
+    },
+    {
+     "ref": "s_docs",
+     "titulo": "Documentos NR-10",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Documentos NR-10 — NR-10 10.11.1, 10.2.1, 10.8.4"
+     },
+     "itens": [
+      {
+       "ref": "proc",
+       "tipo": "documento",
+       "rotulo": "Procedimento de trabalho (10.11.1)",
+       "obrigatorio": true,
+       "anexo": true,
+       "validade": true,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Procedimento de trabalho (10.11.1) — NR-10 10.11.1 procedimentos de trabalho"
+       }
+      },
+      {
+       "ref": "apr",
+       "tipo": "documento",
+       "rotulo": "Análise de risco / APR (10.2.1)",
+       "obrigatorio": true,
+       "anexo": true,
+       "validade": true,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Análise de risco / APR (10.2.1) — NR-10 10.2.1 análise de risco"
+       }
+      },
+      {
+       "ref": "aut",
+       "tipo": "documento",
+       "rotulo": "Autorizações NR-10 da equipe (10.8.4 / 10.8.8)",
+       "obrigatorio": true,
+       "anexo": true,
+       "validade": true,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Autorizações NR-10 da equipe (10.8.4 / 10.8.8) — NR-10 10.8.8 treinamento específico; reciclagem bienal"
+       }
+      }
+     ]
+    },
+    {
+     "ref": "s_class",
+     "titulo": "Classificação",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Classificação — NR-10 Glossário BT/AT; 10.6"
+     },
+     "itens": [
+      {
+       "ref": "cond",
+       "tipo": "marcacao",
+       "rotulo": "Condição da instalação no ponto de trabalho",
+       "obrigatorio": true,
+       "multipla": false,
+       "outro": false,
+       "opcoes": [
+        {
+         "rotulo": "Desenergizada (10.5)"
+        },
+        {
+         "rotulo": "Desenergizada com partes energizadas na zona controlada"
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "Condição da instalação no ponto de trabalho — Desenergizada (10.5) | Desenergizada com partes energizadas na zona controlada — NR-10 10.5.1; 10.5.1 e) zona controlada"
+       }
+      },
+      {
+       "ref": "tensao",
+       "tipo": "marcacao",
+       "rotulo": "Nível de tensão do painel",
+       "obrigatorio": true,
+       "multipla": false,
+       "outro": false,
+       "opcoes": [
+        {
+         "rotulo": "Baixa tensão (até 1 kV CA)"
+        },
+        {
+         "rotulo": "Alta tensão (acima de 1 kV CA)"
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "Nível de tensão do painel — Baixa tensão (até 1 kV CA) | Alta tensão (acima de 1 kV CA) — NR-10 Glossário: BT até 1000 V CA; AT acima"
+       }
+      },
+      {
+       "ref": "riscos",
+       "tipo": "marcacao",
+       "rotulo": "Riscos adicionais",
+       "obrigatorio": false,
+       "multipla": true,
+       "outro": true,
+       "opcoes": [
+        {
+         "rotulo": "Arco elétrico"
+        },
+        {
+         "rotulo": "Trabalho em altura"
+        },
+        {
+         "rotulo": "Espaço confinado"
+        },
+        {
+         "rotulo": "Área classificada"
+        },
+        {
+         "rotulo": "Umidade"
+        },
+        {
+         "rotulo": "Campos eletromagnéticos"
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "Riscos adicionais — Arco elétrico | Trabalho em altura | Espaço confinado | Área classificada | Umidade | Campos eletromagnéticos — NR-10 10.2.8 riscos adicionais"
+       }
+      }
+     ]
+    },
+    {
+     "ref": "s_ctrl",
+     "titulo": "Medidas de controle",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Medidas de controle — NR-10 10.2.9.2, 10.7.3, 10.7.8, 10.9, 10.12"
+     },
+     "itens": [
+      {
+       "ref": "ctrl",
+       "tipo": "verificacao",
+       "rotulo": "Antes de enviar",
+       "obrigatorio": true,
+       "respostas": "sim_nao_na",
+       "origem": {
+        "pagina": 1,
+        "trecho": "Antes de enviar — Vestimenta e EPIs adequados à energia incidente de arco (10.2.9.2) | Ferramentas e equipamentos isolantes ensaiados e dentro da validade (10.7.8) | Em AT: equipe com no mínimo dois trabalhadores (10.7.3) | Extintor adequado e plano de emergência conhecidos (10.9 / 10.12) — NR-10 10.2.9.2, 10.7.3, 10.7.8"
+       },
+       "linhas": [
+        {
+         "ref": "c_epi",
+         "rotulo": "Vestimenta e EPIs adequados à energia incidente de arco (10.2.9.2)",
+         "impede": [
+          "nao",
+          "na"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Vestimenta e EPIs adequados à energia incidente de arco (10.2.9.2) — NR-10 10.2.9.2, 10.7.3, 10.7.8"
+         }
+        },
+        {
+         "ref": "c_isol",
+         "rotulo": "Ferramentas e equipamentos isolantes ensaiados e dentro da validade (10.7.8)",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Ferramentas e equipamentos isolantes ensaiados e dentro da validade (10.7.8) — NR-10 10.2.9.2, 10.7.3, 10.7.8"
+         }
+        },
+        {
+         "ref": "c_dupla",
+         "rotulo": "Em AT: equipe com no mínimo dois trabalhadores (10.7.3)",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Em AT: equipe com no mínimo dois trabalhadores (10.7.3) — NR-10 10.2.9.2, 10.7.3, 10.7.8"
+         }
+        },
+        {
+         "ref": "c_emerg",
+         "rotulo": "Extintor adequado e plano de emergência conhecidos (10.9 / 10.12)",
+         "impede": [
+          "nao",
+          "na"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Extintor adequado e plano de emergência conhecidos (10.9 / 10.12) — NR-10 10.2.9.2, 10.7.3, 10.7.8"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "ref": "prep",
+   "nome": "Desenergização (10.5.1)",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Desenergização (10.5.1) — NR-10 10.5.1"
+   },
+   "assinaturas": [
+    {
+     "ref": "a_exec",
+     "significado": "Executa a desenergização",
+     "cargo": "Eletricista autorizado (NR-10)",
+     "minimo": 1,
+     "obrigatoria": true,
+     "origem": {
+      "pagina": 1,
+      "trecho": "Executa a desenergização — NR-10 10.5.1"
+     }
+    },
+    {
+     "ref": "a_ver",
+     "significado": "Confere a desenergização",
+     "cargo": "Líder de equipe",
+     "minimo": 1,
+     "obrigatoria": true,
+     "origem": {
+      "pagina": 1,
+      "trecho": "Confere a desenergização — NR-10 10.5.1"
+     }
+    }
+   ],
+   "secoes": [
+    {
+     "ref": "s_bloq",
+     "titulo": "Pontos de bloqueio",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Pontos de bloqueio — NR-10 10.5.1 b) impedimento de reenergização"
+     },
+     "itens": [
+      {
+       "ref": "bloqueios",
+       "tipo": "isolamento",
+       "rotulo": "Dispositivos seccionados e bloqueados",
+       "obrigatorio": true,
+       "minimo_linhas": 1,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Dispositivos seccionados e bloqueados — NR-10 10.5.1 a) b)"
+       }
+      }
+     ]
+    },
+    {
+     "ref": "s_seq",
+     "titulo": "Sequência de desenergização — na ordem",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Sequência de desenergização — na ordem — NR-10 10.5.1 a)–f)"
+     },
+     "itens": [
+      {
+       "ref": "d1",
+       "tipo": "verificacao",
+       "rotulo": "a) Seccionamento",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "d1_l",
+         "rotulo": "Circuito seccionado no dispositivo identificado",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Circuito seccionado no dispositivo identificado — NR-10 10.5.1 a) seccionamento"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "a) Seccionamento — Circuito seccionado no dispositivo identificado — NR-10 10.5.1 a) seccionamento"
+       }
+      },
+      {
+       "ref": "d2",
+       "tipo": "verificacao",
+       "rotulo": "b) Impedimento de reenergização",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "d2_l",
+         "rotulo": "Dispositivo bloqueado com cadeado e etiqueta pessoal",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Dispositivo bloqueado com cadeado e etiqueta pessoal — NR-10 10.5.1 b) impedimento de reenergização"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "b) Impedimento de reenergização — Dispositivo bloqueado com cadeado e etiqueta pessoal — NR-10 10.5.1 b) impedimento de reenergização"
+       }
+      },
+      {
+       "ref": "d3",
+       "tipo": "verificacao",
+       "rotulo": "c) Ausência de tensão",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "d3_l",
+         "rotulo": "Ausência de tensão constatada com detector testado antes e depois",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Ausência de tensão constatada com detector testado antes e depois — NR-10 10.5.1 c) constatação da ausência de tensão"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "c) Ausência de tensão — Ausência de tensão constatada com detector testado antes e depois — NR-10 10.5.1 c) constatação da ausência de tensão"
+       }
+      },
+      {
+       "ref": "d4",
+       "tipo": "verificacao",
+       "rotulo": "d) Aterramento temporário",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "d4_l",
+         "rotulo": "Aterramento temporário instalado com equipotencialização dos condutores",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Aterramento temporário instalado com equipotencialização dos condutores — NR-10 10.5.1 d) aterramento temporário com equipotencialização"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "d) Aterramento temporário — Aterramento temporário instalado com equipotencialização dos condutores — NR-10 10.5.1 d) aterramento temporário com equipotencialização"
+       }
+      },
+      {
+       "ref": "d5",
+       "tipo": "verificacao",
+       "rotulo": "e) Proteção da zona controlada",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "d5_l",
+         "rotulo": "Elementos energizados na zona controlada protegidos (barreiras / anteparos)",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Elementos energizados na zona controlada protegidos (barreiras / anteparos) — NR-10 10.5.1 e) proteção dos elementos energizados"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "e) Proteção da zona controlada — Elementos energizados na zona controlada protegidos (barreiras / anteparos) — NR-10 10.5.1 e) proteção dos elementos energizados"
+       }
+      },
+      {
+       "ref": "d6",
+       "tipo": "verificacao",
+       "rotulo": "f) Sinalização",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "d6_l",
+         "rotulo": "Sinalização de impedimento de reenergização instalada",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Sinalização de impedimento de reenergização instalada — NR-10 10.5.1 f) sinalização de impedimento de reenergização"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "f) Sinalização — Sinalização de impedimento de reenergização instalada — NR-10 10.5.1 f) sinalização de impedimento de reenergização"
+       }
+      },
+      {
+       "ref": "v_res",
+       "tipo": "numero",
+       "rotulo": "Tensão medida após o seccionamento (maior leitura entre fases e fase-terra)",
+       "obrigatorio": true,
+       "unidade": "V",
+       "casas_decimais": 0,
+       "negativo": false,
+       "minimo": 0,
+       "maximo": 0,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Tensão medida após o seccionamento (maior leitura entre fases e fase-terra) — NR-10 10.5.1 c)"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "ref": "emi",
+   "nome": "Emissão",
+   "tipo": "emissao",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Emissão — NR-10 10.11.2 aprovadas por trabalhador autorizado"
+   },
+   "assinaturas": [
+    {
+     "ref": "a_emi",
+     "significado": "Emite a PT (responsável autorizado)",
+     "cargo": "Supervisora de área",
+     "minimo": 1,
+     "obrigatoria": true,
+     "origem": {
+      "pagina": 1,
+      "trecho": "Emite a PT (responsável autorizado) — NR-10 10.11.2"
+     }
+    }
+   ],
+   "secoes": [
+    {
+     "ref": "s_emi",
+     "titulo": "Conferência do emitente no local",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Conferência do emitente no local — NR-10 10.8, 10.10.1"
+     },
+     "itens": [
+      {
+       "ref": "emi_conf",
+       "tipo": "verificacao",
+       "rotulo": "Antes de emitir",
+       "obrigatorio": true,
+       "respostas": "confirmo",
+       "origem": {
+        "pagina": 1,
+        "trecho": "Antes de emitir — Equipe autorizada, capacitada e com reciclagem em dia (10.8) | Área delimitada e sinalizada; equipamento bloqueado identificado (10.10.1) | Sequência 10.5.1 conferida no painel — NR-10 10.8, 10.10.1"
+       },
+       "linhas": [
+        {
+         "ref": "e1",
+         "rotulo": "Equipe autorizada, capacitada e com reciclagem em dia (10.8)",
+         "impede": [],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Equipe autorizada, capacitada e com reciclagem em dia (10.8) — NR-10 10.8, 10.10.1"
+         }
+        },
+        {
+         "ref": "e2",
+         "rotulo": "Área delimitada e sinalizada; equipamento bloqueado identificado (10.10.1)",
+         "impede": [],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Área delimitada e sinalizada; equipamento bloqueado identificado (10.10.1) — NR-10 10.8, 10.10.1"
+         }
+        },
+        {
+         "ref": "e3",
+         "rotulo": "Sequência 10.5.1 conferida no painel",
+         "impede": [],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Sequência 10.5.1 conferida no painel — NR-10 10.8, 10.10.1"
+         }
+        }
+       ]
+      },
+      {
+       "ref": "foto_bloq",
+       "tipo": "anexo",
+       "rotulo": "Foto do bloqueio e da sinalização",
+       "obrigatorio": true,
+       "aceita": [
+        "foto"
+       ],
+       "minimo": 1,
+       "dica": "Cadeado, etiqueta e aterramento visíveis",
+       "origem": {
+        "pagina": 1,
+        "trecho": "Foto do bloqueio e da sinalização — Cadeado, etiqueta e aterramento visíveis — NR-10 10.10.1 g) identificação de equipamento bloqueado"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "ref": "campo",
+   "nome": "Aceite no campo",
+   "tipo": "aceite_campo",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Aceite no campo — NR-10 10.7.5 avaliação prévia"
+   },
+   "assinaturas": [
+    {
+     "ref": "a_campo",
+     "significado": "Aceita no campo (líder da equipe)",
+     "cargo": "Líder de equipe",
+     "minimo": 1,
+     "obrigatoria": true,
+     "origem": {
+      "pagina": 1,
+      "trecho": "Aceita no campo (líder da equipe) — NR-10 10.7.5"
+     }
+    }
+   ],
+   "secoes": [
+    {
+     "ref": "s_campo",
+     "titulo": "Antes de começar",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Antes de começar — NR-10 10.7.5, 10.12"
+     },
+     "itens": [
+      {
+       "ref": "campo_chk",
+       "tipo": "verificacao",
+       "rotulo": "Equipe e ponto de trabalho",
+       "obrigatorio": true,
+       "respostas": "sim_nao_na",
+       "origem": {
+        "pagina": 1,
+        "trecho": "Equipe e ponto de trabalho — APR e procedimento lidos com a equipe no local | Ausência de tensão reconfirmada no ponto de trabalho | Rota de fuga e resgate definidos (10.12) — NR-10 10.7.5, 10.12"
+       },
+       "linhas": [
+        {
+         "ref": "k1",
+         "rotulo": "APR e procedimento lidos com a equipe no local",
+         "impede": [
+          "nao",
+          "na"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "APR e procedimento lidos com a equipe no local — NR-10 10.7.5, 10.12"
+         }
+        },
+        {
+         "ref": "k2",
+         "rotulo": "Ausência de tensão reconfirmada no ponto de trabalho",
+         "impede": [
+          "nao",
+          "na"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Ausência de tensão reconfirmada no ponto de trabalho — NR-10 10.7.5, 10.12"
+         }
+        },
+        {
+         "ref": "k3",
+         "rotulo": "Rota de fuga e resgate definidos (10.12)",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Rota de fuga e resgate definidos (10.12) — NR-10 10.7.5, 10.12"
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "ref": "ent",
+   "nome": "Entrega",
+   "tipo": "entrega",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Entrega — NR-10 10.5.2"
+   },
+   "assinaturas": [
+    {
+     "ref": "a_ent",
+     "significado": "Entrega a área (serviço concluído)",
+     "cargo": "Líder de equipe",
+     "minimo": 1,
+     "obrigatoria": true,
+     "origem": {
+      "pagina": 1,
+      "trecho": "Entrega a área (serviço concluído) — NR-10 10.5.2"
+     }
+    }
+   ],
+   "secoes": [
+    {
+     "ref": "s_ent",
+     "titulo": "Painel devolvido",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Painel devolvido — NR-10 10.5.2"
+     },
+     "itens": [
+      {
+       "ref": "ent_conf",
+       "tipo": "verificacao",
+       "rotulo": "Antes de entregar",
+       "obrigatorio": true,
+       "respostas": "confirmo",
+       "origem": {
+        "pagina": 1,
+        "trecho": "Antes de entregar — Serviço concluído; portas, tampas e barreiras do painel recolocadas — NR-10 10.5.2"
+       },
+       "linhas": [
+        {
+         "ref": "t1",
+         "rotulo": "Serviço concluído; portas, tampas e barreiras do painel recolocadas",
+         "impede": [],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Serviço concluído; portas, tampas e barreiras do painel recolocadas — NR-10 10.5.2"
+         }
+        }
+       ]
+      },
+      {
+       "ref": "obs_ent",
+       "tipo": "texto",
+       "rotulo": "Observações da entrega",
+       "obrigatorio": false,
+       "longo": true,
+       "origem": {
+        "pagina": 1,
+        "trecho": "Observações da entrega — NR-10 10.5.2"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "ref": "area",
+   "nome": "Reenergização e encerramento (10.5.2)",
+   "tipo": "aceite_area",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Reenergização e encerramento (10.5.2) — NR-10 10.5.2"
+   },
+   "assinaturas": [
+    {
+     "ref": "a_area",
+     "significado": "Autoriza a reenergização e encerra a PT",
+     "cargo": "Supervisora de área",
+     "minimo": 1,
+     "obrigatoria": true,
+     "origem": {
+      "pagina": 1,
+      "trecho": "Autoriza a reenergização e encerra a PT — NR-10 10.5.2"
+     }
+    }
+   ],
+   "secoes": [
+    {
+     "ref": "s_reen",
+     "titulo": "Sequência de reenergização — na ordem",
+     "origem": {
+      "pagina": 1,
+      "trecho": "Sequência de reenergização — na ordem — NR-10 10.5.2 a)–e)"
+     },
+     "itens": [
+      {
+       "ref": "r1",
+       "tipo": "verificacao",
+       "rotulo": "a) Ferramentas retiradas",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "r1_l",
+         "rotulo": "Ferramentas, utensílios e equipamentos retirados",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Ferramentas, utensílios e equipamentos retirados — NR-10 10.5.2 a)"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "a) Ferramentas retiradas — Ferramentas, utensílios e equipamentos retirados — NR-10 10.5.2 a)"
+       }
+      },
+      {
+       "ref": "r2",
+       "tipo": "verificacao",
+       "rotulo": "b) Zona controlada liberada",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "r2_l",
+         "rotulo": "Trabalhadores não envolvidos retirados da zona controlada",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Trabalhadores não envolvidos retirados da zona controlada — NR-10 10.5.2 b)"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "b) Zona controlada liberada — Trabalhadores não envolvidos retirados da zona controlada — NR-10 10.5.2 b)"
+       }
+      },
+      {
+       "ref": "r3",
+       "tipo": "verificacao",
+       "rotulo": "c) Aterramento removido",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "r3_l",
+         "rotulo": "Aterramento temporário, equipotencialização e proteções adicionais removidos",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Aterramento temporário, equipotencialização e proteções adicionais removidos — NR-10 10.5.2 c)"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "c) Aterramento removido — Aterramento temporário, equipotencialização e proteções adicionais removidos — NR-10 10.5.2 c)"
+       }
+      },
+      {
+       "ref": "r4",
+       "tipo": "verificacao",
+       "rotulo": "d) Sinalização removida",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "r4_l",
+         "rotulo": "Sinalização de impedimento de reenergização removida",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Sinalização de impedimento de reenergização removida — NR-10 10.5.2 d)"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "d) Sinalização removida — Sinalização de impedimento de reenergização removida — NR-10 10.5.2 d)"
+       }
+      },
+      {
+       "ref": "r5",
+       "tipo": "verificacao",
+       "rotulo": "e) Religação",
+       "obrigatorio": true,
+       "respostas": "sim_nao",
+       "linhas": [
+        {
+         "ref": "r5_l",
+         "rotulo": "Dispositivos destravados e religados",
+         "impede": [
+          "nao"
+         ],
+         "justificar": [],
+         "origem": {
+          "pagina": 1,
+          "trecho": "Dispositivos destravados e religados — NR-10 10.5.2 e)"
+         }
+        }
+       ],
+       "origem": {
+        "pagina": 1,
+        "trecho": "e) Religação — Dispositivos destravados e religados — NR-10 10.5.2 e)"
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "separacoes": [
+  {
+   "a": "a_exec",
+   "b": "a_ver",
+   "origem": {
+    "pagina": 1,
+    "trecho": "NR-10 Quem confere não é quem executou a desenergização"
+   }
+  },
+  {
+   "a": "a_emi",
+   "b": "a_campo",
+   "travada": true,
+   "origem": {
+    "pagina": 1,
+    "trecho": "NR-10 Emitente não é o líder que aceita no campo"
+   }
+  }
+ ],
+ "campos_do_sistema": [
+  {
+   "rotulo": "PT nº",
+   "corresponde_a": "numero_pt",
+   "origem": {
+    "pagina": 1,
+    "trecho": "PT nº — NR-10 10.11.2"
+   }
+  },
+  {
+   "rotulo": "Local",
+   "corresponde_a": "local",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Local — NR-10 10.11.2 local"
+   }
+  },
+  {
+   "rotulo": "Painel / equipamento",
+   "corresponde_a": "ativos",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Painel / equipamento — NR-10 10.10.1 g)"
+   }
+  },
+  {
+   "rotulo": "Data e janela",
+   "corresponde_a": "janela",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Data e janela — NR-10 10.11.2 data"
+   }
+  },
+  {
+   "rotulo": "Equipe autorizada",
+   "corresponde_a": "equipe",
+   "origem": {
+    "pagina": 1,
+    "trecho": "Equipe autorizada — NR-10 10.8"
+   }
+  }
+ ],
+ "pendencias": []
+}

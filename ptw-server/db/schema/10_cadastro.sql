@@ -44,6 +44,12 @@ end $$;
 create trigger type_def_system_guard before update or delete on ptw.type_def
   for each row execute function ptw.type_def_system_guard();
 
+-- Atributos de ficha (local e ativo): um objeto JSON de até 8 KiB. As chaves e os formatos são da tela
+-- (core/assetAttrs.ts); o banco só garante que é um objeto pequeno.
+create function ptw.attrs_ok(a jsonb) returns boolean
+  language sql immutable parallel safe
+  return jsonb_typeof(a) = 'object' and octet_length(a::text) <= 8192;
+
 -- ---------- Locais: árvore estrita ----------
 create table ptw.location (
   unit_id    uuid not null references ptw.unit,
@@ -54,11 +60,14 @@ create table ptw.location (
   code       text not null check (length(code) between 1 and 64),
   name       text not null check (length(name) between 1 and 200),
   aliases    text[] not null default '{}',
+  -- Dados de integração e de ficha (SGI Forces): planta (fuso, WERKS, IWERK, BUKRS, REGIO) e área
+  -- (TPLNR, BEBER, KOSTL). Objeto de textos curtos; a tela conhece as chaves, o banco só limita.
+  attrs      jsonb not null default '{}'::jsonb check (ptw.attrs_ok(attrs)),
   origin     ptw.record_origin not null default 'manual',
   status     ptw.record_status not null default 'ativo',
   -- Caminho de ids da raiz até o local, mantido pelos gatilhos abaixo.
   path       ltree not null,
-  search     text generated always as (ptw.search_text(variadic array[code, name] || aliases)) stored,
+  search     text generated always as (ptw.search_text(variadic array[code, name, attrs->>'tplnr', attrs->>'werks'] || aliases)) stored,
   revision   integer not null default 1,
   updated_at timestamptz not null default now(),
   primary key (unit_id, id),
@@ -113,9 +122,12 @@ create table ptw.asset (
   code       text not null check (length(code) between 1 and 64),
   name       text not null check (length(name) between 1 and 200),
   aliases    text[] not null default '{}',
+  -- Ficha do equipamento (SGI Forces): EQUNR, fabricante, modelo, série, status operacional, dados SAP
+  -- e o bloco "dispositivo de proteção" (protecao: tipo, princípio, bypass, sistema, classe, protegidos).
+  attrs      jsonb not null default '{}'::jsonb check (ptw.attrs_ok(attrs)),
   origin     ptw.record_origin not null default 'manual',
   status     ptw.record_status not null default 'ativo',
-  search     text generated always as (ptw.search_text(variadic array[code, name] || aliases)) stored,
+  search     text generated always as (ptw.search_text(variadic array[code, name, attrs->>'equnr', attrs->>'tplnr'] || aliases)) stored,
   revision   integer not null default 1,
   updated_at timestamptz not null default now(),
   primary key (unit_id, id),

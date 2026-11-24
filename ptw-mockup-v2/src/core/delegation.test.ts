@@ -24,3 +24,13 @@ it("mandato não transfere cargo nem contorna conta ou elegibilidade do delegant
   expect(candidates([{ ...people[0], enabled: false }, people[1]]).some((c) => c.person.id === "b")).toBe(false)
   expect(candidates(people, { ...d, revokedAt: d.startsAt }).some((c) => c.person.id === "b")).toBe(false)
 })
+
+it("mandato geral (sem aprovação escolhida) cobre todas as aprovações nominais do delegante", () => {
+  const geral = { ...d, slotId: null }
+  expect(delegationMatches(geral, slot, ["loc"], d.startsAt)).toBe(true)
+  expect(delegationMatches(geral, { ...slot, id: "outra-aprovacao" }, ["loc"], d.startsAt)).toBe(true)
+  expect(delegationMatches(geral, { ...slot, personId: "outra-pessoa" }, ["loc"], d.startsAt)).toBe(false)
+  expect(delegationMatches(geral, { ...slot, delegable: false }, ["loc"], d.startsAt)).toBe(false)
+  expect(delegationMatches(geral, slot, ["outra"], d.startsAt)).toBe(false)
+  expect(delegationMatches({ ...d, slotId: "s2" }, slot, ["loc"], d.startsAt)).toBe(false)
+})

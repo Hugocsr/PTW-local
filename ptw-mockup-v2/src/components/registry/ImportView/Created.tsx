@@ -166,7 +166,7 @@ export function Created({ r, p, state, byAlvo, showAll, setShowAll }: {
               return (
                 <li key={st.id} id={`imp-${st.id}`} tabIndex={-1} className={cn("flex flex-col gap-4 rounded-xl p-3 md:p-4", st.locked ? "bg-surface-fixed" : "bg-surface-well")}>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-foreground bg-background type-meta tabular-nums" aria-hidden>{i + 1}</span>
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-primary bg-primary font-semibold text-primary-foreground type-meta tabular-nums" aria-hidden>{i + 1}</span>
                     <h4 className="type-title">{st.name}</h4>
                     {st.kind && <span className="flex items-center gap-1 type-meta"><LockIcon className="size-3.5" aria-hidden />Fixa</span>}
                     {added && <StatusBadge tone="attention" icon={TriangleAlertIcon}>Incluída pelo produto</StatusBadge>}

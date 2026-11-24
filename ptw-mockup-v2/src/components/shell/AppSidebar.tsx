@@ -6,7 +6,7 @@ import { NAV, NAV_GROUP_LABELS, type ViewKey } from "./nav"
 import { useSim } from "@/sim/SimProvider"
 
 /**
- * Only one count earns a place in the menu: work waiting for me (Minha área · Sua vez, the same count).
+ * Only one count earns a place in the menu: work waiting for me (Dashboard · Sua vez, the same count).
  * Totals of places, assets or people are on their own pages.
  */
 import { useBrand } from "@/data/brand"
@@ -27,7 +27,7 @@ export function AppSidebar({ active, unit, agir, onGo }: { active: ViewKey; unit
         {/* With a logo: the logo on its own line over the name; collapsed, only the letters fit. */}
         <div className={cn("flex gap-2 overflow-hidden group-data-[collapsible=icon]:justify-center", brand.logoUrl ? "flex-col items-start group-data-[collapsible=icon]:items-center" : "items-center")}>
           <BrandLogo className="h-7 group-data-[collapsible=icon]:hidden" />
-          <BrandMark className={cn("size-10 rounded-xl type-section group-data-[collapsible=icon]:size-8", brand.logoUrl && "hidden group-data-[collapsible=icon]:flex")} />
+          <BrandMark className={cn("size-10 rounded-[10px] type-section group-data-[collapsible=icon]:size-8", brand.logoUrl && "hidden group-data-[collapsible=icon]:flex")} />
           <div className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
             <strong className="type-section truncate">{brand.name}</strong>
             <span className="type-meta truncate">{unit}</span>
@@ -42,19 +42,19 @@ export function AppSidebar({ active, unit, agir, onGo }: { active: ViewKey; unit
               <SidebarMenu>
                 {section.views.map((k) => {
                   const v = NAV[k]
-                  const n = k === "minha-area" ? agir : 0
+                  const n = k === "dashboard" ? agir : 0
                   return (
                     <SidebarMenuItem key={k}>
-                      <SidebarMenuButton isActive={active === k} aria-current={active === k ? "page" : undefined} className="min-h-11 rounded-xl px-3 text-sidebar-foreground data-active:font-semibold data-active:text-sidebar-accent-foreground" tooltip={n ? `${v.title} · ${n} para agir` : v.title} onClick={() => go(k)}>
+                      <SidebarMenuButton isActive={active === k} aria-current={active === k ? "page" : undefined} className="min-h-11 rounded-md px-3 font-medium text-sidebar-foreground md:min-h-9 data-active:font-semibold data-active:text-sidebar-accent-foreground data-active:[&_svg]:text-sidebar-accent-foreground" tooltip={n ? `${v.title} · ${n} para agir` : v.title} onClick={() => go(k)}>
                         <v.icon />
                         <span className="min-w-0 truncate">{v.title}</span>
                         {n > 0 && (
-                          <span className="ml-auto min-w-5 rounded-full bg-st-pending-solid px-1.5 text-center text-[0.75rem] font-medium leading-5 text-background tabular-nums group-data-[collapsible=icon]:hidden">
+                          <span className="ml-auto min-w-5 rounded-full bg-sidebar-primary px-1.5 text-center text-[0.75rem] font-semibold leading-5 text-sidebar-primary-foreground tabular-nums group-data-[collapsible=icon]:hidden">
                             {n}<span className="sr-only"> para agir</span>
                           </span>
                         )}
                       </SidebarMenuButton>
-                      {n > 0 && <span aria-hidden className="pointer-events-none absolute top-1 left-5 hidden size-2 rounded-full bg-st-pending-solid ring-2 ring-sidebar group-data-[collapsible=icon]:block" />}
+                      {n > 0 && <span aria-hidden className="pointer-events-none absolute top-1 left-5 hidden size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar group-data-[collapsible=icon]:block" />}
                     </SidebarMenuItem>
                   )
                 })}

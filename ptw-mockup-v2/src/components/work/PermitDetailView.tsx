@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { AssetIcon, LocationIcon } from "@/components/shell/TypeIcon"
+import { BLOCK_TITLE, dashboardTab, isBlock } from "@/core/dashboard"
 import { useAudit } from "@/audit/store"
 import { AttachmentOpenContext } from "@/audit/attachmentOpen"
 import { accessEvent, auditGroup, eventIso, type AuditEvent } from "@/core/audit"
@@ -54,7 +55,7 @@ export const PERMIT_TABS = ["etapas", "equipe", "historico"] as const
 export type PermitTab = (typeof PERMIT_TABS)[number]
 const TAB_TITLE: Record<PermitTab, string> = { etapas: "Formulário", equipe: "Equipe", historico: "Histórico" }
 
-/** Back to the screen the permit was opened from (Minha área, Quadro…); the Quadro when opened directly. */
+/** Back to the screen the permit was opened from (Dashboard, Quadro…); the Quadro when opened directly. */
 const back = () => goBack("quadro")
 /** The back link's text: the real name of where "Voltar" goes (DESIGN.md), never just "Voltar". */
 function useBackLabel(): string {
@@ -62,7 +63,9 @@ function useBackLabel(): string {
   const from = backTarget("quadro")
   const [head, id] = from.split("/")
   if (head === "pt") { const p = permits.find((x) => x.id === id); return p ? permitName(p) : "PT" }
-  if (from === "minha-area/eu") return "Seus cargos e conta"
+  if (from === "dashboard/eu") return "Seus cargos e conta"
+  const block = head === "dashboard" ? dashboardTab(id) : undefined
+  if (isBlock(block)) return BLOCK_TITLE[block]
   return (NAV as Record<string, { title: string }>)[head]?.title ?? NAV.quadro.title
 }
 /** Tabs replace the history entry: "Voltar" leaves the PT in one step. */
@@ -327,7 +330,7 @@ function Timeline({ events }: { events: AuditEvent[] }) {
     <div className="flex flex-col gap-6">
       {days.map((d) => (
         <section key={d.day} className="flex flex-col">
-          <h3 className="mb-3 flex items-center gap-3 type-label text-foreground"><span className="tabular-nums">{d.day}</span><span aria-hidden className="h-px flex-1 bg-foreground" /><span className="tabular-nums">{d.items.length}</span></h3>
+          <h3 className="mb-3 flex items-center gap-3 type-label text-foreground"><span className="tabular-nums">{d.day}</span><span aria-hidden className="h-px flex-1 bg-border" /><span className="tabular-nums">{d.items.length}</span></h3>
           <ol className="flex flex-col">
             {d.items.map((e, i) => {
               const { tone, icon: Icon } = auditLook(e)
@@ -470,7 +473,7 @@ function ActionPanel({ permit, rail, ver, next, nextMine }: { permit: Permit; ra
       {showStop && stop?.ok && (
         <>
           <div aria-hidden className="h-16 md:hidden" />
-          <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-foreground bg-background p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden print:hidden">
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background p-3 shadow-[0_-4px_12px_rgb(0_0_0/0.06)] pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden print:hidden">
             <Button variant="stop" className="h-14 w-full text-base font-bold tracking-[0.06em] uppercase" onClick={() => setStopId(permit.id)}><OctagonXIcon data-icon="inline-start" className="size-5" />Parar o trabalho</Button>
           </div>
         </>

@@ -1,0 +1,102 @@
+# Base do modelo "PT elétrica NR-10 — Painéis BT/MT (Actemium)"
+
+Fonte: NR-10 (Portaria MTE 598/2004, redação consolidada vigente). A nova redação (Portaria MTE 737/2026) entra em vigor em 01/06/2027.
+
+- 10.2.1 / 10.2.8 Análise de risco e medidas de controle; riscos adicionais.
+- 10.2.9.2 Vestimentas de trabalho adequadas (condutibilidade, inflamabilidade, influências eletromagnéticas).
+- 10.5.1 Sequência de desenergização: a) seccionamento; b) impedimento de reenergização; c) constatação da ausência de tensão; d) instalação de aterramento temporário com equipotencialização dos condutores dos circuitos; e) proteção dos elementos energizados existentes na zona controlada; f) instalação da sinalização de impedimento de reenergização.
+- 10.5.2 Reenergização: a) retirada das ferramentas, utensílios e equipamentos; b) retirada da zona controlada de todos os trabalhadores não envolvidos; c) remoção do aterramento temporário, da equipotencialização e das proteções adicionais; d) remoção da sinalização de impedimento de reenergização; e) destravamento, se houver, e religação dos dispositivos de seccionamento.
+- 10.6.1 Intervenções em instalações energizadas (≥ 50 V CA ou 120 V CC) só por trabalhadores que atendam 10.8.
+- 10.7.3 Trabalhos em AT e no SEP não podem ser realizados individualmente.
+- 10.7.8 Equipamentos e ferramentas isolantes ensaiados periodicamente.
+- 10.8.8 Treinamento específico; reciclagem bienal.
+- 10.9 Proteção contra incêndio e explosão.
+- 10.10.1 Sinalização: bloqueios, delimitação de área, impedimento de energização, identificação de equipamento bloqueado.
+- 10.11.1 / 10.11.2 Procedimentos de trabalho e ordens de serviço específicas (tipo, data, local, referências aos procedimentos).
+- 10.12 Situação de emergência.
+- Glossário: BT > 50 V CA até 1000 V CA; AT > 1000 V CA.
+
+Equipamentos: linha de painéis Actemium Brasil — CM4 (CDC/CCM BT 690 V, até 4000 A, 65 kA, arco interno IEC/TR 61641, forma 4b), PA4 (cubículos MT 7,2–36 kV, 630–4000 A, até 50 kA, IAC AFLR, LSC2B), PA3 (cubículos MT até 17,5 kV, 400–1100 A, 20 kA), eletrocentros até 36 kV, painéis de inversores, de CLP, de iluminação e retificadores.
+
+
+## Especificação do formulário (cada linha é um campo, assinatura ou etapa do modelo)
+
+- Solicita a PT elétrica — NR-10 10.11.2
+- Descrição detalhada do serviço no painel — NR-10 10.11.2 tipo de serviço
+- Ordem de serviço (10.11.2) — NR-10 10.11.2 ordens de serviço específicas
+- Serviço — NR-10 10.11.2
+- Procedimento de trabalho (10.11.1) — NR-10 10.11.1 procedimentos de trabalho
+- Análise de risco / APR (10.2.1) — NR-10 10.2.1 análise de risco
+- Autorizações NR-10 da equipe (10.8.4 / 10.8.8) — NR-10 10.8.8 treinamento específico; reciclagem bienal
+- Documentos NR-10 — NR-10 10.11.1, 10.2.1, 10.8.4
+- Condição da instalação no ponto de trabalho — Desenergizada (10.5) | Desenergizada com partes energizadas na zona controlada — NR-10 10.5.1; 10.5.1 e) zona controlada
+- Nível de tensão do painel — Baixa tensão (até 1 kV CA) | Alta tensão (acima de 1 kV CA) — NR-10 Glossário: BT até 1000 V CA; AT acima
+- Riscos adicionais — Arco elétrico | Trabalho em altura | Espaço confinado | Área classificada | Umidade | Campos eletromagnéticos — NR-10 10.2.8 riscos adicionais
+- Classificação — NR-10 Glossário BT/AT; 10.6
+- Vestimenta e EPIs adequados à energia incidente de arco (10.2.9.2) — NR-10 10.2.9.2, 10.7.3, 10.7.8
+- Ferramentas e equipamentos isolantes ensaiados e dentro da validade (10.7.8) — NR-10 10.2.9.2, 10.7.3, 10.7.8
+- Em AT: equipe com no mínimo dois trabalhadores (10.7.3) — NR-10 10.2.9.2, 10.7.3, 10.7.8
+- Extintor adequado e plano de emergência conhecidos (10.9 / 10.12) — NR-10 10.2.9.2, 10.7.3, 10.7.8
+- Antes de enviar — Vestimenta e EPIs adequados à energia incidente de arco (10.2.9.2) | Ferramentas e equipamentos isolantes ensaiados e dentro da validade (10.7.8) | Em AT: equipe com no mínimo dois trabalhadores (10.7.3) | Extintor adequado e plano de emergência conhecidos (10.9 / 10.12) — NR-10 10.2.9.2, 10.7.3, 10.7.8
+- Medidas de controle — NR-10 10.2.9.2, 10.7.3, 10.7.8, 10.9, 10.12
+- Solicitação — NR-10 10.11.2 ordens de serviço específicas
+- Executa a desenergização — NR-10 10.5.1
+- Confere a desenergização — NR-10 10.5.1
+- Dispositivos seccionados e bloqueados — NR-10 10.5.1 a) b)
+- Pontos de bloqueio — NR-10 10.5.1 b) impedimento de reenergização
+- Circuito seccionado no dispositivo identificado — NR-10 10.5.1 a) seccionamento
+- a) Seccionamento — Circuito seccionado no dispositivo identificado — NR-10 10.5.1 a) seccionamento
+- Dispositivo bloqueado com cadeado e etiqueta pessoal — NR-10 10.5.1 b) impedimento de reenergização
+- b) Impedimento de reenergização — Dispositivo bloqueado com cadeado e etiqueta pessoal — NR-10 10.5.1 b) impedimento de reenergização
+- Ausência de tensão constatada com detector testado antes e depois — NR-10 10.5.1 c) constatação da ausência de tensão
+- c) Ausência de tensão — Ausência de tensão constatada com detector testado antes e depois — NR-10 10.5.1 c) constatação da ausência de tensão
+- Aterramento temporário instalado com equipotencialização dos condutores — NR-10 10.5.1 d) aterramento temporário com equipotencialização
+- d) Aterramento temporário — Aterramento temporário instalado com equipotencialização dos condutores — NR-10 10.5.1 d) aterramento temporário com equipotencialização
+- Elementos energizados na zona controlada protegidos (barreiras / anteparos) — NR-10 10.5.1 e) proteção dos elementos energizados
+- e) Proteção da zona controlada — Elementos energizados na zona controlada protegidos (barreiras / anteparos) — NR-10 10.5.1 e) proteção dos elementos energizados
+- Sinalização de impedimento de reenergização instalada — NR-10 10.5.1 f) sinalização de impedimento de reenergização
+- f) Sinalização — Sinalização de impedimento de reenergização instalada — NR-10 10.5.1 f) sinalização de impedimento de reenergização
+- Tensão medida após o seccionamento (maior leitura entre fases e fase-terra) — NR-10 10.5.1 c)
+- Sequência de desenergização — na ordem — NR-10 10.5.1 a)–f)
+- Desenergização (10.5.1) — NR-10 10.5.1
+- Emite a PT (responsável autorizado) — NR-10 10.11.2
+- Equipe autorizada, capacitada e com reciclagem em dia (10.8) — NR-10 10.8, 10.10.1
+- Área delimitada e sinalizada; equipamento bloqueado identificado (10.10.1) — NR-10 10.8, 10.10.1
+- Sequência 10.5.1 conferida no painel — NR-10 10.8, 10.10.1
+- Antes de emitir — Equipe autorizada, capacitada e com reciclagem em dia (10.8) | Área delimitada e sinalizada; equipamento bloqueado identificado (10.10.1) | Sequência 10.5.1 conferida no painel — NR-10 10.8, 10.10.1
+- Foto do bloqueio e da sinalização — Cadeado, etiqueta e aterramento visíveis — NR-10 10.10.1 g) identificação de equipamento bloqueado
+- Conferência do emitente no local — NR-10 10.8, 10.10.1
+- Emissão — NR-10 10.11.2 aprovadas por trabalhador autorizado
+- Aceita no campo (líder da equipe) — NR-10 10.7.5
+- APR e procedimento lidos com a equipe no local — NR-10 10.7.5, 10.12
+- Ausência de tensão reconfirmada no ponto de trabalho — NR-10 10.7.5, 10.12
+- Rota de fuga e resgate definidos (10.12) — NR-10 10.7.5, 10.12
+- Equipe e ponto de trabalho — APR e procedimento lidos com a equipe no local | Ausência de tensão reconfirmada no ponto de trabalho | Rota de fuga e resgate definidos (10.12) — NR-10 10.7.5, 10.12
+- Antes de começar — NR-10 10.7.5, 10.12
+- Aceite no campo — NR-10 10.7.5 avaliação prévia
+- Entrega a área (serviço concluído) — NR-10 10.5.2
+- Serviço concluído; portas, tampas e barreiras do painel recolocadas — NR-10 10.5.2
+- Antes de entregar — Serviço concluído; portas, tampas e barreiras do painel recolocadas — NR-10 10.5.2
+- Observações da entrega — NR-10 10.5.2
+- Painel devolvido — NR-10 10.5.2
+- Entrega — NR-10 10.5.2
+- Autoriza a reenergização e encerra a PT — NR-10 10.5.2
+- Ferramentas, utensílios e equipamentos retirados — NR-10 10.5.2 a)
+- a) Ferramentas retiradas — Ferramentas, utensílios e equipamentos retirados — NR-10 10.5.2 a)
+- Trabalhadores não envolvidos retirados da zona controlada — NR-10 10.5.2 b)
+- b) Zona controlada liberada — Trabalhadores não envolvidos retirados da zona controlada — NR-10 10.5.2 b)
+- Aterramento temporário, equipotencialização e proteções adicionais removidos — NR-10 10.5.2 c)
+- c) Aterramento removido — Aterramento temporário, equipotencialização e proteções adicionais removidos — NR-10 10.5.2 c)
+- Sinalização de impedimento de reenergização removida — NR-10 10.5.2 d)
+- d) Sinalização removida — Sinalização de impedimento de reenergização removida — NR-10 10.5.2 d)
+- Dispositivos destravados e religados — NR-10 10.5.2 e)
+- e) Religação — Dispositivos destravados e religados — NR-10 10.5.2 e)
+- Sequência de reenergização — na ordem — NR-10 10.5.2 a)–e)
+- Reenergização e encerramento (10.5.2) — NR-10 10.5.2
+- NR-10 Quem confere não é quem executou a desenergização
+- NR-10 Emitente não é o líder que aceita no campo
+- PT nº — NR-10 10.11.2
+- Local — NR-10 10.11.2 local
+- Painel / equipamento — NR-10 10.10.1 g)
+- Data e janela — NR-10 10.11.2 data
+- Equipe autorizada — NR-10 10.8

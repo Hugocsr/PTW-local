@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest"
 import { canReadView, navigationGroup, navigationSections, visibleViews, type NavigationAccess } from "./navigation"
 
 const operator: NavigationAccess = { canEditRegistry: false, canEditModels: false, canAudit: false, canExport: false }
-const operation = ["minha-area", "quadro", "desabilitados"]
-const registry = ["locais", "ativos", "pessoas"]
+const operation = ["dashboard", "quadro"]
+const registry = ["ativos", "pessoas"]
 const references = [...registry, "modelos", "tipos", "listas"]
 
 describe("menu único por permissões", () => {

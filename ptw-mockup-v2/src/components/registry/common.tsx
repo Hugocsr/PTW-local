@@ -162,7 +162,7 @@ export function PageHeader({ title, count, children }: { title: string; count?: 
 }
 
 export function IconTile({ icon: Icon, className }: { icon: LucideIcon; className?: string }) {
-  return <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground", className)}><Icon className="size-5" /></div>
+  return <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary", className)}><Icon className="size-5" /></div>
 }
 
 export function PersonAvatar({ name, className }: { name: string; className?: string }) {
@@ -295,7 +295,7 @@ export function Stepper({ label, value, min = 1, max, onChange, suffix = "" }: {
 }
 
 /** One style for "pick one of a few" toggles everywhere (forms, filters, Parar reasons). */
-export const TOGGLE_ON = "data-[state=on]:border-foreground/70 data-[state=on]:bg-surface-well data-[state=on]:text-foreground data-[state=on]:font-semibold data-[state=on]:shadow-xs"
+export const TOGGLE_ON = "data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold"
 
 /**
  * Header of a detail view: optional icon or avatar, title, one supporting line and badges, stacked
@@ -326,11 +326,14 @@ export function DetailHeader({ title, media, meta, badges, size = "item", mono }
  * leaves the app (work/nav.ts). Opened from a link or a reload, it goes to `fallback`.
  */
 export function useRecordBack(fallback: "ativos" | "locais" | "pessoas") {
+  const home: ViewKey = fallback === "locais" ? "ativos" : fallback
   const { state } = useRegistry()
   const { permits } = usePermits()
   const [head, id] = backTarget(fallback).split("/")
-  let text: string = NAV[fallback].title
-  if (head === "ativos" && id) text = byId(state.assets, id)?.code ?? text
+  let text: string = NAV[home].title
+  if (head === "ativos" && id) text = byId(state.assets, id)?.code ?? byId(state.locations, id)?.name ?? text
+  else if (head === "ativo" && id) text = byId(state.assets, id)?.code ?? text
+  else if (head === "local" && id) text = byId(state.locations, id)?.name ?? text
   else if (head === "locais" && id) text = byId(state.locations, id)?.name ?? text
   else if (head === "pessoas" && id) text = byId(state.people, id)?.name ?? text
   else if (head === "pt" && id) { const p = byId(permits, id); text = p ? permitName(p) : "PT" }

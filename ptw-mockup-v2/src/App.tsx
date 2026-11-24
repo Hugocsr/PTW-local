@@ -14,7 +14,8 @@ import { Page, PageHeader } from "@/components/shell/Page"
 import { DataProvider, useData, useDataMode } from "@/data/context"
 import { AuditProvider } from "@/audit/store"
 import { QuadroView } from "@/components/work/QuadroView"
-import { MinhaAreaView } from "@/components/work/MinhaAreaView"
+import { DashboardView } from "@/components/work/Dashboard/DashboardView"
+import { dashboardTab, legacyDashboardHash } from "@/core/dashboard"
 import { useMyWork } from "@/components/work/useMyWork"
 import { mustActCount } from "@/core/myWork"
 import { PermitDetailView } from "@/components/work/PermitDetailView"
@@ -24,16 +25,14 @@ import { permitName } from "@/core/permitFormat"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { LoginView } from "@/components/shell/LoginView"
 import { WallView } from "@/components/work/WallView"
-import { BypassView } from "@/components/work/BypassView"
 import { NewPermitView } from "@/components/work/NewPermitView"
 import { canReadView, navigationGroup } from "@/core/navigation"
 import { toast } from "sonner"
 
 /* Cadastro and Configuração load on first visit; the work screens ship in the main bundle. */
-const HierarchyView = lazy(() => import("@/components/registry/HierarchyView").then((m) => ({ default: m.HierarchyView })))
 const LocationDetailView = lazy(() => import("@/components/registry/HierarchyView").then((m) => ({ default: m.LocationDetailView })))
 const AssetDetailView = lazy(() => import("@/components/registry/AssetsView").then((m) => ({ default: m.AssetDetailView })))
-const AssetsView = lazy(() => import("@/components/registry/AssetsView").then((m) => ({ default: m.AssetsView })))
+const AssetManagementView = lazy(() => import("@/components/registry/AssetManagement").then((m) => ({ default: m.AssetManagementView })))
 const PersonDetailView = lazy(() => import("@/components/registry/PeopleView").then((m) => ({ default: m.PersonDetailView })))
 const PeopleView = lazy(() => import("@/components/registry/PeopleView").then((m) => ({ default: m.PeopleView })))
 const TemplatesView = lazy(() => import("@/components/registry/TemplatesView").then((m) => ({ default: m.TemplatesView })))
@@ -46,28 +45,36 @@ const DelegationsView = lazy(() => import("@/components/registry/DelegationsView
 
 /** Screen per route; titles, groups and icons live in the menu table (`shell/nav.ts`). */
 const VIEWS = {
-  "minha-area": MinhaAreaView, quadro: QuadroView, desabilitados: BypassView, locais: HierarchyView, ativos: AssetsView,
+  dashboard: DashboardView, quadro: QuadroView, ativos: AssetManagementView,
   pessoas: PeopleView, modelos: TemplatesView, tipos: TypesView, listas: ListsView, auditoria: AuditView, identidade: AppearanceView, grupos: GroupsView, delegacoes: DelegationsView,
 } satisfies Record<ViewKey, unknown>
 
-/** `#quadro`, `#locais`, … `#pt/<permitId>/<tab>`, `#ativos/<id>`, `#locais/<id>` or `#pessoas/<id>`. */
-type Route = { view: ViewKey; permitId?: string; tab?: string; recordId?: string; newPermit?: boolean }
-/** Old names redirect to Minha área (spec 09: Pendências and Campo became the Hoje view). */
-const ALIAS: Record<string, string> = { pendencias: "minha-area", campo: "minha-area" }
+/**
+ * `#quadro`, … `#pt/<permitId>/<tab>`, `#ativos/<id>` (Gestão de Ativos with a plant, area or equipment
+ * open), `#pessoas/<id>`; `#ativo/<id>` and `#local/<id>` are the full page of one asset or place
+ * (relations, people, history), opened from Gestão de Ativos.
+ */
+type Route = { view: ViewKey; permitId?: string; tab?: string; recordId?: string; newPermit?: boolean; page?: "ativo" | "local" }
+/** Old names: Locais is part of Gestão de Ativos (SGI). Minha área, Pendências, Campo and Desabilitados are the Dashboard (SPEC 001, legacyDashboardHash). */
+const ALIAS: Record<string, string> = { locais: "ativos" }
 const fromHash = (): Route => {
   const [head, id, tab] = window.location.hash.slice(1).split("/")
   if (head === "nova-pt") return { view: "quadro", newPermit: true }
   if (head === "pt" && id) return { view: "quadro", permitId: id, tab: tab ?? "etapas" }
-  if (head === "minha-area") return { view: "minha-area", tab: id }
+  const legacy = legacyDashboardHash(head, id)
+  if (legacy) { const [, t] = legacy.split("/"); return { view: "dashboard", tab: t } }
+  if (head === "dashboard") return { view: "dashboard", tab: dashboardTab(id) }
   // "#auditoria/pt/<id>": Auditoria filtered by one PT (from its Histórico).
   if (head === "auditoria") return id === "pt" && tab ? { view: "auditoria", tab: `pt/${tab}` } : { view: "auditoria" }
   // One asset or one place on its own page; an id that matches nothing shows "não encontrado" there.
-  if ((head === "ativos" || head === "locais" || head === "pessoas") && id) return { view: head, recordId: id }
+  if ((head === "ativo" || head === "local") && id) return { view: "ativos", recordId: id, page: head }
+  if ((head === "ativos" || head === "locais") && id) return { view: "ativos", recordId: id }
+  if (head === "pessoas" && id) return { view: head, recordId: id }
   const key = ALIAS[head] ?? head
-  return { view: key in VIEWS ? (key as ViewKey) : "minha-area" }
+  return { view: key in VIEWS ? (key as ViewKey) : "dashboard" }
 }
 /** The one spelling of a route; unknown, aliased or over-long hashes are rewritten to it. */
-const canonical = (r: Route) => r.newPermit ? "nova-pt" : r.recordId ? `${r.view}/${r.recordId}` : r.permitId ? `pt/${r.permitId}/${r.tab ?? "etapas"}` : r.view === "minha-area" && r.tab ? `minha-area/${r.tab}` : r.view === "auditoria" && r.tab ? `auditoria/${r.tab}` : r.view
+const canonical = (r: Route) => r.newPermit ? "nova-pt" : r.page && r.recordId ? `${r.page}/${r.recordId}` : r.recordId ? `${r.view}/${r.recordId}` : r.permitId ? `pt/${r.permitId}/${r.tab ?? "etapas"}` : r.view === "dashboard" && r.tab ? `dashboard/${r.tab}` : r.view === "auditoria" && r.tab ? `auditoria/${r.tab}` : r.view
 const normalize = (): Route => {
   const r = fromHash()
   const want = `#${canonical(r)}`
@@ -92,8 +99,8 @@ function Shell() {
     const previous = previousRead.current
     previousRead.current = { view: route.view, allowed: routeAllowed }
     if (previous?.view === route.view && previous.allowed && !routeAllowed) {
-      go("minha-area")
-      toast.error("Seu acesso a esta tela foi alterado. Você voltou para Minha área.")
+      go("dashboard")
+      toast.error("Seu acesso a esta tela foi alterado. Você voltou para o Dashboard.")
     }
   }, [route.view, routeAllowed])
   useEffect(() => {
@@ -105,7 +112,7 @@ function Shell() {
   const View = VIEWS[route.view]
   const permit = route.permitId ? permits.find((p) => p.id === route.permitId) : undefined
   // The open record on Ativos/Locais detail, like the PT number (code · name).
-  const record = route.recordId ? (route.view === "ativos" ? state.assets : state.locations).find((r) => r.id === route.recordId) : undefined
+  const record = route.recordId && route.view === "ativos" ? state.assets.find((r) => r.id === route.recordId) ?? state.locations.find((r) => r.id === route.recordId) : undefined
   const person = route.recordId && route.view === "pessoas" ? state.people.find((p) => p.id === route.recordId) : undefined
   const recordLabel = person ? person.name : record ? `${record.code} · ${record.name}` : undefined
 
@@ -136,12 +143,12 @@ function Shell() {
         {/* Padding only: each screen owns its frame through <Page> (72rem, shell/Page.tsx). */}
         <main id="workspace-content" tabIndex={-1} className="flex w-full min-w-0 flex-col gap-4 px-4 pt-5 pb-8 outline-none md:px-6 md:pt-6 lg:px-8">
           <Suspense fallback={<p className="type-meta" role="status">Carregando…</p>}>
-            {!routeAllowed ? <Page><PageHeader title="Acesso não disponível" /><p className="type-body">Sua conta não tem acesso a esta tela.</p><a href="#minha-area" className="type-body underline underline-offset-2">Voltar para Minha área</a></Page> : route.newPermit ? <NewPermitView /> : route.permitId ? <PermitDetailView id={route.permitId} tab={route.tab ?? "etapas"} /> : route.recordId ? (route.view === "ativos" ? <AssetDetailView id={route.recordId} /> : route.view === "pessoas" ? <PersonDetailView id={route.recordId} /> : <LocationDetailView id={route.recordId} />) : route.view === "minha-area" ? <MinhaAreaView tab={route.tab} /> : route.view === "auditoria" ? <AuditView key={route.tab ?? ""} permitFilter={route.tab?.slice(3)} /> : <View />}
+            {!routeAllowed ? <Page><PageHeader title="Acesso não disponível" /><p className="type-body">Sua conta não tem acesso a esta tela.</p><a href="#dashboard" className="type-body underline underline-offset-2">Voltar para o Dashboard</a></Page> : route.newPermit ? <NewPermitView /> : route.permitId ? <PermitDetailView id={route.permitId} tab={route.tab ?? "etapas"} /> : route.recordId ? (route.page === "ativo" ? <AssetDetailView id={route.recordId} /> : route.page === "local" ? <LocationDetailView id={route.recordId} /> : route.view === "pessoas" ? <PersonDetailView id={route.recordId} /> : <AssetManagementView recordId={route.recordId} />) : route.view === "dashboard" ? <DashboardView tab={route.tab} /> : route.view === "auditoria" ? <AuditView key={route.tab ?? ""} permitFilter={route.tab?.slice(3)} /> : <View />}
           </Suspense>
         </main>
         {!demo && <ResourceFooter />}
       </SidebarInset>
-      {/* On a phone the bottom edge holds the sheet actions and the Minha área tab bar. */}
+      {/* On a phone the bottom edge holds the sheet actions and the bottom bar. */}
       <Toaster position={mobile ? "top-center" : "bottom-right"} />
     </SidebarProvider>
   )

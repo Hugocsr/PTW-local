@@ -46,6 +46,15 @@ export interface TypeDef {
 /** systemKey of the relation that makes two assets one piece of equipment (equipment lock). */
 export const PART_OF_KEY = "parte_de"
 
+/** One value of a record's sheet: short text, flag, number, list of texts, or one level of object (protecao). */
+export type AttrLeaf = null | string | boolean | number | string[]
+export type AttrValue = AttrLeaf | { [key: string]: AttrLeaf }
+/**
+ * The record's sheet (`attrs`, jsonb ≤ 8 KiB) in the SGI Forces shape: plant, area and equipment data and the
+ * SAP keys (core/assetAttrs.ts knows the keys). Absent = never set (older fixtures); the database always has one.
+ */
+export type RecordAttrs = Record<string, AttrValue>
+
 export interface Location extends RegistryRecord {
   parentId: string | null
   typeId: string
@@ -54,6 +63,7 @@ export interface Location extends RegistryRecord {
   /** 1–200. */
   name: string
   aliases: string[]
+  attrs?: RecordAttrs
 }
 
 export interface Asset extends RegistryRecord {
@@ -62,6 +72,7 @@ export interface Asset extends RegistryRecord {
   code: string
   name: string
   aliases: string[]
+  attrs?: RecordAttrs
   /** One row of asset_location each (audited per row). */
   locationIds: string[]
 }

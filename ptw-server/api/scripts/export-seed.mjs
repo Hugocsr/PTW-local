@@ -1,4 +1,5 @@
-// Atualiza o pacote estático de carga a partir dos exemplos usados pelos testes do app.
+// Atualiza o pacote estático de carga a partir do cadastro de exemplo no formato SGI Forces
+// (ptw-mockup-v2/src/demo/sgi/registry.ts: plantas, áreas, equipamentos e aninhados, sobre as pessoas e os modelos do app).
 // Rode no host, na raiz da API: node scripts/export-seed.mjs (Node 22.15+).
 import { registerHooks } from "node:module"
 import { existsSync, mkdirSync, writeFileSync } from "node:fs"
@@ -15,7 +16,7 @@ registerHooks({ resolve(specifier, context, next) {
   }
   return next(specifier, context)
 } })
-const { seed } = await import(pathToFileURL(resolve(source, "registry/seed.ts")).href)
+const { sgiSeed: seed } = await import(pathToFileURL(resolve(source, "demo/sgi/registry.ts")).href)
 const dest = resolve(here, "../seed/dados")
 mkdirSync(dest, { recursive: true })
 writeFileSync(resolve(dest, "exemplo.json"), JSON.stringify(seed, null, 2) + "\n")

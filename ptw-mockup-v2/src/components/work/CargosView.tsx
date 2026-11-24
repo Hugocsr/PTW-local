@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils"
 
 
 /**
- * Seus cargos e conta (`#minha-area/eu`): my cargos with their validity and what each lets me sign,
- * then my account. Profile facts, kept off the work list; Minha área links here from its header "⋯".
- * A Registro-like page: back link to Minha área, h1, narrow content on the title's left edge.
+ * Seus cargos e conta (`#dashboard/eu`): my cargos with their validity and what each lets me sign,
+ * then my account. Profile facts, kept off the work list; the Dashboard links here from its header "⋯".
+ * A Registro-like page: back link to the Dashboard, h1, narrow content on the title's left edge.
  */
 export function CargosView() {
   const { state } = useRegistry()
@@ -34,7 +34,7 @@ export function CargosView() {
 
   return (
     <Page>
-      <PageHeader back={{ label: "Minha área", onClick: () => goBack("minha-area") }} title="Seus cargos e conta" />
+      <PageHeader back={{ label: "Dashboard", onClick: () => goBack("dashboard") }} title="Seus cargos e conta" />
       {sim.serverDown && <DownBanner now={sim.now} />}
       <Narrow>
         <PageSection title="Cargos">

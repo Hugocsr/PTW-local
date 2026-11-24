@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react"
-import { ChevronRightIcon, CircleAlertIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon } from "lucide-react"
+import { ChevronRightIcon, CircleAlertIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, ShieldCheckIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -72,18 +72,22 @@ export function LoginView() {
   const loading = state.status === "carregando" && !problem
   const ready = (state.passwordLogin || state.devLogin) && state.status === "ausente"
   return (
-    <main className="app-login relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-surface-canvas px-4 py-10">
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50rem_30rem_at_50%_-10%,var(--brand-glow),transparent_70%)]" />
-      <div className="relative flex w-full max-w-[28rem] flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500 ease-out motion-reduce:animate-none">
-        <div className={cn("flex items-center justify-center", brand.logoUrl ? "flex-col gap-4" : "gap-3")}>
+    <main className="app-login relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-4 py-10">
+      {/* SGI Forces Design System · Tela de login: fundo da marca, cartão branco central com logo, nome e subtítulo. */}
+      <div className="relative flex w-full max-w-[26.25rem] flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500 ease-out motion-reduce:animate-none">
+        <div className="flex flex-col gap-6 rounded-2xl bg-card p-6 text-card-foreground shadow-[0_24px_70px_rgb(7_20_50/0.45)] sm:p-9">
+        <div className={cn("flex items-center justify-center", brand.logoUrl ? "flex-col gap-3" : "gap-3")}>
           <BrandLogo className="h-10 max-w-64 object-center" />
-          {!brand.logoUrl && <BrandMark className="size-11 rounded-xl text-base font-semibold" />}
-          <h1 className="type-page">{brand.name}</h1>
+          {!brand.logoUrl && <BrandMark className="size-12 rounded-xl text-base font-semibold" />}
+          <div className={cn("flex min-w-0 flex-col", brand.logoUrl && "items-center text-center")}>
+            <h1 className="text-xl leading-7 font-semibold tracking-tight">{brand.name}</h1>
+            <p className="type-meta">Gestão de permissões de trabalho</p>
+          </div>
         </div>
 
-        <p className="-mt-2 text-center type-body text-muted-foreground">Gestão de permissões de trabalho</p>
+        <p className="-mt-1 text-center type-body text-muted-foreground">Acesse com sua conta para abrir, executar e encerrar permissões de trabalho em campo.</p>
 
-        <div className="flex flex-col gap-5 rounded-2xl border bg-card p-5 shadow-[0_1px_2px_oklch(0.2_0.02_262/0.06),0_16px_40px_-16px_oklch(0.2_0.04_262/0.22)] sm:p-7">
+        <div className="flex flex-col gap-5">
           {both && (
             <div role="tablist" aria-label="Forma de entrar" className="grid grid-cols-2 gap-1 rounded-lg bg-surface-well p-1">
               {(["senha", "como"] as const).map((m) => (
@@ -114,7 +118,7 @@ export function LoginView() {
                         <li key={p.id}>
                           <button type="button" disabled={!!busy || state.serverDown} onClick={() => void enterAs(p)}
                             className="group flex min-h-14 w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-surface-well focus-visible:bg-surface-well focus-visible:outline-none disabled:opacity-60">
-                            <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-st-pending-surface text-xs font-semibold text-st-pending-fg">{initials(p.name)}</span>
+                            <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">{initials(p.name)}</span>
                             <span className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-sm font-medium">{p.name}</span>
                               <span className="truncate type-data text-muted-foreground">{p.login}</span>
@@ -139,14 +143,21 @@ export function LoginView() {
                     <Input id="entry-password" name="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={!!busy || state.serverDown} required className="h-11 text-base md:text-sm" />
                   </Field>
                 </FieldGroup>
-                <Button type="submit" disabled={!login.trim() || !password || !!busy || state.serverDown} className="h-11 w-full text-sm">{busy === "senha" && <LoaderCircleIcon className="animate-spin" data-icon="inline-start" />}{busy === "senha" ? "Entrando…" : "Entrar"}</Button>
+                <Button type="submit" disabled={!login.trim() || !password || !!busy || state.serverDown} className="h-11 w-full text-[0.9375rem]">{busy === "senha" && <LoaderCircleIcon className="animate-spin" data-icon="inline-start" />}{busy === "senha" ? "Entrando…" : "Entrar"}</Button>
               </form>
             )}
 
           {(state.serverDown || state.error || (as && !people && error)) && <Button variant="outline" disabled={!!busy} onClick={() => void recover()} className="min-h-11 md:min-h-9"><RefreshCwIcon data-icon="inline-start" />{busy === "retry" ? "Tentando…" : "Tentar novamente"}</Button>}
         </div>
 
-        <p className="flex items-center justify-center gap-2 type-meta" role="status">
+        <div className="flex flex-col items-center gap-4">
+          <p className="flex items-center gap-1.5 type-meta"><ShieldCheckIcon aria-hidden className="size-3.5" />Cada entrada abre uma sessão auditada pelo servidor</p>
+          <div className="h-px w-full bg-border" />
+          <p className="type-data text-muted-foreground">{location.host}</p>
+        </div>
+        </div>
+
+        <p className="flex items-center justify-center gap-2 text-xs text-white/85" role="status">
           <span aria-hidden className={`size-2 rounded-full ${state.serverDown ? "bg-st-stop-solid" : loading ? "bg-st-neutral-solid" : "bg-st-ok-solid"}`} />
           {state.serverDown ? "Servidor sem resposta" : "Servidor no ar"}
         </p>

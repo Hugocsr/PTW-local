@@ -96,7 +96,7 @@ function SectionEditor({ section, number, canUp, canDown, onChange, onRemove, on
   const n = section.items.length
   return (
     // A section is a block marked by a left rule inside the stage card: divided, not boxed (DESIGN.md, no card in a card).
-    <section className="flex min-w-0 flex-col gap-1 border-l-2 border-foreground/25 pl-2 sm:pl-3" aria-label={`Seção ${number}: ${title}`}>
+    <section className="flex min-w-0 flex-col gap-1 border-l-2 border-border-strong pl-2 sm:pl-3" aria-label={`Seção ${number}: ${title}`}>
       <span className="type-label tabular-nums">Seção {number} · {n} {n === 1 ? "item" : "itens"}</span>
       {/* On a phone the title takes the whole row and its actions sit below, so the name stays readable. */}
       <div className="flex flex-wrap items-center justify-end gap-1">

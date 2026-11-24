@@ -132,6 +132,7 @@ export function FormDialog({
   missing = [],
   meta,
   tabs,
+  wide,
   children,
 }: {
   open: boolean
@@ -146,6 +147,8 @@ export function FormDialog({
   missing?: string[]
   meta?: ReactNode
   tabs?: { value: string; label: ReactNode; content: ReactNode }[]
+  /** Two-column forms (SGI · modal de cadastro): a wider dialog; the caller lays the fields out. */
+  wide?: boolean
   children: ReactNode
 }) {
   const [saving, setSaving] = useState(false)
@@ -198,7 +201,7 @@ export function FormDialog({
     return (
       <Sheet open={open} onOpenChange={close}>
         <SheetContent side="bottom" className={cn("max-h-dvh overflow-y-auto", fixed && "data-[side=bottom]:h-[90dvh]")}>
-          <div className="mx-auto w-full max-w-md p-4">
+          <div className={cn("mx-auto w-full p-4", wide ? "max-w-2xl" : "max-w-md")}>
             {form(
               <SheetHeader className="p-0 pr-10">
                 <SheetTitle>{title}</SheetTitle>
@@ -212,7 +215,7 @@ export function FormDialog({
   }
   return (
     <Dialog open={open} onOpenChange={close}>
-      <DialogContent className={cn("max-h-[90svh] overflow-y-auto sm:max-w-lg", fixed && "h-[min(42rem,90svh)] content-start")}>
+      <DialogContent className={cn("max-h-[90svh] overflow-y-auto", wide ? "sm:max-w-2xl" : "sm:max-w-lg", fixed && "h-[min(42rem,90svh)] content-start")}>
         {form(
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>

@@ -7,14 +7,14 @@ import { Q, iso, orderBy, pagingOf, run, currentRevision, searchLike, selectPage
 
 type Location = Schemas["Location"]
 
-const COLUMNS = `l.id, l.unit_id, l.parent_id, l.type_id, l.code, l.name, to_jsonb(l.aliases) as aliases, l.origin, l.status, l.revision, l.updated_at`
+const COLUMNS = `l.id, l.unit_id, l.parent_id, l.type_id, l.code, l.name, to_jsonb(l.aliases) as aliases, l.attrs, l.origin, l.status, l.revision, l.updated_at`
 interface Row {
-  id: string; unit_id: string; parent_id: string | null; type_id: string; code: string; name: string; aliases: string[]
+  id: string; unit_id: string; parent_id: string | null; type_id: string; code: string; name: string; aliases: string[]; attrs: Location["attrs"]
   origin: Location["origin"]; status: Location["status"]; revision: number; updated_at: Date
 }
 export const mapLocation = (r: Row): Location => ({
   id: r.id, unitId: r.unit_id, revision: Number(r.revision), updatedAt: iso(r.updated_at), origin: r.origin, status: r.status,
-  parentId: r.parent_id, typeId: r.type_id, code: r.code, name: r.name, aliases: r.aliases,
+  parentId: r.parent_id, typeId: r.type_id, code: r.code, name: r.name, aliases: r.aliases, attrs: r.attrs ?? {},
 })
 
 const SORT = { code: "lower(l.code)", name: "lower(l.name)", updatedAt: "l.updated_at" }
@@ -49,10 +49,10 @@ export async function createLocation(tx: Tx, body: OpBody<"createLocation">): Pr
   const q = new Q()
   const rows = await run<Row>(
     tx,
-    `insert into ptw.location (unit_id, id, parent_id, type_id, code, name, aliases, origin, status)
+    `insert into ptw.location (unit_id, id, parent_id, type_id, code, name, aliases, attrs, origin, status)
      values (ptw.current_unit(), coalesce(${q.p(body.id, "uuid")}, uuidv7()), ${q.p(body.parentId, "uuid")}, ${q.p(body.typeId, "uuid")},
              ${q.p(body.code, "text")}, ${q.p(body.name, "text")}, array(select jsonb_array_elements_text(${q.json(body.aliases ?? [])})),
-             coalesce(${q.p(body.origin, "ptw.record_origin")}, 'manual'), coalesce(${q.p(body.status, "ptw.record_status")}, 'ativo'))
+             ${q.json(body.attrs ?? {})}, coalesce(${q.p(body.origin, "ptw.record_origin")}, 'manual'), coalesce(${q.p(body.status, "ptw.record_status")}, 'ativo'))
      returning id`,
     q.params,
   )
@@ -67,6 +67,7 @@ export async function updateLocation(tx: Tx, id: string, rev: number, body: OpBo
         parent_id = case when ${q.p("parentId" in body, "boolean")} then ${q.p(body.parentId, "uuid")} else parent_id end,
         type_id = ${q.p(body.typeId, "uuid")}, code = ${q.p(body.code, "text")}, name = ${q.p(body.name, "text")},
         aliases = case when ${q.p(body.aliases !== undefined, "boolean")} then array(select jsonb_array_elements_text(${q.json(body.aliases ?? [])})) else aliases end,
+        attrs = case when ${q.p(body.attrs !== undefined, "boolean")} then ${q.json(body.attrs ?? {})} else attrs end,
         origin = coalesce(${q.p(body.origin, "ptw.record_origin")}, origin), status = coalesce(${q.p(body.status, "ptw.record_status")}, status)
       where unit_id = ptw.current_unit() and id = ${q.p(id, "uuid")} and revision = ${q.p(rev, "integer")} returning id`,
     q.params,

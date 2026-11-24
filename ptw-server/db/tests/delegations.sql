@@ -74,6 +74,27 @@ update ptw.delegation set revoked_at=now(),revoked_reason='Encerramento da subst
 select t.check((select count(*)=1 from ptw.signature where permit_id=t.id('de70') and delegation_id=t.id('de61') and voided_at is null),'Delegação: revogação preserva assinatura anterior');
 select t.expect('42501','Delegação: API não altera identidade do mandato',$$update ptw.delegation set delegate_id=t.id('de13') where id=t.id('de61')$$);
 select t.expect('42501','Delegação: API não apaga mandatos',$$delete from ptw.delegation$$);
+-- Mandato geral (tela de Delegações do SGI): sem aprovação escolhida, vale para todas as do delegante.
+select set_config('ptw.unit_id',t.id('de01')::text,false), set_config('ptw.person_id',t.id('de11')::text,false), set_config('ptw.auth','sessao',false);
+select t.expect('23514','Delegação geral: delegante sem aprovação nominal recusado',$$insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by) values(t.id('de01'),t.id('de62'),null,t.id('de13'),t.id('de12'),now(),now()+interval '1 day','Férias',t.id('de11'))$$);
+select t.expect('23514','Delegação geral: delegado sem cargo recusado',$$insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by) values(t.id('de01'),t.id('de62'),null,t.id('de11'),t.id('de14'),now(),now()+interval '1 day','Férias',t.id('de11'))$$);
+select t.expect('23514','Delegação geral: mais de sete dias recusado',$$insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by) values(t.id('de01'),t.id('de62'),null,t.id('de11'),t.id('de12'),now(),now()+interval '7 day 1 minute','Férias',t.id('de11'))$$);
+select t.expect('23514','Delegação geral: início no passado recusado',$$insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by) values(t.id('de01'),t.id('de62'),null,t.id('de11'),t.id('de12'),now()-interval '1 hour',now()+interval '1 day','Férias',t.id('de11'))$$);
+insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,scope_location_id,starts_at,ends_at,reason,created_by)
+ values(t.id('de01'),t.id('de62'),null,t.id('de11'),t.id('de12'),t.id('de02'),now(),now()+interval '7 day','Férias',t.id('de11'));
+select t.check(ptw.delegation_for(t.id('de01'),t.id('de41'),t.id('de12'),(select path from ptw.location where id=t.id('de02'))) = t.id('de62'),'Delegação geral: cobre a aprovação nominal do delegante');
+select t.check(ptw.delegation_for(t.id('de01'),t.id('de41'),t.id('de12'),(select path from ptw.location where id=t.id('de06'))) is null,'Delegação geral: respeita o escopo');
+select t.check(ptw.delegation_for(t.id('de01'),t.id('de42'),t.id('de12'),(select path from ptw.location where id=t.id('de02'))) is null,'Delegação geral: assinatura técnica continua indelegável');
+select t.check(exists(select 1 from ptw.slot_candidates_for(t.id('de01'),t.id('de41'),current_date,(select path from ptw.location where id=t.id('de02'))) c where c.person_id=t.id('de12') and c.ok),'Delegação geral: delegado aparece como candidato');
+select t.expect('23505','Delegação geral: aprovação específica sobreposta recusada',$$insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by) values(t.id('de01'),t.id('de63'),t.id('de41'),t.id('de11'),t.id('de13'),now()+interval '1 hour',now()+interval '2 hour','Ausência',t.id('de11'))$$);
+select t.expect('23505','Delegação geral: outro mandato geral sobreposto recusado',$$insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by) values(t.id('de01'),t.id('de63'),null,t.id('de11'),t.id('de13'),now()+interval '1 hour',now()+interval '2 hour','Ausência',t.id('de11'))$$);
+update ptw.delegation set revoked_at=now(),revoked_reason='Retorno antecipado' where id=t.id('de62');
+select t.check(ptw.delegation_for(t.id('de01'),t.id('de41'),t.id('de12'),(select path from ptw.location where id=t.id('de02'))) is null,'Delegação geral: revogação encerra o mandato');
+insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by)
+ values(t.id('de01'),t.id('de63'),null,t.id('de11'),t.id('de13'),now()+interval '1 day',now()+interval '3 day','Viagem técnica',t.id('de11'));
+select t.check(ptw.delegation_for(t.id('de01'),t.id('de41'),t.id('de13'),(select path from ptw.location where id=t.id('de02'))) is null,'Delegação geral: agendada ainda não vale');
+select t.check((select slot_id is null and scope_location_id is null from ptw.delegation where id=t.id('de63')),'Delegação geral: todas as plantas sem aprovação fixa');
+select t.check((select count(*)=1 from ptw.audit_event where action='delegacao.criada' and entity_id=t.id('de63')),'Delegação geral: criação auditada');
 select t.check((select count(*)=1 from ptw.audit_event where action='pt.assinatura' and data->>'delegacao'=t.id('de61')::text and data->>'representado'=t.id('de11')::text),'Delegação: representação auditada');
 select set_config('ptw.unit_id',t.id('1')::text,false), set_config('ptw.person_id',t.id('d2')::text,false), set_config('ptw.auth','sessao',false);
 select t.check((select count(*)=0 from ptw.delegation),'Delegação: outra unidade não lê mandatos');

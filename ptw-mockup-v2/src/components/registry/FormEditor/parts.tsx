@@ -158,7 +158,7 @@ export function ConditionEditor({ idBase, value, sources, lists, legend, toggle,
             <span className="type-field" id={id("val")}>Quando a resposta for</span>
             <ToggleGroup type="multiple" variant="outline" spacing={2} value={c.anyOf} aria-labelledby={id("val")} className="flex flex-wrap justify-start"
               onValueChange={(v) => set({ ...c, anyOf: v })}>
-              {values.map((o) => <ToggleGroupItem key={o.id} value={o.id} className="min-h-11 bg-surface-row data-[state=on]:bg-foreground data-[state=on]:text-background md:min-h-9">{o.label}</ToggleGroupItem>)}
+              {values.map((o) => <ToggleGroupItem key={o.id} value={o.id} className="min-h-11 bg-surface-row data-[state=on]:border-primary data-[state=on]:bg-primary-soft data-[state=on]:text-primary-hover data-[state=on]:font-semibold md:min-h-9">{o.label}</ToggleGroupItem>)}
             </ToggleGroup>
             {c.anyOf.length === 0 && <p className={cn("type-meta", TONE_TEXT.stop)}>Escolha ao menos uma resposta.</p>}
           </div>

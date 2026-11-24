@@ -1,5 +1,7 @@
 /** Canonical destinations; navigation never grants permission to write or sign. */
-export const NAVIGATION_VIEWS = ["minha-area", "quadro", "desabilitados", "locais", "ativos", "pessoas", "modelos", "tipos", "listas", "identidade", "grupos", "delegacoes", "auditoria"] as const
+/** "dashboard" joins Minha área and Desabilitados agora (SPEC 001); old routes are aliases in App. */
+/** "ativos" is Gestão de Ativos (SGI): plants, areas and equipment on one screen; the old "locais" route opens it. */
+export const NAVIGATION_VIEWS = ["dashboard", "quadro", "ativos", "pessoas", "modelos", "tipos", "listas", "identidade", "grupos", "delegacoes", "auditoria"] as const
 export type NavigationView = typeof NAVIGATION_VIEWS[number]
 export interface NavigationAccess { canEditRegistry: boolean; canEditModels: boolean; canAudit: boolean; canExport: boolean }
 export const NAVIGATION_GROUPS = ["operation", "registry", "configuration", "governance", "reference"] as const
@@ -9,8 +11,8 @@ export interface NavigationSection { group: NavigationGroup; views: NavigationVi
 /** Reference reads remain available to signed-in people; restricted views keep their own grant. */
 export function canReadView(view: NavigationView, access: NavigationAccess): boolean {
   switch (view) {
-    case "minha-area": case "quadro": case "desabilitados":
-    case "locais": case "ativos": case "pessoas": case "modelos": case "tipos": case "listas": return true
+    case "dashboard": case "quadro":
+    case "ativos": case "pessoas": case "modelos": case "tipos": case "listas": return true
     case "auditoria": return access.canAudit
     case "identidade": return access.canEditModels
     case "grupos": return access.canEditRegistry
@@ -23,8 +25,8 @@ export function canReadView(view: NavigationView, access: NavigationAccess): boo
 export function navigationGroup(view: NavigationView, access: NavigationAccess): NavigationGroup | null {
   if (!canReadView(view, access)) return null
   switch (view) {
-    case "minha-area": case "quadro": case "desabilitados": return "operation"
-    case "locais": case "ativos": case "pessoas": return access.canEditRegistry ? "registry" : "reference"
+    case "dashboard": case "quadro": return "operation"
+    case "ativos": case "pessoas": return access.canEditRegistry ? "registry" : "reference"
     case "modelos": return access.canEditModels ? "configuration" : "reference"
     case "tipos": case "listas": return access.canEditRegistry ? "configuration" : "reference"
     case "auditoria": return "governance"

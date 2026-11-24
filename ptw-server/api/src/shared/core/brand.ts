@@ -22,13 +22,17 @@ export interface Brand {
   font: { family: string; file: string | null }
 }
 
+/**
+ * Product default = SGI Forces Design System v2.0: primária indigo-600, fundo slate-50, texto slate-900 e a
+ * fonte do sistema (`system-ui`, resolvida pela pilha `--font-sans` de index.css).
+ */
 export const DEFAULT_BRAND: Brand = {
   name: "PTW Local",
   mark: "PT",
   logo: null,
   symbol: null,
-  colors: { brand: "#635bff", canvas: "#f6f8fc", ink: "#16213b" },
-  font: { family: "Geist Variable", file: null },
+  colors: { brand: "#4f46e5", canvas: "#f8fafc", ink: "#0f172a" },
+  font: { family: "system-ui", file: null },
 }
 
 const HEX = /^#[0-9a-f]{6}$/i
@@ -116,41 +120,37 @@ export function parseBrand(raw: unknown): { brand: Brand; problems: string[] } {
   return { brand, problems }
 }
 
+/** Generic font keywords are written bare; a named family is quoted. */
+const GENERIC_FONTS = new Set(["system-ui", "ui-sans-serif", "ui-serif", "ui-monospace", "sans-serif", "serif"])
+const fontValue = (family: string) => (GENERIC_FONTS.has(family) ? family : `'${family}'`)
+
 /**
- * The CSS variables a theme sets on the page root. State colours are never among them. The greys of the
- * app (wells, quiet surfaces, lines, secondary text) are mixed from the canvas and the ink, so the whole
- * page takes the tone of the plant's paper instead of a neutral grey.
+ * The CSS variables a theme sets on the page root. State colours are never among them, and neither are the
+ * neutrals: lines, wells and secondary text stay the slate scale of the SGI Forces Design System in every
+ * plant. A theme changes the brand colour (button, active item, focus, mark), the page canvas and the ink.
  */
 export function brandVars(b: Brand): Record<string, string> {
   const on = onBrand(b)
-  const { canvas, ink } = b.colors
-  const tone = (canvasPct: number) => `color-mix(in srgb, ${canvas} ${canvasPct}%, ${ink})`
+  const { brand, canvas, ink } = b.colors
   return {
-    "--surface-well": tone(96),
-    "--surface-fixed": tone(90),
-    "--muted": tone(97),
-    "--secondary": tone(96),
-    "--accent": tone(96),
-    "--border": tone(84),
-    "--sidebar-border": tone(88),
-    "--muted-foreground": `color-mix(in srgb, ${ink} 85%, white)`,
-    "--sidebar-foreground": ink,
-    "--primary": b.colors.brand,
+    "--primary": brand,
     "--primary-foreground": on,
-    "--sidebar-primary": b.colors.brand,
+    "--primary-hover": `color-mix(in srgb, ${brand} 85%, black)`,
+    "--primary-soft": `color-mix(in srgb, ${brand} 9%, white)`,
+    "--sidebar-primary": brand,
     "--sidebar-primary-foreground": on,
-    "--ring": b.colors.brand,
-    "--brand-mark-from": b.colors.brand,
-    "--brand-glow": `color-mix(in srgb, ${b.colors.brand} 14%, white)`,
-    "--foreground": b.colors.ink,
-    "--card-foreground": b.colors.ink,
-    "--popover-foreground": b.colors.ink,
-    "--surface-canvas": b.colors.canvas,
+    "--ring": `color-mix(in srgb, ${brand} 80%, white)`,
+    "--brand-mark-from": brand,
+    "--brand-glow": `color-mix(in srgb, ${brand} 9%, white)`,
+    "--foreground": ink,
+    "--card-foreground": ink,
+    "--popover-foreground": ink,
+    "--surface-canvas": canvas,
     "--sidebar": WHITE,
-    "--sidebar-accent": `color-mix(in srgb, ${b.colors.brand} 9%, white)`,
-    "--sidebar-accent-foreground": ink,
-    "--sidebar-ring": b.colors.brand,
-    "--app-font": `'${b.font.family}'`,
+    "--sidebar-accent": `color-mix(in srgb, ${brand} 9%, white)`,
+    "--sidebar-accent-foreground": `color-mix(in srgb, ${brand} 85%, black)`,
+    "--sidebar-ring": `color-mix(in srgb, ${brand} 80%, white)`,
+    "--app-font": fontValue(b.font.family),
   }
 }
 

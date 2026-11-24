@@ -9,39 +9,17 @@
   ],
   "locationTypes": [
     {
-      "id": "019a0002-0000-7000-8000-000000000001",
-      "label": "Prédio",
-      "icon": "predio",
+      "id": "019a0002-0000-7000-8000-000000000101",
+      "label": "Planta",
+      "icon": "fabrica",
+      "systemKey": "planta",
       "active": true
     },
     {
-      "id": "019a0002-0000-7000-8000-000000000002",
+      "id": "019a0002-0000-7000-8000-000000000102",
       "label": "Área",
       "icon": "area",
-      "active": true
-    },
-    {
-      "id": "019a0002-0000-7000-8000-000000000003",
-      "label": "Linha",
-      "icon": "linha",
-      "active": true
-    },
-    {
-      "id": "019a0002-0000-7000-8000-000000000004",
-      "label": "Sala",
-      "icon": "sala",
-      "active": true
-    },
-    {
-      "id": "019a0002-0000-7000-8000-000000000005",
-      "label": "Zona",
-      "icon": "zona",
-      "active": true
-    },
-    {
-      "id": "019a0002-0000-7000-8000-000000000006",
-      "label": "Ponto de trabalho",
-      "icon": "ponto",
+      "systemKey": "area",
       "active": true
     }
   ],
@@ -69,21 +47,9 @@
   ],
   "assetTypes": [
     {
-      "id": "019a0003-0000-7000-8000-000000000001",
-      "label": "Painel / CCM",
-      "icon": "eletrico",
-      "active": true
-    },
-    {
-      "id": "019a0003-0000-7000-8000-000000000002",
-      "label": "Módulo / gaveta",
-      "icon": "eletrico",
-      "active": true
-    },
-    {
-      "id": "019a0003-0000-7000-8000-000000000003",
-      "label": "Alimentador",
-      "icon": "cabo",
+      "id": "019a0003-0000-7000-8000-000000000101",
+      "label": "Bomba",
+      "icon": "bomba",
       "active": true
     },
     {
@@ -93,21 +59,63 @@
       "active": true
     },
     {
-      "id": "019a0003-0000-7000-8000-000000000005",
-      "label": "Tubulação",
-      "icon": "tubulacao",
+      "id": "019a0003-0000-7000-8000-000000000006",
+      "label": "Válvula",
+      "icon": "valvula",
       "active": true
     },
     {
-      "id": "019a0003-0000-7000-8000-000000000006",
-      "label": "Válvula",
-      "icon": "tubulacao",
+      "id": "019a0003-0000-7000-8000-000000000102",
+      "label": "Compressor",
+      "icon": "compressor",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000103",
+      "label": "Agitador",
+      "icon": "ventilador",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000105",
+      "label": "Trocador de calor",
+      "icon": "aquecedor",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000104",
+      "label": "Filtro",
+      "icon": "filtro",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000107",
+      "label": "Moinho",
+      "icon": "ferramenta",
       "active": true
     },
     {
       "id": "019a0003-0000-7000-8000-000000000007",
       "label": "Caldeira",
       "icon": "caldeira",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000005",
+      "label": "Tubulação",
+      "icon": "tubulacao",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000001",
+      "label": "Painel / CCM",
+      "icon": "painel",
+      "active": true
+    },
+    {
+      "id": "019a0003-0000-7000-8000-000000000106",
+      "label": "Sensor / instrumento",
+      "icon": "sensor",
       "active": true
     }
   ],
@@ -136,329 +144,414 @@
   ],
   "locations": [
     {
-      "id": "019a0010-0000-7000-8000-000000000001",
+      "id": "019a0010-0000-7000-8000-000000000101",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
       "parentId": null,
-      "typeId": "019a0002-0000-7000-8000-000000000001",
-      "code": "PRD-01",
-      "name": "Prédio de Produção",
-      "aliases": [
-        "Galpão 1"
-      ]
+      "typeId": "019a0002-0000-7000-8000-000000000101",
+      "code": "PNO",
+      "name": "Planta Norte",
+      "aliases": [],
+      "attrs": {
+        "fuso": "America/Sao_Paulo",
+        "localizacao": "Barcarena/PA",
+        "werks": "BR01",
+        "iwerk": "BR01",
+        "bukrs": "BR00",
+        "regio": "PA"
+      }
     },
     {
-      "id": "019a0010-0000-7000-8000-000000000002",
+      "id": "019a0010-0000-7000-8000-000000000102",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000001",
-      "typeId": "019a0002-0000-7000-8000-000000000003",
-      "code": "L02",
-      "name": "Linha 02",
-      "aliases": [
-        "Linha dois"
-      ]
+      "parentId": "019a0010-0000-7000-8000-000000000101",
+      "typeId": "019a0002-0000-7000-8000-000000000102",
+      "code": "PNO-CAL",
+      "name": "Caldeiraria",
+      "aliases": [],
+      "attrs": {
+        "tplnr": "BR-PNO-CAL",
+        "beber": "01",
+        "kostl": "CC-1001"
+      }
     },
     {
-      "id": "019a0010-0000-7000-8000-000000000003",
+      "id": "019a0010-0000-7000-8000-000000000103",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000002",
-      "typeId": "019a0002-0000-7000-8000-000000000004",
-      "code": "L02-SE",
-      "name": "Sala CCM Linha 02",
-      "aliases": [
-        "Sala elétrica L2"
-      ]
+      "parentId": "019a0010-0000-7000-8000-000000000101",
+      "typeId": "019a0002-0000-7000-8000-000000000102",
+      "code": "PNO-DIG",
+      "name": "Digestores",
+      "aliases": [],
+      "attrs": {
+        "tplnr": "BR-PNO-DIG",
+        "beber": "02",
+        "kostl": "CC-1002"
+      }
     },
     {
-      "id": "019a0010-0000-7000-8000-000000000004",
+      "id": "019a0010-0000-7000-8000-000000000104",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000003",
-      "typeId": "019a0002-0000-7000-8000-000000000006",
-      "code": "L02-SE-C03",
-      "name": "Coluna C03 do CCM",
-      "aliases": []
+      "parentId": "019a0010-0000-7000-8000-000000000101",
+      "typeId": "019a0002-0000-7000-8000-000000000102",
+      "code": "PNO-LAV",
+      "name": "Lavagem",
+      "aliases": [],
+      "attrs": {
+        "tplnr": "BR-PNO-LAV",
+        "beber": "03",
+        "kostl": "CC-1003"
+      }
     },
     {
-      "id": "019a0010-0000-7000-8000-000000000005",
+      "id": "019a0010-0000-7000-8000-000000000105",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000002",
-      "typeId": "019a0002-0000-7000-8000-000000000005",
-      "code": "L02-ENV",
-      "name": "Zona de envase",
-      "aliases": [
-        "Envase"
-      ]
+      "parentId": "019a0010-0000-7000-8000-000000000101",
+      "typeId": "019a0002-0000-7000-8000-000000000102",
+      "code": "PNO-REC",
+      "name": "Recuperação",
+      "aliases": [],
+      "attrs": {
+        "tplnr": "BR-PNO-REC",
+        "beber": "04",
+        "kostl": "CC-1004"
+      }
     },
     {
-      "id": "019a0010-0000-7000-8000-000000000006",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "csv",
-      "status": "em_revisao",
-      "parentId": "019a0010-0000-7000-8000-000000000002",
-      "typeId": "019a0002-0000-7000-8000-000000000005",
-      "code": "L02-COB",
-      "name": "Cobertura da Linha 02",
-      "aliases": []
-    },
-    {
-      "id": "019a0010-0000-7000-8000-000000000007",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "parentId": null,
-      "typeId": "019a0002-0000-7000-8000-000000000002",
-      "code": "UTL",
-      "name": "Utilidades",
-      "aliases": []
-    },
-    {
-      "id": "019a0010-0000-7000-8000-000000000008",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000007",
-      "typeId": "019a0002-0000-7000-8000-000000000004",
-      "code": "UTL-CAL",
-      "name": "Casa de caldeira",
-      "aliases": [
-        "Caldeiraria"
-      ]
-    },
-    {
-      "id": "019a0010-0000-7000-8000-000000000009",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000008",
-      "typeId": "019a0002-0000-7000-8000-000000000006",
-      "code": "UTL-CAL-VB",
-      "name": "Trecho B da linha de vapor",
-      "aliases": []
-    },
-    {
-      "id": "019a0010-0000-7000-8000-00000000000a",
+      "id": "019a0010-0000-7000-8000-000000000106",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
       "parentId": null,
-      "typeId": "019a0002-0000-7000-8000-000000000001",
-      "code": "ELC",
-      "name": "Eletrocentro",
-      "aliases": []
+      "typeId": "019a0002-0000-7000-8000-000000000101",
+      "code": "PSU",
+      "name": "Planta Sul",
+      "aliases": [],
+      "attrs": {
+        "fuso": "America/Sao_Paulo",
+        "localizacao": "Mogi Guaçu/SP",
+        "werks": "BR02",
+        "iwerk": "BR02",
+        "bukrs": "BR00",
+        "regio": "SP"
+      }
     },
     {
-      "id": "019a0010-0000-7000-8000-00000000000b",
+      "id": "019a0010-0000-7000-8000-000000000107",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000106",
+      "typeId": "019a0002-0000-7000-8000-000000000102",
+      "code": "PSU-MOA",
+      "name": "Moagem",
+      "aliases": [],
+      "attrs": {
+        "tplnr": "BR-PSU-MOA",
+        "beber": "01",
+        "kostl": "CC-2001"
+      }
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000108",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "parentId": "019a0010-0000-7000-8000-000000000106",
+      "typeId": "019a0002-0000-7000-8000-000000000102",
+      "code": "PSU-FIL",
+      "name": "Filtração",
+      "aliases": [],
+      "attrs": {
+        "tplnr": "BR-PSU-FIL",
+        "beber": "02",
+        "kostl": "CC-2002"
+      }
+    },
+    {
+      "id": "019a0010-0000-7000-8000-000000000109",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "inativo",
-      "parentId": "019a0010-0000-7000-8000-00000000000a",
-      "typeId": "019a0002-0000-7000-8000-000000000004",
-      "code": "ELC-MT",
-      "name": "Sala de painéis MT (desativada)",
-      "aliases": []
+      "parentId": null,
+      "typeId": "019a0002-0000-7000-8000-000000000101",
+      "code": "PLE",
+      "name": "Planta Leste",
+      "aliases": [],
+      "attrs": {
+        "fuso": "America/Fortaleza",
+        "localizacao": "Pecém/CE",
+        "werks": "BR03",
+        "bukrs": "BR00",
+        "regio": "CE"
+      }
     },
     {
-      "id": "019a0010-0000-7000-8000-00000000000c",
+      "id": "019a0010-0000-7000-8000-00000000010a",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-00000000000a",
-      "typeId": "019a0002-0000-7000-8000-000000000004",
-      "code": "ELC-BT",
-      "name": "Sala de painéis BT",
-      "aliases": []
-    },
-    {
-      "id": "019a0010-0000-7000-8000-00000000000d",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000003",
-      "typeId": "019a0002-0000-7000-8000-000000000006",
-      "code": "L02-SE-K01",
-      "name": "Coluna K01 do CCM-L2-02",
-      "aliases": []
-    },
-    {
-      "id": "019a0010-0000-7000-8000-00000000000e",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000003",
-      "typeId": "019a0002-0000-7000-8000-000000000006",
-      "code": "L02-SE-K02",
-      "name": "Coluna K02 do CCM-L2-02",
-      "aliases": []
-    },
-    {
-      "id": "019a0010-0000-7000-8000-00000000000f",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000005",
-      "typeId": "019a0002-0000-7000-8000-000000000004",
-      "code": "L02-ENV-QF",
-      "name": "Sala do quadro de força do envase",
-      "aliases": [
-        "Salinha do envase"
-      ]
-    },
-    {
-      "id": "019a0010-0000-7000-8000-000000000010",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "parentId": "019a0010-0000-7000-8000-000000000008",
-      "typeId": "019a0002-0000-7000-8000-000000000006",
-      "code": "UTL-CAL-VA",
-      "name": "Trecho A da linha de vapor",
-      "aliases": [
-        "Linha de vapor da lavadora"
-      ]
+      "parentId": "019a0010-0000-7000-8000-000000000109",
+      "typeId": "019a0002-0000-7000-8000-000000000102",
+      "code": "PLE-UTL",
+      "name": "Utilidades",
+      "aliases": [],
+      "attrs": {
+        "tplnr": "BR-PLE-UTL",
+        "beber": "01",
+        "kostl": "CC-3001"
+      }
     }
   ],
   "assets": [
     {
-      "id": "019a0011-0000-7000-8000-000000000001",
+      "id": "019a0011-0000-7000-8000-000000000101",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000001",
-      "code": "CCM-L2-01",
-      "name": "CCM da Linha 02",
-      "aliases": [
-        "CCM2",
-        "Painel 14"
-      ],
-      "locationIds": [
-        "019a0010-0000-7000-8000-000000000003"
-      ]
-    },
-    {
-      "id": "019a0011-0000-7000-8000-000000000002",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000002",
-      "code": "CCM-L2-01.C03",
-      "name": "Gaveta C03 – partida do M-201",
+      "typeId": "019a0003-0000-7000-8000-000000000101",
+      "code": "BP-201",
+      "name": "Bomba de Polpa 201",
       "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-000000000004"
-      ]
+        "019a0010-0000-7000-8000-000000000102"
+      ],
+      "attrs": {
+        "equnr": "10001234",
+        "fabricante": "KSB",
+        "modelo": "MegaCPK 125-250",
+        "nserie": "KSB-2019-88231",
+        "statusOp": "operando",
+        "tplnr": "BR-PNO-CAL-BP201",
+        "catSap": "M",
+        "kostl": "CC-1001",
+        "iwerk": "BR01",
+        "ingrp": "M01",
+        "dataAquis": "2019-03-18",
+        "matnr": "MAT-BOMBA-125"
+      }
     },
     {
-      "id": "019a0011-0000-7000-8000-000000000003",
+      "id": "019a0011-0000-7000-8000-000000000102",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
-      "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000003",
-      "code": "DJ-QGBT-14",
-      "name": "Disjuntor de alimentação do CCM2",
-      "aliases": [
-        "Disjuntor geral CCM2"
-      ],
-      "locationIds": [
-        "019a0010-0000-7000-8000-00000000000c"
-      ]
-    },
-    {
-      "id": "019a0011-0000-7000-8000-000000000004",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "csv",
       "status": "ativo",
       "typeId": "019a0003-0000-7000-8000-000000000004",
       "code": "M-201",
-      "name": "Motor da transportadora de envase",
+      "name": "Motor da Bomba de Polpa 201",
       "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-000000000005"
-      ]
+        "019a0010-0000-7000-8000-000000000102"
+      ],
+      "attrs": {
+        "equnr": "10001235",
+        "fabricante": "WEG",
+        "modelo": "W22 IR3 75 cv",
+        "statusOp": "operando",
+        "tplnr": "BR-PNO-CAL-BP201-M",
+        "catSap": "E",
+        "kostl": "CC-1001"
+      }
     },
     {
-      "id": "019a0011-0000-7000-8000-000000000005",
+      "id": "019a0011-0000-7000-8000-000000000103",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000005",
-      "code": "VAP-3B",
-      "name": "Tubulação de vapor 3\" – trecho B",
-      "aliases": [
-        "Linha vapor B"
-      ],
+      "typeId": "019a0003-0000-7000-8000-000000000106",
+      "code": "LSL-201",
+      "name": "Chave de nível baixo da BP-201",
+      "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-000000000009",
-        "019a0010-0000-7000-8000-000000000005"
-      ]
+        "019a0010-0000-7000-8000-000000000102"
+      ],
+      "attrs": {
+        "equnr": "10001236",
+        "fabricante": "Endress+Hauser",
+        "modelo": "Liquiphant FTL51",
+        "statusOp": "operando",
+        "tplnr": "BR-PNO-CAL-BP201-LSL",
+        "catSap": "E",
+        "protecao": {
+          "tipo": "sensor_de_processo",
+          "principio": "desliga_equipamento",
+          "bypass": "Comando BYPASS LSL201 na tela do DCS, menu Manutenção > Intertravamentos. Requer senha de nível 2.",
+          "sistema": "DCS Emerson DeltaV v14",
+          "classeRisco": "Alto Risco",
+          "protegidos": [
+            "019a0011-0000-7000-8000-000000000105"
+          ]
+        }
+      }
     },
     {
-      "id": "019a0011-0000-7000-8000-000000000006",
+      "id": "019a0011-0000-7000-8000-000000000104",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "sugerida",
-      "status": "em_revisao",
-      "typeId": "019a0003-0000-7000-8000-000000000006",
-      "code": "XV-312",
-      "name": "Válvula de bloqueio do vapor",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000004",
+      "code": "MD-101",
+      "name": "Motor Digestor 101",
       "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-000000000009"
-      ]
+        "019a0010-0000-7000-8000-000000000103"
+      ],
+      "attrs": {
+        "equnr": "10001300",
+        "fabricante": "WEG",
+        "modelo": "W22 250 cv",
+        "statusOp": "operando",
+        "tplnr": "BR-PNO-DIG-MD101",
+        "catSap": "E",
+        "kostl": "CC-1002"
+      }
     },
     {
-      "id": "019a0011-0000-7000-8000-000000000007",
+      "id": "019a0011-0000-7000-8000-00000000010b",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000106",
+      "code": "PSH-101",
+      "name": "Pressostato de alta do Digestor 101",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000103"
+      ],
+      "attrs": {
+        "equnr": "10001301",
+        "fabricante": "Danfoss",
+        "modelo": "KPS 35",
+        "statusOp": "operando",
+        "catSap": "E",
+        "protecao": {
+          "tipo": "chave_de_seguranca",
+          "principio": "emite_alarme_mais_trip",
+          "bypass": "Jumper nos bornes X14:1 e X14:2 do painel CA-P01.",
+          "sistema": "CLP Allen-Bradley ControlLogix L85E",
+          "classeRisco": "Crítico",
+          "protegidos": []
+        }
+      }
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000105",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000101",
+      "code": "BL-301",
+      "name": "Bomba Lavagem 301",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000104"
+      ],
+      "attrs": {
+        "equnr": "10001355",
+        "fabricante": "Sulzer",
+        "modelo": "AHLSTAR A",
+        "statusOp": "em_manutencao",
+        "tplnr": "BR-PNO-LAV-BL301",
+        "catSap": "M",
+        "kostl": "CC-1003"
+      }
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000106",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000102",
+      "code": "CA-401",
+      "name": "Compressor Ar 401",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000105"
+      ],
+      "attrs": {
+        "equnr": "10001500",
+        "fabricante": "Atlas Copco",
+        "modelo": "GA 90",
+        "statusOp": "operando",
+        "tplnr": "BR-PNO-REC-CA401",
+        "catSap": "M",
+        "kostl": "CC-1004"
+      }
+    },
+    {
+      "id": "019a0011-0000-7000-8000-000000000107",
+      "unitId": "019a0001-0000-7000-8000-000000000001",
+      "revision": 1,
+      "updatedAt": "2026-11-06T09:00:00-03:00",
+      "origin": "manual",
+      "status": "ativo",
+      "typeId": "019a0003-0000-7000-8000-000000000006",
+      "code": "XV-401",
+      "name": "Válvula de bloqueio do CA-401",
+      "aliases": [],
+      "locationIds": [
+        "019a0010-0000-7000-8000-000000000105"
+      ],
+      "attrs": {
+        "equnr": "10001501",
+        "fabricante": "Fisher",
+        "statusOp": "operando",
+        "catSap": "M",
+        "protecao": {
+          "tipo": "valvula_de_bloqueio",
+          "principio": "fecha_valvula",
+          "bypass": "Travar a XV-401 aberta com dispositivo mecânico do kit de bypass.",
+          "sistema": "CLP Siemens S7-1500",
+          "classeRisco": "Classe 1",
+          "protegidos": []
+        }
+      }
+    },
+    {
+      "id": "019a0011-0000-7000-8000-00000000010c",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
@@ -466,205 +559,120 @@
       "status": "ativo",
       "typeId": "019a0003-0000-7000-8000-000000000007",
       "code": "CALD-01",
-      "name": "Caldeira 1",
+      "name": "Caldeira de Recuperação 01",
       "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-000000000008"
-      ]
-    },
-    {
-      "id": "019a0011-0000-7000-8000-000000000008",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000001",
-      "code": "CCM-L2-02",
-      "name": "CCM 2 da Linha 02 (utilidades)",
-      "aliases": [
-        "CCM utilidades L2",
-        "Painel 15"
+        "019a0010-0000-7000-8000-000000000105"
       ],
-      "locationIds": [
-        "019a0010-0000-7000-8000-000000000003"
-      ]
+      "attrs": {
+        "equnr": "10001520",
+        "fabricante": "Valmet",
+        "statusOp": "operando",
+        "tplnr": "BR-PNO-REC-CALD01",
+        "catSap": "M",
+        "kostl": "CC-1004",
+        "dataAquis": "2012-08-01"
+      }
     },
     {
-      "id": "019a0011-0000-7000-8000-000000000009",
+      "id": "019a0011-0000-7000-8000-000000000108",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000002",
-      "code": "CCM-L2-02.K01",
-      "name": "Gaveta K01 – partida da bomba P-202",
+      "typeId": "019a0003-0000-7000-8000-000000000107",
+      "code": "MO-01",
+      "name": "Moinho Principal 01",
       "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-00000000000d"
-      ]
+        "019a0010-0000-7000-8000-000000000107"
+      ],
+      "attrs": {
+        "equnr": "20001100",
+        "fabricante": "Metso",
+        "statusOp": "operando",
+        "tplnr": "BR-PSU-MOA-MO01",
+        "catSap": "M",
+        "kostl": "CC-2001"
+      }
     },
     {
-      "id": "019a0011-0000-7000-8000-00000000000a",
+      "id": "019a0011-0000-7000-8000-000000000109",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000002",
-      "code": "CCM-L2-02.K02",
-      "name": "Gaveta K02 – partida do exaustor EX-205",
+      "typeId": "019a0003-0000-7000-8000-000000000103",
+      "code": "AG-002",
+      "name": "Agitador Polpa 02",
       "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-00000000000e"
-      ]
-    },
-    {
-      "id": "019a0011-0000-7000-8000-00000000000b",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "csv",
-      "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000004",
-      "code": "P-202",
-      "name": "Bomba de água gelada do envase",
-      "aliases": [
-        "Bomba 202"
+        "019a0010-0000-7000-8000-000000000107"
       ],
-      "locationIds": [
-        "019a0010-0000-7000-8000-000000000005"
-      ]
+      "attrs": {
+        "equnr": "20001255",
+        "fabricante": "Sulzer",
+        "statusOp": "parado",
+        "tplnr": "BR-PSU-MOA-AG002",
+        "catSap": "M",
+        "kostl": "CC-2001"
+      }
     },
     {
-      "id": "019a0011-0000-7000-8000-00000000000c",
+      "id": "019a0011-0000-7000-8000-00000000010a",
       "unitId": "019a0001-0000-7000-8000-000000000001",
       "revision": 1,
       "updatedAt": "2026-11-06T09:00:00-03:00",
       "origin": "manual",
       "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000001",
-      "code": "QF-ENV-01",
-      "name": "Quadro de força do envase",
-      "aliases": [
-        "QF envase"
-      ],
+      "typeId": "019a0003-0000-7000-8000-000000000104",
+      "code": "FP-01",
+      "name": "Filtro Prensa 01",
+      "aliases": [],
       "locationIds": [
-        "019a0010-0000-7000-8000-00000000000f"
-      ]
-    },
-    {
-      "id": "019a0011-0000-7000-8000-00000000000d",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000001",
-      "code": "QD-L2-ILU",
-      "name": "Quadro de iluminação da Linha 02",
-      "aliases": [
-        "QDL L2"
+        "019a0010-0000-7000-8000-000000000108"
       ],
-      "locationIds": [
-        "019a0010-0000-7000-8000-000000000003"
-      ]
-    },
-    {
-      "id": "019a0011-0000-7000-8000-00000000000e",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000005",
-      "code": "VAP-4A",
-      "name": "Tubulação de vapor 4\" – trecho A",
-      "aliases": [
-        "Linha vapor A"
-      ],
-      "locationIds": [
-        "019a0010-0000-7000-8000-000000000010"
-      ]
-    },
-    {
-      "id": "019a0011-0000-7000-8000-00000000000f",
-      "unitId": "019a0001-0000-7000-8000-000000000001",
-      "revision": 1,
-      "updatedAt": "2026-11-06T09:00:00-03:00",
-      "origin": "manual",
-      "status": "ativo",
-      "typeId": "019a0003-0000-7000-8000-000000000006",
-      "code": "XV-410",
-      "name": "Válvula de bloqueio do trecho A",
-      "aliases": [
-        "Válvula da lavadora"
-      ],
-      "locationIds": [
-        "019a0010-0000-7000-8000-000000000010"
-      ]
+      "attrs": {
+        "equnr": "20001200",
+        "fabricante": "Andritz",
+        "statusOp": "operando",
+        "tplnr": "BR-PSU-FIL-FP01",
+        "catSap": "M",
+        "kostl": "CC-2002"
+      }
     }
   ],
   "relations": [
     {
-      "id": "019a0012-0000-7000-8000-000000000001",
-      "fromId": "019a0011-0000-7000-8000-000000000003",
-      "toId": "019a0011-0000-7000-8000-000000000001",
-      "kindId": "019a0005-0000-7000-8000-000000000001"
-    },
-    {
-      "id": "019a0012-0000-7000-8000-000000000002",
-      "fromId": "019a0011-0000-7000-8000-000000000002",
-      "toId": "019a0011-0000-7000-8000-000000000001",
+      "id": "019a0012-0000-7000-8000-000000000101",
+      "fromId": "019a0011-0000-7000-8000-000000000102",
+      "toId": "019a0011-0000-7000-8000-000000000101",
       "kindId": "019a0005-0000-7000-8000-000000000004"
     },
     {
-      "id": "019a0012-0000-7000-8000-000000000003",
-      "fromId": "019a0011-0000-7000-8000-000000000002",
-      "toId": "019a0011-0000-7000-8000-000000000004",
-      "kindId": "019a0005-0000-7000-8000-000000000001"
-    },
-    {
-      "id": "019a0012-0000-7000-8000-000000000004",
-      "fromId": "019a0011-0000-7000-8000-000000000006",
-      "toId": "019a0011-0000-7000-8000-000000000005",
-      "kindId": "019a0005-0000-7000-8000-000000000002"
-    },
-    {
-      "id": "019a0012-0000-7000-8000-000000000005",
-      "fromId": "019a0011-0000-7000-8000-000000000007",
-      "toId": "019a0011-0000-7000-8000-000000000005",
-      "kindId": "019a0005-0000-7000-8000-000000000003"
-    },
-    {
-      "id": "019a0012-0000-7000-8000-000000000006",
-      "fromId": "019a0011-0000-7000-8000-000000000009",
-      "toId": "019a0011-0000-7000-8000-000000000008",
+      "id": "019a0012-0000-7000-8000-000000000102",
+      "fromId": "019a0011-0000-7000-8000-000000000103",
+      "toId": "019a0011-0000-7000-8000-000000000101",
       "kindId": "019a0005-0000-7000-8000-000000000004"
     },
     {
-      "id": "019a0012-0000-7000-8000-000000000007",
-      "fromId": "019a0011-0000-7000-8000-00000000000a",
-      "toId": "019a0011-0000-7000-8000-000000000008",
+      "id": "019a0012-0000-7000-8000-000000000103",
+      "fromId": "019a0011-0000-7000-8000-00000000010b",
+      "toId": "019a0011-0000-7000-8000-000000000104",
       "kindId": "019a0005-0000-7000-8000-000000000004"
     },
     {
-      "id": "019a0012-0000-7000-8000-000000000008",
-      "fromId": "019a0011-0000-7000-8000-000000000009",
-      "toId": "019a0011-0000-7000-8000-00000000000b",
-      "kindId": "019a0005-0000-7000-8000-000000000001"
+      "id": "019a0012-0000-7000-8000-000000000104",
+      "fromId": "019a0011-0000-7000-8000-000000000107",
+      "toId": "019a0011-0000-7000-8000-000000000106",
+      "kindId": "019a0005-0000-7000-8000-000000000004"
     },
     {
-      "id": "019a0012-0000-7000-8000-000000000009",
-      "fromId": "019a0011-0000-7000-8000-00000000000f",
-      "toId": "019a0011-0000-7000-8000-00000000000e",
-      "kindId": "019a0005-0000-7000-8000-000000000002"
-    },
-    {
-      "id": "019a0012-0000-7000-8000-00000000000a",
-      "fromId": "019a0011-0000-7000-8000-000000000007",
-      "toId": "019a0011-0000-7000-8000-00000000000e",
+      "id": "019a0012-0000-7000-8000-000000000105",
+      "fromId": "019a0011-0000-7000-8000-00000000010c",
+      "toId": "019a0011-0000-7000-8000-000000000106",
       "kindId": "019a0005-0000-7000-8000-000000000003"
     }
   ],
@@ -687,7 +695,7 @@
         {
           "id": "019a0021-0000-7000-8000-000000000101",
           "roleId": "019a0004-0000-7000-8000-000000000004",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "scopeLocationId": null,
           "validUntil": "2027-06-30"
         }
       ]
@@ -712,6 +720,12 @@
           "roleId": "019a0004-0000-7000-8000-000000000003",
           "scopeLocationId": null,
           "validUntil": "2027-06-30"
+        },
+        {
+          "id": "019a0021-0000-7000-8000-000000000202",
+          "roleId": "019a0004-0000-7000-8000-000000000004",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000101",
+          "validUntil": "2027-06-30"
         }
       ]
     },
@@ -733,7 +747,7 @@
         {
           "id": "019a0021-0000-7000-8000-000000000301",
           "roleId": "019a0004-0000-7000-8000-000000000001",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000102",
           "validUntil": "2026-12-31"
         }
       ]
@@ -756,7 +770,7 @@
         {
           "id": "019a0021-0000-7000-8000-000000000401",
           "roleId": "019a0004-0000-7000-8000-000000000002",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000102",
           "validUntil": "2026-12-31"
         }
       ]
@@ -779,7 +793,7 @@
         {
           "id": "019a0021-0000-7000-8000-000000000501",
           "roleId": "019a0004-0000-7000-8000-000000000002",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000007",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000107",
           "validUntil": "2026-12-31"
         }
       ]
@@ -802,7 +816,7 @@
         {
           "id": "019a0021-0000-7000-8000-000000000601",
           "roleId": "019a0004-0000-7000-8000-000000000001",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000007",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000107",
           "validUntil": "2027-06-30"
         }
       ]
@@ -825,7 +839,7 @@
         {
           "id": "019a0021-0000-7000-8000-000000000701",
           "roleId": "019a0004-0000-7000-8000-000000000004",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000007",
+          "scopeLocationId": null,
           "validUntil": "2027-06-30"
         }
       ]
@@ -848,7 +862,7 @@
         {
           "id": "019a0021-0000-7000-8000-000000000801",
           "roleId": "019a0004-0000-7000-8000-000000000002",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000102",
           "validUntil": "2026-12-31"
         }
       ]
@@ -887,13 +901,13 @@
         {
           "id": "019a0021-0000-7000-8000-000000000a01",
           "roleId": "019a0004-0000-7000-8000-000000000003",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000102",
           "validUntil": "2027-06-30"
         },
         {
           "id": "019a0021-0000-7000-8000-000000000a02",
           "roleId": "019a0004-0000-7000-8000-000000000001",
-          "scopeLocationId": "019a0010-0000-7000-8000-000000000002",
+          "scopeLocationId": "019a0010-0000-7000-8000-000000000102",
           "validUntil": "2027-06-30"
         }
       ]
@@ -1111,12 +1125,10 @@
           "holdsEquipment": true,
           "maxWindowHours": null,
           "locationTypeIds": [
-            "019a0002-0000-7000-8000-000000000004",
-            "019a0002-0000-7000-8000-000000000006"
+            "019a0002-0000-7000-8000-000000000102"
           ],
           "assetTypeIds": [
-            "019a0003-0000-7000-8000-000000000001",
-            "019a0003-0000-7000-8000-000000000002"
+            "019a0003-0000-7000-8000-000000000001"
           ],
           "form": {
             "sections": [
@@ -1285,12 +1297,10 @@
           "holdsEquipment": true,
           "maxWindowHours": 12,
           "locationTypeIds": [
-            "019a0002-0000-7000-8000-000000000004",
-            "019a0002-0000-7000-8000-000000000006"
+            "019a0002-0000-7000-8000-000000000102"
           ],
           "assetTypeIds": [
-            "019a0003-0000-7000-8000-000000000001",
-            "019a0003-0000-7000-8000-000000000002"
+            "019a0003-0000-7000-8000-000000000001"
           ],
           "form": {
             "sections": [
@@ -1526,6 +1536,24 @@
               ]
             },
             {
+              "id": "019a0050-0000-7000-8000-000000000102",
+              "name": "Aprovação da gerência",
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000102",
+                  "meaning": "Autoriza a intervenção (gerência)",
+                  "kind": "pessoa",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": "019a0020-0000-7000-8000-000000000001",
+                  "min": 1,
+                  "required": true,
+                  "delegable": true
+                }
+              ]
+            },
+            {
               "id": "019a0051-0000-7000-8000-000000000003",
               "name": "Emissão",
               "kind": "emissao",
@@ -1627,12 +1655,10 @@
           "holdsEquipment": true,
           "maxWindowHours": 12,
           "locationTypeIds": [
-            "019a0002-0000-7000-8000-000000000004",
-            "019a0002-0000-7000-8000-000000000006"
+            "019a0002-0000-7000-8000-000000000102"
           ],
           "assetTypeIds": [
-            "019a0003-0000-7000-8000-000000000001",
-            "019a0003-0000-7000-8000-000000000002"
+            "019a0003-0000-7000-8000-000000000001"
           ],
           "form": {
             "sections": [
@@ -1985,7 +2011,7 @@
           "holdsEquipment": true,
           "maxWindowHours": null,
           "locationTypeIds": [
-            "019a0002-0000-7000-8000-000000000006"
+            "019a0002-0000-7000-8000-000000000102"
           ],
           "assetTypeIds": [
             "019a0003-0000-7000-8000-000000000005",
@@ -2067,6 +2093,24 @@
                   "personId": null,
                   "min": 1,
                   "required": false
+                }
+              ]
+            },
+            {
+              "id": "019a0050-0000-7000-8000-000000000101",
+              "name": "Aprovação da gerência",
+              "slots": [
+                {
+                  "id": "019a0060-0000-7000-8000-000000000101",
+                  "meaning": "Aprova a soldagem (gerência da área)",
+                  "kind": "pessoa",
+                  "roleIds": [
+                    "019a0004-0000-7000-8000-000000000004"
+                  ],
+                  "personId": "019a0020-0000-7000-8000-000000000007",
+                  "min": 1,
+                  "required": true,
+                  "delegable": true
                 }
               ]
             },
@@ -2181,12 +2225,10 @@
           "holdsEquipment": true,
           "maxWindowHours": 72,
           "locationTypeIds": [
-            "019a0002-0000-7000-8000-000000000004",
-            "019a0002-0000-7000-8000-000000000006"
+            "019a0002-0000-7000-8000-000000000102"
           ],
           "assetTypeIds": [
             "019a0003-0000-7000-8000-000000000001",
-            "019a0003-0000-7000-8000-000000000002",
             "019a0003-0000-7000-8000-000000000005",
             "019a0003-0000-7000-8000-000000000006"
           ],

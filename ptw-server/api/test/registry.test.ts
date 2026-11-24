@@ -498,6 +498,34 @@ describe.skipIf(!HAS_DB)("com banco (PostgreSQL de verdade, como ptw_api)", () =
     expect(dup.json()).toMatchObject({ code: "23505" })
   })
 
+  it("ficha SGI: planta → área → equipamento → aninhado, com atributos lidos, buscados e trocados por PUT", async () => {
+    const planta = await req("POST", "/locations", {}, { typeId: T.local, code: "SGI-PNO", name: "Planta Norte", attrs: { fuso: "America/Sao_Paulo", werks: "BR01", regio: "PA" } })
+    expect(planta.statusCode, planta.body).toBe(201)
+    const p = planta.json() as { id: string; attrs: Record<string, unknown> }
+    expect(p.attrs).toEqual({ fuso: "America/Sao_Paulo", werks: "BR01", regio: "PA" })
+    const area = (await req("POST", "/locations", {}, { typeId: T.local, code: "SGI-CAL", name: "Caldeiraria", parentId: p.id, attrs: { tplnr: "BR-PNO-CAL" } })).json() as { id: string; attrs: Record<string, unknown> }
+    expect(area.attrs).toEqual({ tplnr: "BR-PNO-CAL" })
+    const ficha = { equnr: "10001234", fabricante: "KSB", statusOp: "operando", protecao: { tipo: "sensor_de_processo", principio: "desliga_equipamento", protegidos: [] } }
+    const eq = await req("POST", "/assets", {}, { typeId: T.ativo, code: "SGI-BP-201", name: "Bomba de Polpa 201", locationIds: [area.id], attrs: ficha })
+    expect(eq.statusCode, eq.body).toBe(201)
+    const e = eq.json() as { id: string; revision: number; attrs: Record<string, unknown> }
+    expect(e.attrs).toEqual(ficha)
+    const filho = (await req("POST", "/assets", {}, { typeId: T.ativo, code: "SGI-BP-201-M", name: "Motor da bomba", locationIds: [area.id] })).json() as { id: string; attrs: Record<string, unknown> }
+    expect(filho.attrs).toEqual({})
+    expect((await req("POST", "/asset-relations", {}, { fromId: filho.id, toId: e.id, kindId: T.parte })).statusCode).toBe(201)
+    const found = (await req("GET", "/assets?q=10001234")).json() as { items: { id: string }[] }
+    expect(found.items.map((x) => x.id)).toEqual([e.id])
+    // PUT sem attrs mantém a ficha; com attrs troca inteira.
+    const keep = await req("PUT", `/assets/${e.id}`, { "if-match": `"${e.revision}"` }, { typeId: T.ativo, code: "SGI-BP-201", name: "Bomba de Polpa 201 A" })
+    expect((keep.json() as { attrs: unknown }).attrs).toEqual(ficha)
+    const swap = await req("PUT", `/assets/${e.id}`, { "if-match": `"${(keep.json() as { revision: number }).revision}"` }, { typeId: T.ativo, code: "SGI-BP-201", name: "Bomba de Polpa 201 A", attrs: { equnr: "10009999" } })
+    expect(swap.statusCode, swap.body).toBe(200)
+    expect((swap.json() as { attrs: unknown }).attrs).toEqual({ equnr: "10009999" })
+    expect((await events("cadastro.ativo.alterado")).at(-1)!.data).toMatchObject({ para: { attrs: { equnr: "10009999" } } })
+    const bad = await req("POST", "/assets", {}, { typeId: T.ativo, code: "SGI-BAD", name: "x", attrs: { "não vale": "x" } })
+    expect(bad.statusCode).toBe(400)
+  })
+
   it("X-Ptw-Undo grava <ação>.desfeito", async () => {
     const l = (await req("POST", "/locations", {}, { typeId: T.local, code: "U-1", name: "Desfazer" })).json() as { id: string; revision: number }
     expect((await req("PUT", `/locations/${l.id}`, { "if-match": `"${l.revision}"`, "x-ptw-undo": "true" }, { typeId: T.local, code: "U-1", name: "Voltou" })).statusCode).toBe(200)

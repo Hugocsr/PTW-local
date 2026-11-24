@@ -2,7 +2,8 @@ import { cmpInstant } from "./time.ts"
 
 export interface Delegation {
   id: string
-  slotId: string
+  /** null = mandato geral: todas as aprovações administrativas delegáveis em que o delegante é o aprovador nominal. */
+  slotId: string | null
   delegatorId: string
   delegateId: string
   scopeLocationId: string | null
@@ -28,7 +29,7 @@ export function delegationStatus(d: Delegation, now: string): DelegationStatus {
 
 /** Matching a mandate never replaces either participant's current account/cargo eligibility. */
 export function delegationMatches(d: Delegation, slot: { id?: string; personId?: string | null; delegable?: boolean }, pathIds: string[] | null, now: string): boolean {
-  return slot.delegable === true && d.slotId === slot.id && d.delegatorId === slot.personId
+  return slot.delegable === true && (d.slotId === null || d.slotId === slot.id) && d.delegatorId === slot.personId
     && d.delegateId !== d.delegatorId && delegationStatus(d, now) === "ativa"
     && (d.scopeLocationId === null || pathIds?.includes(d.scopeLocationId) === true)
 }

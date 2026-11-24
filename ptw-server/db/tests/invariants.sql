@@ -431,6 +431,13 @@ select t.expect('PTW03', 'origem da versão em uso não muda', $$update ptw.temp
 
 -- Respostas dos tipos novos (PT 8, enviada com o formulário de teste).
 insert into ptw.asset (unit_id, id, type_id, code, name) values (t.id('1'), t.id('c6'), t.id('a2'), 'BOMBA-01', 'Bomba de água gelada');
+-- Ficha SGI (attrs): objeto pequeno, buscável por EQUNR/TPLNR e na trilha da linha.
+update ptw.asset set attrs = '{"equnr": "10001234", "fabricante": "KSB", "protecao": {"tipo": "sensor_de_processo"}}' where id = t.id('c6');
+select t.check((select search like '%10001234%' from ptw.asset where id = t.id('c6')), 'ficha: EQUNR entra na busca do ativo');
+select t.check((select data -> 'para' -> 'attrs' ->> 'fabricante' = 'KSB' from t.ev('cadastro.ativo.alterado')), 'ficha: atributos na trilha do ativo');
+select t.expect('23514', 'ficha: atributos precisam ser um objeto', $$update ptw.asset set attrs = '["x"]' where id = t.id('c6')$$);
+select t.expect('23514', 'ficha: atributos até 8 KiB', $$update ptw.asset set attrs = jsonb_build_object('obs', repeat('x', 9000)) where id = t.id('c6')$$);
+select t.expect('23514', 'ficha do local precisa ser um objeto', $$update ptw.location set attrs = '"x"' where id = (select id from ptw.location where unit_id = ptw.current_unit() limit 1)$$);
 select t.draft(8, t.id('c6'));
 select t.expect('', 'enviar P8', $$select ptw.permit_submit(ptw.current_unit(), t.id('108'))$$);
 select t.expect('PTW15', 'resposta para item que não existe', $$select t.ans('nao_existe', '{"t": "texto", "v": "x"}')$$);

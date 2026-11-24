@@ -142,11 +142,11 @@ export function FlowEditor({ tpl, set }: { tpl: TemplateContent; set: SetTpl }) 
             <Fragment key={st.id}>
               {i > 0 && (i <= insertLimit
                 ? <li className="flex items-center"><Button variant="ghost" size="icon" className="size-11 text-muted-foreground md:size-8" aria-label={`Nova etapa antes de ${st.name}`} onClick={() => insertAt(i)}><PlusIcon /></Button></li>
-                : <li aria-hidden className="flex items-center px-1"><span className="h-px w-5 bg-foreground" /></li>)}
+                : <li aria-hidden className="flex items-center px-1"><span className="h-px w-5 bg-border-strong" /></li>)}
               <li className="min-w-0 xl:flex-1">
                 <button type="button" aria-current={on ? "step" : undefined} onClick={() => setOpenId(st.id)}
                   className={cn("flex min-h-14 w-full min-w-28 flex-col items-start gap-0.5 border px-3 py-2 text-left xl:min-w-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-                    on ? "border-foreground bg-foreground text-background" : "border-foreground/30 bg-background hover:border-foreground")}>
+                    on ? "border-primary bg-primary text-primary-foreground" : "border-border-strong bg-background hover:border-primary")}>
                   <span className={cn("text-[0.6875rem] leading-4 font-semibold tracking-[0.07em] uppercase tabular-nums", !on && "text-muted-foreground")}>Etapa {i + 1}</span>
                   <span className="type-section max-w-full truncate whitespace-nowrap">{st.name}</span>
                   <span className={cn("type-data", !on && "text-muted-foreground")}>{items} {items === 1 ? "item" : "itens"} · {st.slots.length} ass.</span>
@@ -229,7 +229,7 @@ export function FlowEditor({ tpl, set }: { tpl: TemplateContent; set: SetTpl }) 
                       const need = !sl.required ? "opcional" : cond ? `obrigatória só quando ${conditionText(cond, formItems, state.optionLists)}` : "obrigatória"
                       const summary = [`Assina: ${who}`, kind === "cargo" && sl.min > 1 ? `${sl.min} assinaturas` : "", need].filter(Boolean).join(" · ")
                       return (
-                        <div key={sl.id} className="flex min-w-0 flex-col gap-3 border-l-2 border-foreground/25 pl-2 sm:pl-3">
+                        <div key={sl.id} className="flex min-w-0 flex-col gap-3 border-l-2 border-border-strong pl-2 sm:pl-3">
                           <div className="flex items-center gap-1">
                             <InlineName value={sl.meaning ?? ""} maxLength={120} onCommit={(m) => setSlot(st.id, sl.id, { meaning: m.trim() ? m : null })} placeholder="O que a pessoa assina" aria-label="O que a pessoa assina" aria-invalid={!sl.meaning?.trim()} inputClassName="font-medium" />
                             {noRemove ? (

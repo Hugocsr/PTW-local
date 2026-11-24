@@ -2,6 +2,6 @@
   "nome": "PTW Local",
   "sigla": "PT",
   "logo": null,
-  "cores": { "marca": "#1b2030", "fundo": "#f4f3ef", "tinta": "#12151c" },
-  "fonte": { "familia": "Geist Variable", "arquivo": null }
+  "cores": { "marca": "#4f46e5", "fundo": "#f8fafc", "tinta": "#0f172a" },
+  "fonte": { "familia": "system-ui", "arquivo": null }
 }

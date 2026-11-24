@@ -272,8 +272,10 @@ create function ptw.slot_candidates_for(p_unit uuid,p_slot uuid,today date,loc l
     from ptw.sign_slot s cross join lateral ptw.slot_candidates(p_unit,s.kind,s.role_ids,s.person_id,today,loc) c
    where s.unit_id=p_unit and s.id=p_slot
   union all
-  select pe.id,pe.name,true from ptw.delegation d join ptw.person pe on pe.unit_id=d.unit_id and pe.id=d.delegate_id
-   where d.unit_id=p_unit and d.slot_id=p_slot and d.id=ptw.delegation_for(p_unit,p_slot,d.delegate_id,loc)
+  select pe.id,pe.name,true from ptw.sign_slot s
+    join ptw.delegation d on d.unit_id=s.unit_id and d.delegator_id=s.person_id and (d.slot_id=s.id or d.slot_id is null)
+    join ptw.person pe on pe.unit_id=d.unit_id and pe.id=d.delegate_id
+   where s.unit_id=p_unit and s.id=p_slot and d.id=ptw.delegation_for(p_unit,p_slot,d.delegate_id,loc)
 $$;
 
 -- Who acts next includes only currently valid mandates; technical resume stays on its original slot.
