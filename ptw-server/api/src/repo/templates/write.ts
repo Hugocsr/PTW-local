@@ -222,7 +222,7 @@ export async function syncChildren(tx: Tx, versionId: string, c: VersionInput): 
   const curStages = await run<Row>(tx, `select id, position, name, kind, locked from ptw.stage where unit_id = ptw.current_unit() and version_id = ${V}`, base)
   const curSlots = await run<Row>(
     tx,
-    `select id, stage_id, position, meaning, kind, to_jsonb(role_ids) as roles, person_id, min, required, required_when_item as rw_item,
+    `select id, stage_id, position, meaning, kind, to_jsonb(role_ids) as roles, person_id, min, required, delegable, required_when_item as rw_item,
             required_when_line as rw_line, to_jsonb(required_when_values) as rw_values
        from ptw.sign_slot where unit_id = ptw.current_unit() and version_id = ${V}`,
     base,
@@ -290,24 +290,25 @@ export async function syncChildren(tx: Tx, versionId: string, c: VersionInput): 
       q.p(sl.meaning, "text"), q.p(sl.kind, "ptw.slot_kind"), q.p(`{${sl.roleIds.join(",")}}`, "uuid[]"), q.p(sl.personId, "uuid"), q.p(sl.min, "smallint"),
       q.p(sl.required, "boolean"), q.p(rw?.itemId ?? null, "text"), q.p(rw?.lineId ?? null, "text"),
       rw ? q.p(`{${rw.anyOf.map((x) => `"${x.replace(/(["\\])/g, "\\$1")}"`).join(",")}}`, "text[]") : "null::text[]",
+      q.p(sl.delegable === true, "boolean"),
     ]
     if (!old) {
       await run(
         tx,
-        `insert into ptw.sign_slot (unit_id, id, version_id, stage_id, position, meaning, kind, role_ids, person_id, min, required, required_when_item, required_when_line, required_when_values)
+        `insert into ptw.sign_slot (unit_id, id, version_id, stage_id, position, meaning, kind, role_ids, person_id, min, required, required_when_item, required_when_line, required_when_values, delegable)
          values (ptw.current_unit(), ${q.p(sl.id, "uuid")}, ${q.p(versionId, "uuid")}, ${q.p(st.id, "uuid")}, ${q.p(i, "integer")}, ${vals.join(", ")})`,
         q.params,
       )
     } else {
       const unchanged =
         old.stage_id === st.id && Number(old.position) === i && (old.meaning ?? null) === sl.meaning && old.kind === sl.kind && same(old.roles, sl.roleIds) &&
-        (old.person_id ?? null) === sl.personId && Number(old.min) === sl.min && old.required === sl.required &&
+        (old.person_id ?? null) === sl.personId && Number(old.min) === sl.min && old.required === sl.required && (old.delegable === true) === (sl.delegable === true) &&
         (old.rw_item ?? null) === (rw?.itemId ?? null) && (old.rw_line ?? null) === (rw?.lineId ?? null) && same(old.rw_values ?? null, rw ? rw.anyOf : null)
       if (!unchanged) {
         await run(
           tx,
           `update ptw.sign_slot set stage_id = ${q.p(st.id, "uuid")}, position = ${q.p(i, "integer")}, meaning = ${vals[0]}, kind = ${vals[1]}, role_ids = ${vals[2]},
-                  person_id = ${vals[3]}, min = ${vals[4]}, required = ${vals[5]}, required_when_item = ${vals[6]}, required_when_line = ${vals[7]}, required_when_values = ${vals[8]}
+                  person_id = ${vals[3]}, min = ${vals[4]}, required = ${vals[5]}, required_when_item = ${vals[6]}, required_when_line = ${vals[7]}, required_when_values = ${vals[8]}, delegable = ${vals[9]}
             where unit_id = ptw.current_unit() and id = ${q.p(sl.id, "uuid")}`,
           q.params,
         )

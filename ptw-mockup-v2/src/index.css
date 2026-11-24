@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./workspace.css";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 
@@ -90,34 +91,34 @@
 
 :root {
     --background: oklch(1 0 0);
-    --foreground: oklch(0.17 0.015 265);
+    --foreground: #16213b;
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.2 0.02 265);
+    --card-foreground: #16213b;
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.2 0.02 265);
-    --primary: #0038a8;
-    --primary-foreground: oklch(0.985 0 0);
+    --popover-foreground: #16213b;
+    --primary: #635bff;
+    --primary-foreground: #ffffff;
     --secondary: oklch(0.955 0.006 265);
     --secondary-foreground: oklch(0.24 0.03 265);
     --muted: oklch(0.965 0.005 265);
-    --muted-foreground: oklch(0.48 0.02 265);
+    --muted-foreground: #52627a;
     --accent: oklch(0.955 0.008 265);
     --accent-foreground: oklch(0.24 0.03 265);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.86 0.006 265);
+    --border: #e2e8f0;
     /* field outline: >= 3:1 against white and the well, so an editable field reads at a glance */
     --input: oklch(0.66 0.015 265);
-    /* focus: ink, never blue (blue means "your turn"); the keyboard ring is two-colour, see `focus-ring` */
-    --ring: oklch(0.3 0.03 265);
+    /* Brand focus is distinct from semantic state; see the two-colour `focus-ring`. */
+    --ring: #635bff;
     /* motion durations (DESIGN.md · Sistema) */
     --dur-press: 90ms;
     --dur-fast: 150ms;
     --dur-base: 240ms;
     --dur-slow: 400ms;
     /* tonal surfaces: canvas < well < row; fixed is the darker well for product-fixed items */
-    --surface-canvas: #f0f4f8;
-    --surface-well: #eaf0f6;
-    --surface-fixed: #e2eaf4;
+    --surface-canvas: #f6f8fc;
+    --surface-well: #f1f4fa;
+    --surface-fixed: #e8edf5;
     --surface-row: oklch(1 0 0);
     --destructive-text: oklch(0.5 0.2 27);
     --ok-surface: oklch(0.94 0.06 150);
@@ -149,19 +150,19 @@
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --radius: 0.375rem;
+    --radius: 0.625rem;
     /* the look of the plant (core/brand.ts sets these and --primary, --foreground, --surface-canvas, --sidebar) */
     --app-font: 'Geist Variable';
-    --brand-mark-from: oklch(0.36 0.09 262);
-    --brand-glow: oklch(0.93 0.04 262);
+    --brand-mark-from: #635bff;
+    --brand-glow: #eeedff;
     --sidebar: #ffffff;
-    --sidebar-foreground: oklch(0.3 0.02 265);
-    --sidebar-primary: oklch(0.24 0.03 265);
+    --sidebar-foreground: #52627a;
+    --sidebar-primary: #635bff;
     --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: #ebf0fb;
-    --sidebar-accent-foreground: #0038a8;
-    --sidebar-border: oklch(0.915 0.006 265);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar-accent: #eeedff;
+    --sidebar-accent-foreground: #5146d8;
+    --sidebar-border: #e2e8f0;
+    --sidebar-ring: #635bff;
 }
 
 .dark {

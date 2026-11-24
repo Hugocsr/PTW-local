@@ -79,7 +79,7 @@ function serve(d: FakeDriver, versions: VState[] = [{ id: VER }], tplRev = 3, na
   d.on(/from ptw\.stage where unit_id = ptw\.current_unit\(\) and version_id = any/, () => stageRows)
   d.on(/select id, position, name, kind, locked from ptw\.stage/, () => stageRows)
   d.on(/from ptw\.sign_slot where unit_id = ptw\.current_unit\(\) and version_id = any/, () => slotRows)
-  d.on(/to_jsonb\(role_ids\) as roles, person_id, min, required, required_when_item as rw_item, required_when_line as rw_line, to_jsonb\(required_when_values\) as rw_values from ptw\.sign_slot where unit_id = ptw\.current_unit\(\) and version_id = \$\d+::uuid$/, () => slotRows)
+  d.on(/to_jsonb\(role_ids\) as roles, person_id, min, required, delegable, required_when_item as rw_item, required_when_line as rw_line, to_jsonb\(required_when_values\) as rw_values from ptw\.sign_slot where unit_id = ptw\.current_unit\(\) and version_id = \$\d+::uuid$/, () => slotRows)
   d.on(/from ptw\.separation where/, () => [])
   d.on(/from ptw\.version_(location|asset)_type where/, () => [])
 }
@@ -139,7 +139,7 @@ describe("modelo e versão em rascunho", () => {
     t.driver.on(/select uuidv7\(\)::text as id from generate_series/, () => Array.from({ length: 10 }, (_, k) => ({ id: id(0x900 + k) })))
     t.driver.on(/select id, position, name, kind, locked from ptw\.stage/, () => [])
     t.driver.on(/select id, stage_id, position/, () => [])
-    t.driver.on(/to_jsonb\(role_ids\) as roles, person_id, min, required, required_when_item as rw_item, required_when_line as rw_line, to_jsonb\(required_when_values\) as rw_values from ptw\.sign_slot where unit_id = ptw\.current_unit\(\) and version_id = \$\d+::uuid$/, () => [])
+    t.driver.on(/to_jsonb\(role_ids\) as roles, person_id, min, required, delegable, required_when_item as rw_item, required_when_line as rw_line, to_jsonb\(required_when_values\) as rw_values from ptw\.sign_slot where unit_id = ptw\.current_unit\(\) and version_id = \$\d+::uuid$/, () => [])
     t.driver.reset()
     const res = await call("POST", "/templates", s.headers, { name: "Intervenção em painel" })
     expect(res.statusCode, res.body).toBe(201)

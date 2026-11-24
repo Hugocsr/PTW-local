@@ -25,6 +25,7 @@ import { DownBanner } from "./state"
 import { TONE_BLOCK, TONE_SOLID, TONE_TEXT, type StatusTone } from "../shell/Status"
 import { StopSheet } from "./StopSheet"
 import { useMyWork } from "./useMyWork"
+import { WorkSummary } from "../shell/WorkSummary"
 
 const DOWN_ID = "ma-down"
 /** Cards per column before "Mostrar mais": a person with thousands of PTs still gets a quick board. */
@@ -74,6 +75,7 @@ function Painel({ scrollTo }: { scrollTo?: string }) {
       {sim.serverDown && <DownBanner id={DOWN_ID} now={sim.now} note="Assinar, entregar e retomar voltam com o servidor. Parar continua disponível." />}
       <Bloqueios />
       <CargoAvisos />
+      <WorkSummary act={mustActCount(work)} waiting={waiting.length} field={work.emCampo.length} unavailable={sim.serverDown} />
 
       <div className="relative flex flex-col gap-8 lg:-mx-1 lg:gap-6 lg:flex-row lg:items-start lg:overflow-x-auto lg:px-1 lg:pb-2" role="region" aria-label="Quadro das suas PTs">
         <Column id="ma-vez" title="Sua vez" icon={PenLineIcon} tone="pending" count={mustActCount(work)} strong empty="Nada esperando por você." more={more("ma-vez", work.agir.length)}>
@@ -102,7 +104,7 @@ interface More { shown: number; total: number; onMore: () => void }
 function Column({ id, title, icon: Icon, tone, count, strong = false, empty, className, more, children }: { id: string; title: string; icon: LucideIcon; tone: StatusTone; count: number; strong?: boolean; empty: string; className?: string; more?: More; children: ReactNode[] }) {
   return (
     <section id={id} aria-labelledby={`${id}-h`}
-      className={cn("flex scroll-mt-4 flex-col gap-3 rounded-2xl bg-surface-canvas p-3 lg:min-w-52 lg:flex-1", className)}>
+      className={cn("work-column flex flex-col gap-3 rounded-2xl border bg-card p-3 lg:min-w-52 lg:flex-1", className)}>
       <h2 id={`${id}-h`} className="flex min-h-9 items-center gap-2 px-1 type-heading">
         <span aria-hidden className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg bg-background shadow-sm ring-1 ring-border", TONE_TEXT[tone])}><Icon className="size-4" /></span>
         {title}
@@ -136,7 +138,7 @@ function Card({ item, facts, tone, label, quiet = false, children }: { item: Wor
   const title = permit.scope || permitName(permit)
   const { n, total } = item.progress
   return (
-    <article className={cn("relative flex flex-col overflow-hidden rounded-lg border hover:border-ring/50", "bg-card")} aria-label={label ?? title}>
+    <article className={cn("relative flex flex-col overflow-hidden rounded-xl border shadow-elev-2 transition-colors hover:border-ring/50", "bg-card")} aria-label={label ?? title}>
       {/* The card's tone as a 3 px bar on its left edge; the words are in the action line. */}
       <span aria-hidden className={cn("absolute inset-y-0 left-0 z-20 w-[3px]", TONE_SOLID[tone])} />
       <div className="flex flex-col gap-3 p-3 pl-4">

@@ -4,6 +4,141 @@
  */
 
 export interface paths {
+    "/delegations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Delegações próprias ou todas, para administração de cadastro. */
+        get: operations["listDelegations"];
+        put?: never;
+        post: operations["createDelegation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/delegations/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["revokeDelegation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/person-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Grupos e seus membros da unidade; exige cadastro. */
+        get: operations["listPersonGroups"];
+        put?: never;
+        post: operations["createPersonGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/person-groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updatePersonGroup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appearance/public": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Marca pública da unidade, sem identidade de pessoas ou dados administrativos. */
+        get: operations["getPublicAppearance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appearance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Configuração da identidade; exige grant modelos inclusive para leitura. */
+        get: operations["getAppearance"];
+        /** Publica identidade ou restaura fallback; exige grant modelos. */
+        put: operations["putAppearance"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appearance/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Imagem PNG limitada, por hash; só fica pública quando referenciada pela marca ativa. */
+        post: operations["putAppearanceAsset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/appearance/assets/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Imagem da identidade atualmente publicada nesta unidade. */
+        get: operations["getAppearanceAsset"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/session": {
         parameters: {
             query?: never;
@@ -1216,6 +1351,92 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        DelegationInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            slotId: string;
+            /** Format: uuid */
+            delegatorId: string;
+            /** Format: uuid */
+            delegateId: string;
+            /** Format: uuid */
+            scopeLocationId: string | null;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            reason: string;
+        };
+        Delegation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            slotId: string;
+            /** Format: uuid */
+            delegatorId: string;
+            /** Format: uuid */
+            delegateId: string;
+            /** Format: uuid */
+            scopeLocationId: string | null;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            reason: string;
+            /** Format: uuid */
+            createdBy: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            revokedAt: string | null;
+            /** Format: uuid */
+            revokedBy: string | null;
+            revokedReason: string | null;
+            revision: number;
+        };
+        GroupInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string;
+            active: boolean;
+            memberIds: string[];
+        };
+        PersonGroup: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string;
+            active: boolean;
+            memberIds: string[];
+            revision: number;
+        };
+        Brand: {
+            name: string;
+            mark: string;
+            logo: string | null;
+            symbol: string | null;
+            colors: {
+                brand: string;
+                canvas: string;
+                ink: string;
+            };
+            font: {
+                family: string;
+                file: string | null;
+            };
+        };
+        PublicAppearance: {
+            brand: components["schemas"]["Brand"] | null;
+        };
+        Appearance: {
+            brand: components["schemas"]["Brand"] | null;
+            revision: number;
+            updatedAt: string | null;
+            /** Format: uuid */
+            updatedBy: string | null;
+        };
         /** Format: uuid */
         Uuid: string;
         Sha256: string;
@@ -1428,6 +1649,7 @@ export interface components {
             anyOf: string[];
         };
         SignSlot: {
+            delegable?: boolean;
             id: components["schemas"]["Uuid"];
             meaning: string | null;
             /** @enum {string} */
@@ -1793,6 +2015,10 @@ export interface components {
             scope?: string;
         };
         SignatureRec: {
+            /** Format: uuid */
+            delegationId?: string | null;
+            /** Format: uuid */
+            representedPersonId?: string | null;
             id: components["schemas"]["Uuid"];
             permitId: components["schemas"]["Uuid"];
             rev: number;
@@ -2238,6 +2464,282 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listDelegations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mandatos persistidos, inclusive revogados. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Delegation"][];
+                };
+            };
+        };
+    };
+    createDelegation: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description uuid gerado pelo cliente para esta criação; repetir a chamada não cria de novo (guardada por 24 h). */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DelegationInput"];
+            };
+        };
+        responses: {
+            /** @description Delegação registrada. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Delegation"];
+                };
+            };
+        };
+    };
+    revokeDelegation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Revisão que o cliente leu, entre aspas: `"7"`. */
+                "If-Match": components["parameters"]["IfMatch"];
+                /** @description uuid gerado pelo cliente para esta criação; repetir a chamada não cria de novo (guardada por 24 h). */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    reason: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Delegação revogada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Delegation"];
+                };
+            };
+        };
+    };
+    listPersonGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Grupos persistidos. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonGroup"][];
+                };
+            };
+        };
+    };
+    createPersonGroup: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description uuid gerado pelo cliente para esta criação; repetir a chamada não cria de novo (guardada por 24 h). */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupInput"];
+            };
+        };
+        responses: {
+            /** @description Grupo criado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonGroup"];
+                };
+            };
+        };
+    };
+    updatePersonGroup: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Revisão que o cliente leu, entre aspas: `"7"`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupInput"];
+            };
+        };
+        responses: {
+            /** @description Grupo alterado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonGroup"];
+                };
+            };
+        };
+    };
+    getPublicAppearance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Marca publicada ou fallback por arquivo. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicAppearance"];
+                };
+            };
+        };
+    };
+    getAppearance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revisão da configuração. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appearance"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    putAppearance: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Revisão que o cliente leu, entre aspas: `"7"`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublicAppearance"];
+            };
+        };
+        responses: {
+            /** @description Configuração confirmada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Appearance"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    putAppearanceAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    base64: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Nome seguro da imagem armazenada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        file: string;
+                    };
+                };
+            };
+        };
+    };
+    getAppearanceAsset: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                file: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PNG validado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/png": string;
+                };
+            };
+            404: components["responses"]["NotFound"];
+        };
+    };
     getSession: {
         parameters: {
             query?: never;

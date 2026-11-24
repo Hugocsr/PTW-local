@@ -99,7 +99,7 @@ export function PermitSheet({ permit, form, rail, registry, tplName, versionNumb
                       <strong>{slot.meaning}</strong>
                       <span className="sheet-sub">{who}</span>
                       {done.length > 0
-                        ? done.map((g) => <p key={g.id} className="sheet-signed"><b>{person(g.personId)}</b><span>Assinado no sistema em {dmHms(g.signedAt)} · revisão {g.rev}</span></p>)
+                        ? done.map((g) => <p key={g.id} className="sheet-signed"><b>{person(g.personId)}</b>{g.representedPersonId && <span>Em nome de {person(g.representedPersonId)} · delegação {g.delegationId}</span>}<span>Assinado no sistema em {dmHms(g.signedAt)} · revisão {g.rev}</span></p>)
                         : <><span className="sheet-line">Nome</span><span className="sheet-line">Assinatura</span><span className="sheet-line">Data e hora</span></>}
                     </div>
                   )

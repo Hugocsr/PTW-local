@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest"
 import { brandFontFace, brandVars, contrast, DEFAULT_BRAND, isDefaultBrand, onBrand, parseBrand } from "./brand"
 
 describe("tema da planta", () => {
+  it("a identidade padrão mantém contraste de texto nas superfícies claras", () => {
+    expect(contrast(onBrand(DEFAULT_BRAND), DEFAULT_BRAND.colors.brand)).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(DEFAULT_BRAND.colors.ink, DEFAULT_BRAND.colors.canvas)).toBeGreaterThanOrEqual(7)
+    expect(contrast("#52627a", "#ffffff")).toBeGreaterThanOrEqual(4.5)
+    expect(contrast("#5146d8", "#eeedff")).toBeGreaterThanOrEqual(4.5)
+  })
+
   it("sem arquivo, ou com um vazio, vale o padrão e nada é escrito", () => {
     expect(parseBrand(undefined)).toEqual({ brand: DEFAULT_BRAND, problems: [] })
     expect(isDefaultBrand(parseBrand({}).brand)).toBe(true)
@@ -44,7 +51,7 @@ describe("tema da planta", () => {
     expect(vars["--primary-foreground"]).toBe("#ffffff")
     expect(vars["--app-font"]).toBe("'Inter'")
     // The greys follow the canvas and the ink of the theme.
-    expect(vars["--surface-well"]).toBe("color-mix(in srgb, #f4f3ef 96%, #12151c)")
+    expect(vars["--surface-well"]).toBe("color-mix(in srgb, #f6f8fc 96%, #16213b)")
     expect(Object.keys(vars).filter((k) => k.startsWith("--st-") || k.includes("destructive") || k.includes("ok-"))).toEqual([])
   })
 

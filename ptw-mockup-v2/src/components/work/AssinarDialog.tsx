@@ -47,7 +47,7 @@ function Form({ permitId, startReturning, onClose }: { permitId: string; startRe
   const me = state.people.find((p) => p.id === sim.personId)
   const plan = useMemo(() => {
     if (!permit || !ver || !me) return null
-    const rail = railOf(permit, ver, store.signatures, state.people, state.locations, sim.today, sim.now)
+    const rail = railOf(permit, ver, store.signatures, state.people, state.locations, sim.today, sim.now, state.delegations)
     return planSign({ permit, ver, rail, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: store.formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists })
   }, [permit, ver, me, store, state, sim.now, sim.today, sim.serverDown])
 
@@ -95,6 +95,7 @@ function Form({ permitId, startReturning, onClose }: { permitId: string; startRe
         <div className="flex flex-col gap-0.5">
           <span className="type-title">{slot.slot.meaning}</span>
           <span className="type-meta">Etapa {plan.stageName}</span>
+          {slot.eligible.find((e) => e.person.id === me.id && e.ok)?.delegation && <p className="type-body">Você assina em nome de {state.people.find((p) => p.id === slot.slot.personId)?.name}, por delegação administrativa. Sua identidade será preservada no registro.</p>}
         </div>
       )}
 

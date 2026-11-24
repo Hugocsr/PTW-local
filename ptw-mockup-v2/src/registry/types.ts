@@ -118,6 +118,7 @@ export interface OptionList {
 }
 
 export interface RegistryState {
+  delegations?: import("@/core/delegation").Delegation[]
   units: Unit[]
   locationTypes: TypeDef[]
   assetTypes: TypeDef[]

@@ -245,7 +245,7 @@ function TableFrame<T>({ list, columns, rowKey, searchLabel, filter, selectFilte
       </>}
     >
       {/* "Carregando": the last page stays, dimmed, until the next one arrives (DESIGN.md). */}
-      <div aria-busy={loading || undefined} className={cn("min-w-0 transition-opacity", loading && "opacity-60")}>
+      <div aria-busy={loading || undefined} className={cn("app-table min-w-0 transition-opacity", loading && "opacity-60")}>
       <Table>
         <TableHeader>
           <TableRow>

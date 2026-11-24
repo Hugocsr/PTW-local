@@ -12,7 +12,7 @@ const dest = resolve(here, "../src/shared")
 const banner = (f) => `// @ts-nocheck — cópia de ptw-mockup-v2/src/${f}; não edite (node scripts/sync-shared.mjs)
 `
 const copy = (f) => banner(f) + readFileSync(join(appSrc, f), "utf8")
-const roots = ["core/templatePackage.ts"]
+const roots = ["core/templatePackage.ts", "core/appearance.ts", "core/governance.ts"]
 
 const find = (base) => [base, base + ".ts", base + ".tsx", join(base, "index.ts")].find((p) => existsSync(p) && /\.tsx?$/.test(p))
 const seen = new Set()

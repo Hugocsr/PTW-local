@@ -23,6 +23,9 @@ import { assetLocal, assetsUnder, auditFacetsOf, auditPageOf, auditRows, boardLo
 import type { AuditFacets, AuditQuery, EquipmentHold, ListLocal, ListView, Page, PermitAct } from "./port"
 
 export { useData, useDataMode } from "./context"
+export { useAppearance } from "./useAppearance"
+export { useGroups } from "./useGroups"
+export { useDelegations } from "./useDelegations"
 
 /* ---------- acts that can be awaited ---------- */
 

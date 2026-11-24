@@ -1,23 +1,28 @@
-import { BoxIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, InboxIcon, ListIcon, MapPinIcon, SettingsIcon, ShieldOffIcon, UsersIcon } from "lucide-react"
+import { BoxIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, InboxIcon, ListIcon, MapPinIcon, PaletteIcon, SettingsIcon, ShieldOffIcon, UsersIcon } from "lucide-react"
+import type { NavigationGroup, NavigationView } from "@/core/navigation"
 
 /**
- * The side menu, in the order people reach for it: field work first (Minha área, Quadro),
- * then what supervisors keep up to date (Cadastro), then what admins set once (Configuração:
- * the permit models and the types and lists they draw on, and the Auditoria that records them all). Keys are the route hashes; do not rename.
+ * Route labels and icons. The pure navigation policy assigns each destination to management or
+ * consultation using the session's existing grants. Keys are canonical hashes; do not rename.
  */
 export const NAV = {
-  "minha-area": { title: "Minha área", group: "Trabalho", icon: InboxIcon },
-  quadro: { title: "Quadro de PTs", group: "Trabalho", icon: ClipboardListIcon },
-  desabilitados: { title: "Desabilitados agora", group: "Trabalho", icon: ShieldOffIcon },
-  locais: { title: "Locais", group: "Cadastro", icon: MapPinIcon },
-  ativos: { title: "Ativos", group: "Cadastro", icon: BoxIcon },
-  pessoas: { title: "Pessoas", group: "Cadastro", icon: UsersIcon },
-  modelos: { title: "Modelos de PT", group: "Configuração", icon: FileTextIcon },
-  tipos: { title: "Tipos", group: "Configuração", icon: SettingsIcon },
-  listas: { title: "Listas", group: "Configuração", icon: ListIcon },
-  auditoria: { title: "Auditoria", group: "Configuração", icon: ScrollTextIcon },
-} as const
+  "minha-area": { title: "Minha área", icon: InboxIcon },
+  quadro: { title: "Quadro de PTs", icon: ClipboardListIcon },
+  desabilitados: { title: "Desabilitados agora", icon: ShieldOffIcon },
+  locais: { title: "Locais", icon: MapPinIcon },
+  ativos: { title: "Ativos", icon: BoxIcon },
+  pessoas: { title: "Pessoas", icon: UsersIcon },
+  modelos: { title: "Modelos de PT", icon: FileTextIcon },
+  tipos: { title: "Tipos", icon: SettingsIcon },
+  listas: { title: "Listas", icon: ListIcon },
+  auditoria: { title: "Auditoria", icon: ScrollTextIcon },
+  identidade: { title: "Identidade visual", icon: PaletteIcon },
+  grupos: { title: "Grupos de pessoas", icon: UsersIcon },
+  delegacoes: { title: "Delegações", icon: UsersIcon },
+} as const satisfies Record<NavigationView, { title: string; icon: typeof BoxIcon }>
 
-export type ViewKey = keyof typeof NAV
-export const NAV_GROUPS = ["Trabalho", "Cadastro", "Configuração"] as const
-export const NAV_KEYS = Object.keys(NAV) as ViewKey[]
+export type ViewKey = NavigationView
+export const NAV_GROUP_LABELS = {
+  operation: "Operação", registry: "Cadastros", configuration: "Configuração",
+  governance: "Governança e sistema", reference: "Consultas",
+} as const satisfies Record<NavigationGroup, string>

@@ -266,6 +266,18 @@ create function ptw.slot_candidates(p_unit uuid, p_kind ptw.slot_kind, p_roles u
 $$;
 
 -- Quem move a seguir e se é a vez da pessoa, como nextLabel e waitsFor do app, para várias PTs numa
+create function ptw.slot_candidates_for(p_unit uuid,p_slot uuid,today date,loc ltree)
+  returns table(person_id uuid,name text,ok boolean) language sql stable as $$
+  select c.person_id,c.name,c.ok and (not s.delegable or ptw.person_ok(p_unit,c.person_id,s.role_ids,today,loc,true))
+    from ptw.sign_slot s cross join lateral ptw.slot_candidates(p_unit,s.kind,s.role_ids,s.person_id,today,loc) c
+   where s.unit_id=p_unit and s.id=p_slot
+  union all
+  select pe.id,pe.name,true from ptw.delegation d join ptw.person pe on pe.unit_id=d.unit_id and pe.id=d.delegate_id
+   where d.unit_id=p_unit and d.slot_id=p_slot and d.id=ptw.delegation_for(p_unit,p_slot,d.delegate_id,loc)
+$$;
+
+-- Who acts next includes only currently valid mandates; technical resume stays on its original slot.
+-- Quem move a seguir e se é a vez da pessoa, como nextLabel e waitsFor do app, para várias PTs numa
 -- consulta só (a página do Quadro): a etapa com a assinatura pendente (nula se não há), o texto
 -- "Marina · Emissão" e se é a vez de p_person (nula = ninguém).
 --   rascunho, devolvida: o solicitante (Enviar / Reenviar);
@@ -301,15 +313,13 @@ create function ptw.permit_next_rows(p_unit uuid, p_permits uuid[], p_person uui
                               (now() at time zone u.timezone)::date as today) f
     left join lateral ptw.pending_slot(p_unit, p.id, p.version_id, p.state, p.revision, p.resumed_at) cur
            on p.state not in ('rascunho', 'devolvida', 'encerrada', 'cancelada')
-    left join lateral (select s.kind, s.role_ids, s.person_id
+    left join lateral (select s.id, s.kind, s.role_ids, s.person_id
                          from ptw.sign_slot s join ptw.stage st on st.unit_id = s.unit_id and st.id = s.stage_id
                         where s.unit_id = p_unit and s.version_id = p.version_id and st.kind = 'emissao'
                         order by s.position limit 1) em on f.held
     left join lateral (select (array_agg(c.name order by c.ok desc, c.name, c.person_id) filter (where c.ok or not f.held))[1] as name,
                               bool_or(c.ok and c.person_id = p_person) as me_ok
-                         from ptw.slot_candidates(p_unit, case when f.held then em.kind else cur.slot_kind end,
-                                                  case when f.held then em.role_ids else cur.role_ids end,
-                                                  case when f.held then em.person_id else cur.person_id end, f.today, l.path) c) w
+                         from ptw.slot_candidates_for(p_unit, case when f.held then em.id else cur.slot_id end, f.today, l.path) c) w
            on p.state not in ('rascunho', 'devolvida', 'encerrada', 'cancelada')
    where p.unit_id = p_unit and p.id = any (p_permits)
 $$;
@@ -372,7 +382,7 @@ create function ptw.my_permits(p_unit uuid, p_person uuid, p_days integer defaul
                and (select count(*) from ptw.signature g
                      where g.unit_id = p_unit and g.permit_id = p.id and g.rev = p.revision
                        and g.slot_id = s.id and g.voided_at is null) < s.min
-               and case when s.kind = 'pessoa' then s.person_id = p_person
+               and case when s.kind = 'pessoa' then s.person_id = p_person or ptw.delegation_for(p_unit,s.id,p_person,p.path) is not null
                         else me.status <> 'inativo' and exists (
                                select 1 from ptw.person_role pr
                                  left join ptw.location sc on sc.unit_id = pr.unit_id and sc.id = pr.scope_location_id
@@ -427,7 +437,7 @@ begin
     'option_list', 'option_item', 'template', 'template_version', 'version_location_type', 'version_asset_type',
     'stage', 'sign_slot', 'separation', 'form_snapshot', 'permit_counter', 'permit', 'permit_asset', 'permit_team',
     'permit_answer', 'blob', 'attachment', 'permit_revision', 'permit_extension', 'permit_revalidation', 'signature',
-    'api_session', 'api_idempotency', 'login_attempt',
+    'appearance', 'appearance_asset', 'person_group', 'person_group_member', 'delegation', 'api_session', 'api_idempotency', 'login_attempt',
     'audit_event', 'audit_head', 'audit_anchor', 'audit_export', 'audit_archive']
   loop
     execute format('alter table ptw.%I enable row level security', t);
@@ -472,6 +482,12 @@ grant insert, update, delete on
   ptw.option_list, ptw.option_item, ptw.template, ptw.template_version, ptw.version_location_type,
   ptw.version_asset_type, ptw.stage, ptw.sign_slot, ptw.separation
   to ptw_app;
+grant insert, update on ptw.appearance to ptw_app;
+grant insert on ptw.appearance_asset to ptw_app;
+grant insert, update on ptw.person_group to ptw_app;
+grant insert, delete on ptw.person_group_member to ptw_app;
+grant insert on ptw.delegation to ptw_app;
+grant update (revoked_at, revoked_by, revoked_reason) on ptw.delegation to ptw_app;
 -- PT: nunca apagada pela API (rascunho abandonado vira cancelada).
 grant insert, update on ptw.permit, ptw.permit_counter to ptw_app;
 grant insert, update, delete on ptw.permit_asset, ptw.permit_team, ptw.permit_answer to ptw_app;

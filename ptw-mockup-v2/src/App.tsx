@@ -1,10 +1,10 @@
-import { lazy, Suspense, useEffect, useState, useSyncExternalStore } from "react"
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/shell/AppSidebar"
 import { ResourceFooter } from "@/components/shell/ResourceFooter"
-import { NAV, type ViewKey } from "@/components/shell/nav"
+import { NAV, NAV_GROUP_LABELS, type ViewKey } from "@/components/shell/nav"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
 import { RegistryProvider, useRegistry } from "@/registry/store"
@@ -26,6 +26,8 @@ import { LoginView } from "@/components/shell/LoginView"
 import { WallView } from "@/components/work/WallView"
 import { BypassView } from "@/components/work/BypassView"
 import { NewPermitView } from "@/components/work/NewPermitView"
+import { canReadView, navigationGroup } from "@/core/navigation"
+import { toast } from "sonner"
 
 /* Cadastro and Configuração load on first visit; the work screens ship in the main bundle. */
 const HierarchyView = lazy(() => import("@/components/registry/HierarchyView").then((m) => ({ default: m.HierarchyView })))
@@ -38,11 +40,14 @@ const TemplatesView = lazy(() => import("@/components/registry/TemplatesView").t
 const TypesView = lazy(() => import("@/components/registry/TypesView").then((m) => ({ default: m.TypesView })))
 const AuditView = lazy(() => import("@/components/audit/AuditView").then((m) => ({ default: m.AuditView })))
 const ListsView = lazy(() => import("@/components/registry/ListsView").then((m) => ({ default: m.ListsView })))
+const AppearanceView = lazy(() => import("@/components/registry/AppearanceView").then((m) => ({ default: m.AppearanceView })))
+const GroupsView = lazy(() => import("@/components/registry/GroupsView").then((m) => ({ default: m.GroupsView })))
+const DelegationsView = lazy(() => import("@/components/registry/DelegationsView").then((m) => ({ default: m.DelegationsView })))
 
 /** Screen per route; titles, groups and icons live in the menu table (`shell/nav.ts`). */
 const VIEWS = {
   "minha-area": MinhaAreaView, quadro: QuadroView, desabilitados: BypassView, locais: HierarchyView, ativos: AssetsView,
-  pessoas: PeopleView, modelos: TemplatesView, tipos: TypesView, listas: ListsView, auditoria: AuditView,
+  pessoas: PeopleView, modelos: TemplatesView, tipos: TypesView, listas: ListsView, auditoria: AuditView, identidade: AppearanceView, grupos: GroupsView, delegacoes: DelegationsView,
 } satisfies Record<ViewKey, unknown>
 
 /** `#quadro`, `#locais`, … `#pt/<permitId>/<tab>`, `#ativos/<id>`, `#locais/<id>` or `#pessoas/<id>`. */
@@ -79,7 +84,18 @@ function Shell() {
   const { permits } = usePermits()
   const work = useMyWork()
   const mobile = useIsMobile()
-  const { canAudit } = useSim()
+  const access = useSim()
+  const routeAllowed = canReadView(route.view, access)
+  const group = navigationGroup(route.view, access)
+  const previousRead = useRef<{ view: ViewKey; allowed: boolean } | null>(null)
+  useEffect(() => {
+    const previous = previousRead.current
+    previousRead.current = { view: route.view, allowed: routeAllowed }
+    if (previous?.view === route.view && previous.allowed && !routeAllowed) {
+      go("minha-area")
+      toast.error("Seu acesso a esta tela foi alterado. Você voltou para Minha área.")
+    }
+  }, [route.view, routeAllowed])
   useEffect(() => {
     const on = () => setRoute(normalize())
     window.addEventListener("hashchange", on)
@@ -94,20 +110,20 @@ function Shell() {
   const recordLabel = person ? person.name : record ? `${record.code} · ${record.name}` : undefined
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="app-shell">
       <AppSidebar active={route.view} unit={state.units[0]?.name ?? "Unidade"} agir={mustActCount(work)} onGo={go} />
       <SidebarInset className="min-w-0 bg-surface-canvas print:bg-white">
-        <header className="sticky top-0 z-20 flex h-13 shrink-0 print:hidden items-center gap-2 border-b bg-background px-4">
+        <a href="#workspace-content" onClick={(e) => { e.preventDefault(); document.getElementById("workspace-content")?.focus() }} className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-4 focus:z-50 focus:rounded-lg focus:bg-background focus:p-3 focus:shadow-elev-3">Ir para o conteúdo</a>
+        <header className="sticky top-0 z-20 flex min-h-16 shrink-0 print:hidden items-center gap-2 border-b bg-background px-4 lg:gap-4 lg:px-6">
           <SidebarTrigger aria-label="Alternar menu" className="size-11" />
-          <Separator orientation="vertical" className="h-4" />
-          <Breadcrumb className="min-w-0">
+          <Separator orientation="vertical" className="hidden h-5 xl:block" />
+          <Breadcrumb className="min-w-0 flex-1">
             <BreadcrumbList className="flex-nowrap">
-              <BreadcrumbItem className="hidden sm:inline-flex">{current.group}</BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden sm:block" />
-              <BreadcrumbItem>
+              {group && <><BreadcrumbItem className="hidden 2xl:inline-flex">{NAV_GROUP_LABELS[group]}</BreadcrumbItem><BreadcrumbSeparator className="hidden 2xl:block" /></>}
+              <BreadcrumbItem className="min-w-0">
                 {route.permitId || route.recordId
                   ? <BreadcrumbLink asChild><button type="button" className="min-h-11 whitespace-nowrap md:min-h-9" onClick={() => go(route.view)}>{current.title}</button></BreadcrumbLink>
-                  : <BreadcrumbPage>{current.title}</BreadcrumbPage>}
+                  : <BreadcrumbPage className="truncate">{current.title}</BreadcrumbPage>}
               </BreadcrumbItem>
               {route.permitId && (<><BreadcrumbSeparator /><BreadcrumbItem className="min-w-0"><BreadcrumbPage className="truncate">{permit ? permitName(permit) : "PT"}</BreadcrumbPage></BreadcrumbItem></>)}
               {route.recordId && (<><BreadcrumbSeparator /><BreadcrumbItem className="min-w-0"><BreadcrumbPage className="truncate">{recordLabel ?? "Não encontrado"}</BreadcrumbPage></BreadcrumbItem></>)}
@@ -118,9 +134,9 @@ function Shell() {
           <SimControl />
         </header>
         {/* Padding only: each screen owns its frame through <Page> (72rem, shell/Page.tsx). */}
-        <main className="flex w-full min-w-0 flex-col gap-4 px-4 pt-4 pb-8 md:px-6 md:pt-6 lg:px-8">
+        <main id="workspace-content" tabIndex={-1} className="flex w-full min-w-0 flex-col gap-4 px-4 pt-5 pb-8 outline-none md:px-6 md:pt-6 lg:px-8">
           <Suspense fallback={<p className="type-meta" role="status">Carregando…</p>}>
-            {route.view === "auditoria" && !canAudit ? <Page><PageHeader title="Acesso não disponível" /><p className="type-body">Sua conta não tem acesso à Auditoria.</p><a href="#minha-area" className="type-body underline underline-offset-2">Voltar para Minha área</a></Page> : route.newPermit ? <NewPermitView /> : route.permitId ? <PermitDetailView id={route.permitId} tab={route.tab ?? "etapas"} /> : route.recordId ? (route.view === "ativos" ? <AssetDetailView id={route.recordId} /> : route.view === "pessoas" ? <PersonDetailView id={route.recordId} /> : <LocationDetailView id={route.recordId} />) : route.view === "minha-area" ? <MinhaAreaView tab={route.tab} /> : route.view === "auditoria" ? <AuditView key={route.tab ?? ""} permitFilter={route.tab?.slice(3)} /> : <View />}
+            {!routeAllowed ? <Page><PageHeader title="Acesso não disponível" /><p className="type-body">Sua conta não tem acesso a esta tela.</p><a href="#minha-area" className="type-body underline underline-offset-2">Voltar para Minha área</a></Page> : route.newPermit ? <NewPermitView /> : route.permitId ? <PermitDetailView id={route.permitId} tab={route.tab ?? "etapas"} /> : route.recordId ? (route.view === "ativos" ? <AssetDetailView id={route.recordId} /> : route.view === "pessoas" ? <PersonDetailView id={route.recordId} /> : <LocationDetailView id={route.recordId} />) : route.view === "minha-area" ? <MinhaAreaView tab={route.tab} /> : route.view === "auditoria" ? <AuditView key={route.tab ?? ""} permitFilter={route.tab?.slice(3)} /> : <View />}
           </Suspense>
         </main>
         {!demo && <ResourceFooter />}

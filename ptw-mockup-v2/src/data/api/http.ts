@@ -10,6 +10,7 @@
  */
 import type { DenyCode, RuleError } from "@/core/ptwErrors"
 import { uuidv7 } from "@/lib/id"
+import type { ClientTimings } from "./performance"
 
 /** The refusal for "the server did not answer" (shown as "Servidor fora do ar"). */
 export const noServer = (): RuleError => ({ code: "sem_servidor", message: "O servidor não respondeu" })
@@ -43,6 +44,7 @@ export type Res<T> =
   | { ok: false; error: RuleError; status: number; /** Nothing answered, or 502/503: the server is down. */ down: boolean }
 
 export interface HttpOptions {
+  timings?: ClientTimings
   fetch?: typeof fetch
   /** Where the contract is served (`servers[0].url`). */
   base?: string
@@ -112,6 +114,10 @@ export function createHttp(o: HttpOptions = {}): Http {
     const sessionToken = o.csrf?.()
     const sessionVersion = o.sessionVersion?.()
     const h: Record<string, string> = { Accept: "application/json", "X-Request-Id": `ptw-${uuidv7()}` }
+    const finish = o.timings?.request(h["X-Request-Id"]!, r.path, r.method)
+    let status = 0
+    let bytes: number | null = null
+    try {
     const client = o.clientName?.()
     if (client) h["X-Ptw-Client"] = client
     if (!READS.has(r.method) && sessionToken) h["X-Ptw-Csrf"] = sessionToken
@@ -131,9 +137,12 @@ export function createHttp(o: HttpOptions = {}): Http {
       return { ok: false, error: noServer(), status: 0, down: true }
     }
     const down = res.status === 502 || res.status === 503
+    status = res.status
     o.onReach?.(!down)
     if (!res.ok) {
-      const error = lockoutWait(res.status, errorOf(res.status, await res.text().catch(() => "")), res.headers.get("Retry-After"))
+      const text = await res.text().catch(() => "")
+      if (o.timings?.enabled) bytes = new TextEncoder().encode(text).byteLength
+      const error = lockoutWait(res.status, errorOf(res.status, text), res.headers.get("Retry-After"))
       if (res.status === 401 && o.csrf?.() === sessionToken && o.sessionVersion?.() === sessionVersion) o.onUnauthorized?.()
       return { ok: false, error, status: res.status, down }
     }
@@ -143,10 +152,12 @@ export function createHttp(o: HttpOptions = {}): Http {
     if (as === "none" || res.status === 204 || r.method === "HEAD") return { ok: true, data: undefined as T, status: res.status, etag, replayed }
     try {
       const text = await res.text()
+      if (o.timings?.enabled) bytes = new TextEncoder().encode(text).byteLength
       return { ok: true, data: (as === "text" ? text : JSON.parse(text)) as T, status: res.status, etag, replayed }
     } catch {
       return { ok: false, status: res.status, down: false, error: { code: "PTA99", message: "O servidor devolveu uma resposta incompleta. Tente novamente." } }
     }
+    } finally { finish?.(status, bytes) }
   }
 
   return { request, url }

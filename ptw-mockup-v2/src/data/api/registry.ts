@@ -10,6 +10,16 @@ import { settled, type Act, type ImportPreview } from "../port"
 import type { RegistryAction } from "../memory/registry"
 import { noServer, type Res } from "./http"
 import { addAssets, putTemplate, refusal, undoNow, type Page, type Shared } from "./state"
+import type { Delegation } from "@/core/delegation"
+
+async function loadDelegations(s: Shared, r: RegistryState): Promise<RuleError | null> {
+  const hasMandates = r.templates.some((t) => t.versions.some((v) => v.stages.some((st) => st.slots.some((sl) => sl.delegable))))
+  if (!hasMandates) { r.delegations = undefined; return null }
+  const result = await s.http.request<Delegation[]>({ method: "GET", path: "/delegations" })
+  if (!result.ok) return result.error
+  r.delegations = result.data
+  return null
+}
 
 /** `TypeDef.family` of the contract → the app's four lists (the only shape conversion of the layer). */
 const FAMILY: Record<TypeList, string> = { locationTypes: "local", assetTypes: "ativo", roleTypes: "cargo", relationKinds: "relacao" }
@@ -48,6 +58,8 @@ export async function loadReference(s: Shared): Promise<RuleError | null> {
   for (const x of [types, locations, people, lists, templates, relations]) if (failed(x)) return x
   const r: RegistryState = { ...s.registry.get(), units: [unit.data], locationTypes: [], assetTypes: [], roleTypes: [], relationKinds: [], locations: locations as Location[], people: people as Person[], optionLists: lists as OptionList[], templates: templates as PermitTemplate[], relations: relations as AssetRelation[] }
   for (const w of types as WireType[]) { const { list, type } = toType(w); if (list) r[list] = [...r[list], type] }
+  const delegationError = await loadDelegations(s, r)
+  if (delegationError) return delegationError
   s.registry.set(r)
   return null
 }
@@ -84,6 +96,8 @@ export async function syncReference(s: Shared, since: string): Promise<RuleError
   if (failed(relations)) return relations
   const r: RegistryState = { ...s.registry.get(), locationTypes: [], assetTypes: [], roleTypes: [], relationKinds: [], relations }
   for (const w of types) { const { list, type } = toType(w); if (list) r[list] = [...r[list], type] }
+  const delegationError = await loadDelegations(s, r)
+  if (delegationError) return delegationError
   s.registry.set(r)
   return null
 }

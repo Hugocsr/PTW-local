@@ -1,21 +1,21 @@
 ---
 name: PTW — Permissão de Trabalho
-description: Mockup operacional de Permissão de Trabalho; claro, denso, previsível, cor só para estado.
+description: Aplicação de Permissão de Trabalho; superfícies claras, marca azul-violeta, estados semânticos e menu único por permissões.
 colors:
-  primary: "oklch(0.205 0 0)"
-  primary-foreground: "oklch(0.985 0 0)"
+  primary: "#635bff"
+  primary-foreground: "#ffffff"
   background: "oklch(1 0 0)"
-  foreground: "oklch(0.145 0 0)"
+  foreground: "#16213b"
   card: "oklch(1 0 0)"
   secondary: "oklch(0.97 0 0)"
   muted: "oklch(0.97 0 0)"
-  muted-foreground: "oklch(0.5 0 0)"
-  border: "oklch(0.922 0 0)"
+  muted-foreground: "#52627a"
+  border: "#e2e8f0"
   input: "oklch(0.63 0 0)"
-  ring: "oklch(0.45 0 0)"
-  surface-canvas: "oklch(0.975 0 0)"
-  surface-well: "oklch(0.95 0 0)"
-  surface-fixed: "oklch(0.92 0 0)"
+  ring: "#635bff"
+  surface-canvas: "#f6f8fc"
+  surface-well: "#f1f4fa"
+  surface-fixed: "#e8edf5"
   surface-row: "oklch(1 0 0)"
   destructive: "oklch(0.577 0.245 27.325)"
   destructive-text: "oklch(0.5 0.2 27)"
@@ -42,10 +42,10 @@ colors:
 typography:
   page:
     fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.375rem"
-    fontWeight: 600
-    lineHeight: "1.75rem"
-    letterSpacing: "-0.015em"
+    fontSize: "1.75rem"
+    fontWeight: 700
+    lineHeight: "2.125rem"
+    letterSpacing: "-0.03em"
   title:
     fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1.125rem"
@@ -176,14 +176,14 @@ components:
 
 ## Overview
 
-**Creative North Star: "O Quadro de Bloqueio"**
+**Direção visual: Operação clara, com identidade SGI Forces (validada em 23/11/2026)**
 
-Uma ferramenta de segurança operacional, não uma vitrine. Tudo é cinza neutro e preto sobre fundo branco; a cor existe apenas para dizer em que situação algo está (liberado, sua vez, revisar, parado). Quem abre uma PT precisa achar a próxima ação no mesmo lugar em toda tela, ler o estado sem interpretar e não se enganar sobre o que é perigoso.
+Ferramenta de segurança operacional com fundo claro, cartões brancos, bordas suaves e marca azul-violeta nas ações e na navegação. A paleta de estados conserva seu significado próprio (liberado, sua vez, revisar, parado). Quem abre uma PT precisa achar a próxima ação no mesmo lugar em toda tela, ler o estado sem interpretar e não se enganar sobre o que é perigoso.
 
 A densidade é de produto operacional: escala tipográfica fixa em rem, grade de 4 px, uma moldura de página única encostada à esquerda, quatro modelos de tela e nenhum outro. Hierarquia vem de estrutura (h1 → h2 → h3, linhas com divisória, painel lateral) e não de texto explicativo ou decoração. Tema claro.
 
 **Key Characteristics:**
-- Neutros acromáticos (croma 0); botões pretos; cor reservada a estado.
+- Fundo `#F6F8FC`, tinta `#16213B`, ações `#635BFF`, seleção lavanda `#EEEDFF` com texto `#5146D8`; cores configuradas pela planta continuam válidas.
 - Cinco tons de estado, sempre acompanhados de ícone ou palavra.
 - Moldura de 72rem encostada à esquerda, título na mesma borda em todas as telas.
 - Uma primária preenchida por região; destrutivo nunca no lugar da primária.
@@ -192,17 +192,17 @@ A densidade é de produto operacional: escala tipográfica fixa em rem, grade de
 
 ## Colors
 
-Paleta acromática com cinco famílias de estado; nenhuma cor de marca.
+Paleta clara com marca própria e cinco famílias semânticas de estado independentes do tema.
 
 ### Primary
-- **Preto Operacional** (`primary`): botão preenchido, a única ação principal de cada região. Não muda de cor por contexto: uma ação "boa" continua preta.
+- **Marca** (`primary`): azul-violeta por padrão, com texto branco (contraste ≥ 4,5:1); uma ação principal por região. O hover mantém esse contraste. A planta pode configurar sua marca pelo tema.
 
 ### Neutral
 - **Branco** (`background`, `card`, `surface-row`): fundo da página, cartões e linhas.
 - **Tinta** (`foreground`): texto principal.
 - **Cinza de Apoio** (`muted-foreground`): rótulos, meta, contagens, ícones de linha.
-- **Divisória** (`border`) e **Contorno de Campo** (`input`, L 0.63): linhas de tabela e bordas de campo; o contorno de campo tem ≥ 3:1 contra o branco e contra o poço, para que o que se preenche se reconheça de relance. Botões de escolha (toggle) usam o mesmo contorno; o escolhido é tonal (fundo `secondary`, texto em tinta, anel de 2 px em tinta), nunca preto cheio: preto é só da ação principal; botão primário desativado vira superfície `muted` com texto `muted-foreground`, sem opacidade; botões de ação em contorno usam a divisória, mais clara.
-- **Anel de Foco** (`ring`): foco visível, cinza escuro a 50%.
+- **Divisória** (`border`) e **Contorno de Campo** (`input`, L 0.63): linhas de tabela e bordas de campo; o contorno de campo tem ≥ 3:1 contra o branco e contra o poço, para que o que se preenche se reconheça de relance. Botões de escolha (toggle) usam o mesmo contorno; o escolhido é tonal (fundo `secondary`, texto em tinta, anel de 2 px em tinta), sem preenchimento de marca: ele fica reservado à ação principal; botão primário desativado vira superfície `muted` com texto `muted-foreground`, sem opacidade; botões de ação em contorno usam a divisória, mais clara.
+- **Anel de Foco** (`ring`): foco visível na cor de marca, com contorno de duas cores quando aplicável.
 - **Superfícies tonais** (`surface-canvas` < `surface-well` < `surface-row`; `surface-fixed` é o poço mais escuro para itens fixos do produto): profundidade por tom, não por sombra.
 
 ### Status (Cor de estado)
@@ -215,7 +215,7 @@ Cada tom tem quatro papéis: `surface` (fundo suave), `border` (borda de bloco),
 - **Vermelho de Ação** (`destructive`, `destructive-text`): botão Parar (preenchido) e texto de ações de remoção. `destructive-text` é o vermelho mais escuro para texto vermelho sobre branco.
 
 ### Named Rules
-**The Cor É Estado Rule.** Cor saturada só comunica estado. Botões ficam pretos (ou contorno); o único botão colorido é o vermelho de Parar e o de confirmação destrutiva.
+**Marca e estado são independentes.** Marca identifica navegação/ação; estado usa somente `StatusBadge` / `TONE_*`. Parar e confirmação destrutiva continuam vermelhos.
 
 **The Nunca Só Cor Rule.** Todo tom de estado vem com ícone ou palavra (`StatusBadge` exige texto; ícones isolados têm `aria-label`). Quem não distingue verde de vermelho lê o mesmo estado.
 
@@ -231,7 +231,7 @@ Cada tom tem quatro papéis: `surface` (fundo suave), `border` (borda de bloco),
 
 ### Hierarchy
 Os papéis são utilitários `type-*`; use-os em vez de combinar tamanho e peso à mão.
-- **Página** (`type-page`, 600, 22/28, −0.015em): o único `h1` de cada tela.
+- **Página** (`type-page`, 700, 28/34, −0.03em): o único `h1` de cada tela.
 - **Título** (`type-title`, 600, 18/24): títulos de diálogo, destaques de cartão de trabalho e **nome da etapa** (PT, Testar, Fluxo, prévia da importação).
 - **Subtítulo** (`type-subtitle`, 600, 16/24): **seção de formulário** e "Assinaturas" da etapa (com linha embaixo); áreas "Preencher"/"Assinar" do Fluxo e da prévia.
 - **Seção** (`type-heading`, 600, 15/22): `h2` de `PageSection`, sem ícone e sem cartão.
@@ -298,7 +298,7 @@ Cantos suavemente arredondados a partir de uma base de 10 px (`--radius: 0.625re
 Contidos e firmes; a hierarquia é feita por preenchimento, não por cor.
 - **Shape:** cantos de 10 px (`rounded.lg`).
 - **Altura:** 44 px abaixo de `md`, 36 px acima (`h-11 md:h-9`; ícones `size-11 md:size-9`). Exceção: botões do painel de ação da PT ficam com no mínimo 44 px em todos os tamanhos (ação de segurança); rótulo longo ("Preencher e assinar: …") quebra em duas linhas, nunca é cortado.
-- **Primary:** preto (`primary`) com texto claro. **Uma primária preenchida por região** (cabeçalho, painel, cartão, diálogo). Duas pretas na mesma região = uma está errada.
+- **Primary:** marca (`primary`) com texto contrastante. **Uma primária preenchida por região** (cabeçalho, painel, cartão, diálogo).
 - **Outline:** secundárias; até 2 no cabeçalho, à esquerda da primária.
 - **Ghost:** "+ Item" no cabeçalho de seção, ações de linha, link de volta.
 - **Stop:** vermelho preenchido (`destructive`), só para Parar (e Devolver a PT no fluxo de assinatura). Parar fica sempre visível.
@@ -360,7 +360,7 @@ Trocar entre folha de celular e diálogo de computador preserva os campos, a esc
 1. **Etapa** = o cartão (`rounded-xl`): marcador de 28 px + nome `type-title` 18/600 + estado. A etapa da sua vez é branca com contorno de 2 px em tinta; as outras ficam no tom `surface-canvas` com borda de 1 px.
 2. **Seção** = `FormSectionHeader`: `type-subtitle` 16/600 sobre uma linha `foreground/20` que atravessa a coluna, "Falta N" em cinza à direita; 40 px entre seções, 24 px da linha até a primeira pergunta. "Assinaturas" usa o mesmo cabeçalho (só quando a etapa tem formulário).
 3. **Pergunta** = `type-field` 14/500 em tinta, 8 px acima do controle. Rótulo de coluna dentro de linha repetida e subcampo (Documento, ponto de isolamento): 12/500 em tinta. "Linha N"/"Ponto N": `type-label` cinza.
-4. **Campo** = superfície branca com contorno `input` (≥ 3:1), 44/36 px; escolhas em botão contorno, a escolhida preta. **Só leitura** = texto puro, sem caixa: rótulo `type-label` cinza sobre o valor `type-body` 400 em tinta.
+4. **Campo** = superfície branca com contorno `input` (≥ 3:1), 44/36 px; escolhas em botão contorno, a escolhida tonal com contorno. **Só leitura** = texto puro, sem caixa: rótulo `type-label` cinza sobre o valor `type-body` 400 em tinta.
 5. **Instrução/detalhe** = `type-meta` cinza colada ao rótulo; aviso = poço cinza com ícone.
 
 **Leitura da etapa em preenchimento.** A etapa da sua vez ocupa a largura inteira do cartão, em todas as larguras: título da etapa → seções → perguntas → controle → ajuda ou motivo. Depois do formulário vem a seção "Assinaturas" (texto, sem caixa: uma caixa branca pareceria campo) e, no rodapé, o botão com o motivo ao lado quando desativado ("Faltam 3 respostas" em cinza; "Bloqueada por uma resposta: …" em `stop`). Etapas só leitura (concluída, aguardando) mostram as respostas ao lado de "Assinaturas" a partir de `@2xl`; a etapa futura mostra só uma linha por seção ("Seção · N perguntas") e quem assina, sem cabeçalhos, e "Ainda não chegou" em texto cinza, sem selo. **Um sinal só:** nenhum ícone de ✓ por item e nenhum selo "Completa"/"Impede a etapa" por seção; a seção mostra só "Falta N" em cinza, e o motivo que trava fica embaixo do item que trava (`stop`, ícone + palavras). Pergunta com o mesmo nome da seção não repete o título (fica só para leitor de tela). **Avisos** são um poço cinza (`surface-well`, sem borda) com ícone de informação e texto cinza: lê-se, não se preenche; uma sequência de 3 ou mais avisos com rótulos próprios (a tabela de classes do papel) vira uma linha "Consultar · Classe 5, Classe 4, …" que abre uma tabela compacta; escolhida uma opção com o mesmo rótulo de um aviso ("Classe 4"), o detalhe dele aparece junto da resposta (`core/formLayout.ts`). **Marcação:** até 6 opções, botões; mais de 6, seleção com busca (`SearchSelect`; múltipla: `PickList`). O mesmo vale para Pessoa e para toda seleção do formulário (ativo, energia e "Aplicado por" dos pontos de isolamento).
@@ -413,7 +413,7 @@ Faixa fina no fim de toda tela, abaixo do `main` (borda superior de 1 px, mesmo 
 - **Do** renderizar exatamente um `Page` por tela, 72rem, encostado à esquerda.
 - **Do** escolher um dos modelos A–D antes de desenhar uma tela.
 - **Do** usar alvos de 44 px abaixo de `md` (`h-11 md:h-9`, `size-11 md:size-9`).
-- **Do** manter uma primária preta por região; destrutivo no `⋯` ou em contorno com texto vermelho.
+- **Do** manter uma primária na cor de marca por região; destrutivo no `⋯` ou em contorno com texto vermelho.
 - **Do** acompanhar todo tom de estado com ícone ou palavra (`StatusBadge`, `TONE_*`).
 - **Do** usar os utilitários `type-*` e a grade de 4 px da tabela de ritmo.
 - **Do** usar "Desfazer" para itens soltos e `ConfirmRemove` para coisas com conteúdo.
@@ -453,13 +453,13 @@ Faixa fina no fim de toda tela, abaixo do `main` (borda superior de 1 px, mesmo 
 - **Busca rápida** (`shell/CommandPalette.tsx`): Ctrl/⌘+K em qualquer tela ou o botão "Buscar…" da barra do topo (com a tecla `Ctrl K` a partir de `md`; só o ícone, 44 px, no celular). Painel `rounded-2xl` sobre o fundo de tinta; no celular, folha de largura total descendo do topo. Sem texto: Recentes (PTs abertas nesta sessão, só em memória), Ir para (as telas que o menu mostra, Auditoria só com o acesso) e Ações (Nova PT). Digitando: PTs e Ativos (consultados no servidor, com pausa de 250 ms), Locais, Pessoas e Modelos, até 5 por grupo, com o estado da PT em `StatusBadge` e o trecho achado sublinhado. "Buscando…", "Nada encontrado" e "Sem servidor" são linhas de texto; a navegação continua sem servidor.
 - **Marcas do produto (2026-11-11):** trilho de etapas no topo da PT (`work/StageRail.tsx`) e em miniatura nos cartões (`signal/MiniRail.tsx`); medidor de janela com o tempo que resta (`signal/WindowMeter.tsx`) no bloco "Trabalho liberado" e no cartão "Em campo".
 - **Texto:** a interface não explica o sistema. Sem slogans, sem frases de apoio que repetem o que a estrutura já mostra, sem termos técnicos de criptografia (usar "código de verificação" e "impressão digital"). A entrada é um cartão único centralizado: marca, alternador "Login e senha" | "Logar como" (lista de pessoas com busca; um clique entra, só com `PTW_DEV_LOGIN=1`) e a situação do servidor.
-- **Direção "Documento de engenharia" (2026-11-11, escolhida pelo dono):** folha branca sobre papel quente, tinta quase preta, cantos de 6 px, linhas finas em tinta. Rótulos e cabeçalhos de tabela em caixa alta pequena com espaçamento (`type-label`, `type-th`); tabela com régua de tinta em cima e embaixo do cabeçalho, sem faixa cinza. Utilitários em `index.css`: `doc-block`/`doc-cell` (bloco de legenda, como o de um desenho técnico), `stamp` (carimbo) e `stamp-in`.
+- **Histórico — substituída em tela pelo contrato SGI Forces de 23/11/2026; impressão preservada. Direção "Documento de engenharia" (2026-11-11):** folha branca sobre papel quente, tinta quase preta, cantos de 6 px, linhas finas em tinta. Rótulos e cabeçalhos de tabela em caixa alta pequena com espaçamento (`type-label`, `type-th`); tabela com régua de tinta em cima e embaixo do cabeçalho, sem faixa cinza. Utilitários em `index.css`: `doc-block`/`doc-cell` (bloco de legenda, como o de um desenho técnico), `stamp` (carimbo) e `stamp-in`.
 - **PT como documento:** título = serviço; sob régua dupla, o número em mono e "Permissão de trabalho · Revisão N"; dados da PT num bloco de legenda. Assinatura feita = carimbo verde "ASSINADO" com nome, hora e revisão; a assinatura recém-feita cai animada.
 - **Segurar para assinar:** `signal/HoldButton.tsx` (900 ms; soltar antes cancela; teclado: segurar Enter/Espaço). Usado no diálogo Assinar. Scripts de navegador precisam segurar, não clicar.
 - **Parar:** no celular, barra fixa no rodapé da PT em campo ("Parar o trabalho", 56 px). PT parada: faixa vermelha cheia "Trabalho parado" no topo da página, com motivo e hora.
 - **Histórico da PT:** linha do tempo por dia (hora em mono, ícone, texto, quem), negados em vermelho com a palavra; "Revisões" continua em tabela.
 - **Tela de parede** (`#parede`, link no Quadro): escura, para TV; relógio, contagens, "Trabalho parado" em vermelho, "Em campo" com o tempo que resta em figuras grandes, "Aguardando"; só leitura, atualiza a cada 20 s.
-- **Documento em todo o app (2026-11-11):** `PageHeader` desenha a régua dupla sob o título de toda página; `PropertyList` é um bloco de legenda (`doc-block`, células rótulo-sobre-valor, 2 colunas a partir de `sm`). Diálogos: moldura em tinta, título 18/600, rodapé com linha de tinta. Parar: barra vermelha de 6 px no topo e título em caixa alta vermelha.
+- **Histórico — apresentação em tela substituída em 23/11/2026. Documento em todo o app (2026-11-11):** `PageHeader` desenha a régua dupla sob o título de toda página; `PropertyList` é um bloco de legenda (`doc-block`, células rótulo-sobre-valor, 2 colunas a partir de `sm`). Diálogos: moldura em tinta, título 18/600, rodapé com linha de tinta. Parar: barra vermelha de 6 px no topo e título em caixa alta vermelha.
 - **Fluxo do modelo:** trilho horizontal de etapas (Etapa N, nome, itens · assinaturas; a escolhida em tinta cheia; "+" entre as etapas onde dá para inserir) e **uma etapa aberta por vez** abaixo. No celular o trilho rola de lado.
 - **Nova PT:** a partir de `xl`, uma folha de prévia ao lado do formulário (carimbo "Rascunho", serviço, bloco de legenda com modelo, local, ativos e janela, e as etapas numeradas do modelo), preenchida enquanto a pessoa escolhe.
 - **Desabilitados agora** (`#desabilitados`, menu Trabalho; 2026-11-11): PTs abertas de versões que **não prendem o equipamento** (desabilitação de intertravamento / dispositivo de segurança). Bloco de legenda com três contagens e três grupos: "Desabilitados agora" (ativa sem parada; barra vermelha, medidor da janela, "Prazo vencido: reabilite" quando a janela acabou), "A reabilitar" (suspensa, entregue, expirada ou ativa com parada; âmbar) e "Aguardando aprovação" (em análise, devolvida, emitida; cinza). Cada linha: serviço, número e ativos; o que foi pedido (até três respostas de escolha única ou texto curto, na ordem do formulário); estado e próximo; janela. Três colunas a partir de `xl`, uma coluna abaixo. Só leitura; a linha abre a PT. A tela de parede ganhou a contagem "Desabilitados".
@@ -492,3 +492,23 @@ A PT impressa **não é a tela**: é um formulário de papel próprio (`work/Per
 ## Controles NR-10 na PT
 
 O painel lateral mostra a base normativa e o turno explícito. Revalidar abre diálogo com três horários locais, justificativa e três confirmações inicialmente desmarcadas. O ato aguarda confirmação do servidor e deixa a PT aguardando novo aceite. A impressão identifica a última revalidação e seu responsável; o formulário original permanece visível.
+
+
+## Integração SGI Forces — primeiro lote (23/11/2026)
+
+Specs validadas: `fabrica/specs/integracao-sgi-forces/visual-navegacao.md` e aditivo `menu-lateral-por-perfil.md` (SGI-16). Uma aplicação/sessão com menu lateral único, sem toggle. Operação reúne Minha área/Quadro/Desabilitados; Cadastros, Configuração e Governança e sistema aparecem conforme grants. Referências de leitura sem grant de gestão ficam em Consultas, sem duplicar destinos. Auditoria exige seu grant; exportação não concede gestão. Hashes e QR preservados.
+
+Sidebar branca de 256 px, cabeçalho mínimo 64 px. Abaixo de 1024 px usa drawer com Escape, foco contido e fechamento após navegar; os mesmos destinos autorizados do desktop dentro do drawer, sem seletor de área. Conteúdo de 72rem alinhado à esquerda. Cards com 12–16 px de raio, campos/botões com 8–10 px, bordas suaves e sombra discreta. Cabeçalhos deixam de usar régua dupla. PropertyList e painéis usam divisórias suaves em tela; PermitSheet mantém seu desenho de impressão independente.
+
+Minha área exibe três contagens do mesmo cache do quadro pessoal, sem novas consultas: Sua vez, Aguardando e Em campo. Toque leva ao grupo; no celular o resumo ocupa uma linha compacta para manter as ações próximas. Com servidor indisponível, mostra traço em vez de contagem confirmada. Quadro/cadastros usam filtros e tabela em um painel branco, preservando paginação e filtros reais. Nova PT recebe apenas a moldura visual neste lote; seu assistente funcional depende de SGI-03.
+
+Login conserva os modos anunciados pelo servidor, erros, inatividade e autenticação reais. Tema da planta e fontes empacotadas preservados; sem SSO, sino ou seletor de planta fictícios. `workspace.css` contém apenas apresentação em tela, independente da folha impressa.
+
+
+## Navegação SGI-16 (23/11/2026)
+
+Extensão SGI-11A/07/08: `Identidade visual` em Configuração (`modelos`), `Grupos de pessoas` em Governança (`cadastro`) e `Delegações` em Governança para consulta própria (gestão só `cadastro`). As telas usam Page/PageHeader, estados de erro/carregamento e confirmação do servidor. Identidade tem prévia local, paletas, PNG e restauração confirmada; grupos têm editor de membros; delegações mostram representação e vigência, criam e revogam por formulário. Assinatura, histórico visual e folha impressa identificam o representado preservando o ator real. A cor do estado da PT não é personalizada pelo editor.
+
+`core/navigation.ts` é a política única de destinos: Operação sempre disponível à conta autenticada; Locais/Ativos/Pessoas em Cadastros com `cadastro`; Modelos em Configuração com `modelos`; Tipos/Listas em Configuração com `cadastro`; Auditoria em Governança e sistema com `auditoria`. Cada referência sem grant de gestão permanece em Consultas, conforme sua leitura já autorizada. Nenhum grupo vazio, duplicação ou link para módulo não implementado.
+
+Sidebar, busca Ctrl+K e breadcrumbs usam a mesma classificação; a busca identifica o grupo de cada destino. A rota consulta a mesma política de leitura, além da autorização efetiva do servidor. Se houver perda de leitura enquanto uma tela está aberta, a pessoa volta à Minha área com aviso. Nenhum estado de área é salvo no navegador. Drawer mantém foco contido, Escape e retorno ao botão; mudar de tela o fecha.

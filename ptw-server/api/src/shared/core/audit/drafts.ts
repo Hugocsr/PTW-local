@@ -178,7 +178,7 @@ export function rowEvent(table: AuditTable, before: Row | undefined, after: Row 
   return { ...ctxPart(ctx), action: act, ok: true, permit: pid, rev: rv, asset: aid, entity: table, entityId: eid, text: txt, data }
 }
 
-type SigLike = { id: string; permitId: string; rev: number; slotId: string; personId: string }
+type SigLike = { id: string; permitId: string; rev: number; slotId: string; personId: string; delegationId?: string | null; representedPersonId?: string | null }
 /**
  * A signature (ptw.signature_audit): the actor is who signed. With `voidedReason`, its annulment
  * (actor = the session). Text "Assinou: <significado>" / "Assinatura anulada (<significado>): motivo".
@@ -186,7 +186,7 @@ type SigLike = { id: string; permitId: string; rev: number; slotId: string; pers
 export function signatureEvent(sig: SigLike, meaning: string, voidedReason: string | null, ctx: AuditCtx): AuditDraft {
   const base = { ...ctxPart(ctx), ok: true, permit: sig.permitId, rev: sig.rev, asset: null, entity: "signature", entityId: sig.id }
   if (voidedReason === null) {
-    return { ...base, actor: sig.personId, action: "pt.assinatura", text: `Assinou: ${meaning}`, data: { slot: sig.slotId, pessoa: sig.personId } }
+    return { ...base, actor: sig.personId, action: "pt.assinatura", text: `Assinou: ${meaning}`, data: { slot: sig.slotId, pessoa: sig.personId, ...(sig.delegationId ? { delegacao: sig.delegationId, representado: sig.representedPersonId ?? null } : {}) } }
   }
   return { ...base, action: "pt.assinatura.anulada", text: `Assinatura anulada (${meaning}): ${voidedReason}`, data: { slot: sig.slotId, pessoa: sig.personId, motivo: voidedReason } }
 }

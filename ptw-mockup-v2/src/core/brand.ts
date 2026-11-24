@@ -26,7 +26,7 @@ export const DEFAULT_BRAND: Brand = {
   mark: "PT",
   logo: null,
   symbol: null,
-  colors: { brand: "#1b2030", canvas: "#f4f3ef", ink: "#12151c" },
+  colors: { brand: "#635bff", canvas: "#f6f8fc", ink: "#16213b" },
   font: { family: "Geist Variable", file: null },
 }
 
@@ -145,7 +145,10 @@ export function brandVars(b: Brand): Record<string, string> {
     "--card-foreground": b.colors.ink,
     "--popover-foreground": b.colors.ink,
     "--surface-canvas": b.colors.canvas,
-    "--sidebar": b.colors.canvas,
+    "--sidebar": WHITE,
+    "--sidebar-accent": `color-mix(in srgb, ${b.colors.brand} 9%, white)`,
+    "--sidebar-accent-foreground": ink,
+    "--sidebar-ring": b.colors.brand,
     "--app-font": `'${b.font.family}'`,
   }
 }

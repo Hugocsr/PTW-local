@@ -101,10 +101,10 @@ export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: ()
       </form>}
     </div>
     {/* The sheet being written: what this PT will be, filled in as the person chooses. */}
-    <aside aria-label="Prévia da PT" className="sticky top-20 hidden min-w-0 flex-col gap-4 border border-foreground bg-background p-5 shadow-[6px_6px_0_0_var(--surface-fixed)] xl:flex">
+    <aside aria-label="Prévia da PT" className="sticky top-20 hidden min-w-0 flex-col gap-4 rounded-2xl border bg-card p-5 shadow-elev-2 xl:flex">
       <div className="flex items-baseline justify-between gap-3"><span className="type-label">Permissão de trabalho</span><span className="stamp text-st-neutral-fg"><span className="text-[0.625rem] leading-3 font-bold tracking-[0.14em] uppercase">Rascunho</span></span></div>
       <p className={scope.trim() ? "type-title break-words" : "type-title text-muted-foreground"}>{scope.trim() || "Serviço a descrever"}</p>
-      <div aria-hidden className="doc-rule" />
+      <div aria-hidden className="border-t" />
       <dl className="doc-block grid-cols-2">
         {([["Modelo", template ? `${template.name}${version ? ` v${version.number}` : ""}` : "—"], ["Local", state.locations.find((l) => l.id === locationId)?.name ?? "—"], ["Ativos", assetIds.length ? assetIds.map((a) => state.assets.find((x) => x.id === a)?.code ?? "…").join(" · ") : "—"], ["Janela", `${dmHms(instant(start, sim.tz)).slice(0, -3)} – ${dmHms(instant(end, sim.tz)).slice(0, -3)}`]] as const).map(([l, v]) => (
           <div key={l} className="doc-cell flex flex-col gap-1"><dt className="type-label">{l}</dt><dd className="min-w-0 break-words type-body">{v}</dd></div>

@@ -142,6 +142,7 @@ export function StageSignatures({ permit, view, form }: { permit: Permit; view: 
               <span key={g.id} className={cn("stamp my-1.5 w-fit max-w-full", TONE_TEXT.ok, fresh(g.signedAt) && "stamp-in")}>
                 <span className="flex items-center gap-1 text-[0.625rem] leading-3 font-bold tracking-[0.14em] uppercase"><CheckIcon className="size-3 shrink-0" strokeWidth={3} aria-hidden />Assinado</span>
                 <span className="type-section break-words">{who(g.personId)}</span>
+                {g.representedPersonId && <span className="type-meta">Em nome de {who(g.representedPersonId)} · delegação registrada</span>}
                 <span className="type-data">{fmtDateTime(g.signedAt)} · r{g.rev}</span>
               </span>
             ))}
@@ -150,6 +151,7 @@ export function StageSignatures({ permit, view, form }: { permit: Permit; view: 
               <span key={g.id} className={cn("flex flex-col gap-0.5 type-meta", TONE_TEXT.attention)}>
                 <span className="flex flex-wrap items-center gap-x-1.5"><CircleSlashIcon className="size-3.5 shrink-0" aria-hidden /><span className="font-medium">Anulada</span><span className="line-through">{who(g.personId)} · {fmtDateTime(g.signedAt)} · r{g.rev}</span></span>
                 {g.voidedReason && <span className="pl-5 text-muted-foreground">{g.voidedReason}{g.voidedAt ? ` (${fmtDateTime(g.voidedAt)})` : ""}</span>}
+                {g.representedPersonId && <span className="pl-5">Em nome de {who(g.representedPersonId)}</span>}
               </span>
             ))}
             {off ? <NotRequired when={need.when} /> : !v.satisfied && <Waiting v={v} current={view.status === "atual"} />}
@@ -183,7 +185,7 @@ function Waiting({ v, current }: { v: SlotView; current: boolean }) {
       {v.eligible.length === 0 && <span className="pl-5">Ninguém elegível.</span>}
       {v.eligible.map((e) => (
         <span key={e.person.id} className={cn("pl-5", !e.ok && TONE_TEXT.stop)}>
-          {e.person.name}{e.person.id === sim.personId ? " (você)" : ""}{e.ok ? "" : ` · não elegível: ${e.reasons.join(", ")}`}
+          {e.person.name}{e.person.id === sim.personId ? " (você)" : ""}{e.delegation ? " · por delegação administrativa" : ""}{e.ok ? "" : ` · não elegível: ${e.reasons.join(", ")}`}
         </span>
       ))}
     </div>

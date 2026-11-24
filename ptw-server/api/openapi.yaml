@@ -48,6 +48,8 @@ servers:
     description: "Atrás do Caddy (`web`), mesmo host do app."
 
 tags:
+  - { name: governanca, description: "Grupos administrativos; requer grant cadastro." }
+  - { name: identidade, description: "Marca pública e edição administrativa com grant modelos." }
   - { name: sessao, description: "Entrada, saída e quem está na sessão." }
   - { name: cadastro, description: "Unidade, tipos, locais, ativos e relações, pessoas e cargos, listas." }
   - { name: modelos, description: "Modelos de PT, versões, importação e exportação do pacote `ptw.modelo/1`." }
@@ -85,6 +87,148 @@ x-ptw-error-map:
   "504": ["57014 (statement_timeout)"]
 
 paths:
+  /delegations:
+    get:
+      tags: [sessao]
+      operationId: listDelegations
+      summary: Delegações próprias ou todas, para administração de cadastro.
+      responses:
+        "200":
+          description: Mandatos persistidos, inclusive revogados.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Delegation" } }
+    post:
+      tags: [governanca]
+      operationId: createDelegation
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      x-ptw-audit: delegacao.criada, com pessoas/escopo/período e motivo.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/DelegationInput" } } }
+      responses:
+        "201": { description: Delegação registrada., content: { application/json: { schema: { $ref: "#/components/schemas/Delegation" } } } }
+  /delegations/{id}/revoke:
+    post:
+      tags: [governanca]
+      operationId: revokeDelegation
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: "#/components/parameters/IfMatch" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      x-ptw-audit: delegacao.revogada; usos anteriores permanecem íntegros.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 1, maxLength: 500 }
+      responses:
+        "200": { description: Delegação revogada., content: { application/json: { schema: { $ref: "#/components/schemas/Delegation" } } } }
+  /person-groups:
+    get:
+      tags: [governanca]
+      operationId: listPersonGroups
+      summary: Grupos e seus membros da unidade; exige cadastro.
+      responses:
+        "200":
+          description: Grupos persistidos.
+          content:
+            application/json:
+              schema: { type: array, maxItems: 5000, items: { $ref: "#/components/schemas/PersonGroup" } }
+    post:
+      tags: [governanca]
+      operationId: createPersonGroup
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      x-ptw-audit: cadastro.grupo.criado e membros incluídos, sem concessão de privilégios.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/GroupInput" } } }
+      responses:
+        "201": { description: Grupo criado., content: { application/json: { schema: { $ref: "#/components/schemas/PersonGroup" } } } }
+  /person-groups/{id}:
+    put:
+      tags: [governanca]
+      operationId: updatePersonGroup
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: "#/components/parameters/IfMatch" }
+      x-ptw-audit: cadastro.grupo.alterado e diferenças dos membros, na mesma transação.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/GroupInput" } } }
+      responses:
+        "200": { description: Grupo alterado., content: { application/json: { schema: { $ref: "#/components/schemas/PersonGroup" } } } }
+  /appearance/public:
+    get:
+      tags: [sistema]
+      operationId: getPublicAppearance
+      security: []
+      summary: Marca pública da unidade, sem identidade de pessoas ou dados administrativos.
+      responses:
+        "200": { description: Marca publicada ou fallback por arquivo., content: { application/json: { schema: { $ref: "#/components/schemas/PublicAppearance" } } } }
+  /appearance:
+    get:
+      tags: [identidade]
+      operationId: getAppearance
+      summary: Configuração da identidade; exige grant modelos inclusive para leitura.
+      responses:
+        "200": { description: Revisão da configuração., content: { application/json: { schema: { $ref: "#/components/schemas/Appearance" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    put:
+      tags: [identidade]
+      operationId: putAppearance
+      summary: Publica identidade ou restaura fallback; exige grant modelos.
+      x-ptw-audit: identidade.publicada/identidade.restaurada com autoria e revisão.
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/PublicAppearance" } } }
+      responses:
+        "200": { description: Configuração confirmada., content: { application/json: { schema: { $ref: "#/components/schemas/Appearance" } } } }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /appearance/assets:
+    post:
+      tags: [identidade]
+      operationId: putAppearanceAsset
+      summary: Imagem PNG limitada, por hash; só fica pública quando referenciada pela marca ativa.
+      x-ptw-audit: identidade.imagem.incluida; hash e tamanho, sem conteúdo binário.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [base64]
+              properties:
+                base64: { type: string, minLength: 60, maxLength: 349528 }
+      responses:
+        "200":
+          description: Nome seguro da imagem armazenada.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [file]
+                properties:
+                  file: { type: string, pattern: '^[0-9a-f]{64}\.png$' }
+  /appearance/assets/{file}:
+    get:
+      tags: [sistema]
+      operationId: getAppearanceAsset
+      security: []
+      summary: Imagem da identidade atualmente publicada nesta unidade.
+      parameters:
+        - { name: file, in: path, required: true, schema: { type: string, pattern: '^[0-9a-f]{64}\.png$' } }
+      responses:
+        "200": { description: PNG validado., content: { image/png: { schema: { type: string, format: binary } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
   # ------------------------------------------------------------------ sessão
   /session:
     get:
@@ -1547,6 +1691,98 @@ components:
       content: { application/json: { schema: { $ref: "#/components/schemas/PermitDetail" } } }
 
   schemas:
+    DelegationInput:
+      type: object
+      additionalProperties: false
+      required: [id, slotId, delegatorId, delegateId, scopeLocationId, startsAt, endsAt, reason]
+      properties:
+        id: { type: string, format: uuid }
+        slotId: { type: string, format: uuid }
+        delegatorId: { type: string, format: uuid }
+        delegateId: { type: string, format: uuid }
+        scopeLocationId: { type: [string, "null"], format: uuid }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    Delegation:
+      type: object
+      additionalProperties: false
+      required: [id, slotId, delegatorId, delegateId, scopeLocationId, startsAt, endsAt, reason, createdBy, createdAt, revokedAt, revokedBy, revokedReason, revision]
+      properties:
+        id: { type: string, format: uuid }
+        slotId: { type: string, format: uuid }
+        delegatorId: { type: string, format: uuid }
+        delegateId: { type: string, format: uuid }
+        scopeLocationId: { type: [string, "null"], format: uuid }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+        createdBy: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        revokedAt: { type: [string, "null"], format: date-time }
+        revokedBy: { type: [string, "null"], format: uuid }
+        revokedReason: { type: [string, "null"] }
+        revision: { type: integer, minimum: 1 }
+    GroupInput:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, active, memberIds]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: string, maxLength: 500 }
+        active: { type: boolean }
+        memberIds: { type: array, uniqueItems: true, maxItems: 1000, items: { type: string, format: uuid } }
+    PersonGroup:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, active, memberIds, revision]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: string, maxLength: 500 }
+        active: { type: boolean }
+        memberIds: { type: array, uniqueItems: true, maxItems: 1000, items: { type: string, format: uuid } }
+        revision: { type: integer, minimum: 1 }
+    Brand:
+      type: object
+      additionalProperties: false
+      required: [name, mark, logo, symbol, colors, font]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 40 }
+        mark: { type: string, minLength: 1, maxLength: 3 }
+        logo: { type: [string, "null"], maxLength: 81, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*\.(svg|png|webp)$' }
+        symbol: { type: [string, "null"], maxLength: 81, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*\.(svg|png|webp)$' }
+        colors:
+          type: object
+          additionalProperties: false
+          required: [brand, canvas, ink]
+          properties:
+            brand: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+            canvas: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+            ink: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        font:
+          type: object
+          additionalProperties: false
+          required: [family, file]
+          properties:
+            family: { type: string, pattern: '^[A-Za-z0-9][A-Za-z0-9 _-]{0,60}$' }
+            file: { type: [string, "null"], maxLength: 81, pattern: '^[A-Za-z0-9][A-Za-z0-9._-]*\.(woff2|woff|ttf)$' }
+    PublicAppearance:
+      type: object
+      additionalProperties: false
+      required: [brand]
+      properties:
+        brand: { anyOf: [{ $ref: "#/components/schemas/Brand" }, { type: "null" }] }
+    Appearance:
+      type: object
+      additionalProperties: false
+      required: [brand, revision, updatedAt, updatedBy]
+      properties:
+        brand: { anyOf: [{ $ref: "#/components/schemas/Brand" }, { type: "null" }] }
+        revision: { type: integer, minimum: 0 }
+        updatedAt: { type: [string, "null"] }
+        updatedBy: { type: [string, "null"], format: uuid }
     # ---------- comuns ----------
     Uuid: { type: string, format: uuid, pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" }
     Sha256: { type: string, pattern: "^[0-9a-f]{64}$" }
@@ -1788,6 +2024,7 @@ components:
       additionalProperties: false
       required: [id, meaning, kind, roleIds, personId, min, required]
       properties:
+        delegable: { type: boolean }
         id: { $ref: "#/components/schemas/Uuid" }
         meaning: { type: [string, "null"], minLength: 1, maxLength: 120 }
         kind: { type: string, enum: [cargo, pessoa] }
@@ -2133,6 +2370,8 @@ components:
       type: object
       required: [id, permitId, rev, slotId, personId, signedAt, voidedAt, voidedReason]
       properties:
+        delegationId: { type: [string, "null"], format: uuid }
+        representedPersonId: { type: [string, "null"], format: uuid }
         id: { $ref: "#/components/schemas/Uuid" }
         permitId: { $ref: "#/components/schemas/Uuid" }
         rev: { type: integer, minimum: 1 }

@@ -103,7 +103,7 @@ export function permitReducer(data: PermitData, a: PermitAction, ctx: PermitCtx)
   const form = permitFormOf(p, ver, data.formSnapshots, reg.optionLists)
   const equipment = { relations: reg.relations, assets: reg.assets, partOf: partOfKindIds(reg.relationKinds), free: nonHoldingVersionIds(reg.templates) }
   const person = (id: string) => reg.people.find((x) => x.id === id)
-  const rail = () => railOf(p, ver, data.signatures, reg.people, reg.locations, today, now)
+  const rail = () => railOf(p, ver, data.signatures, reg.people, reg.locations, today, now, reg.delegations)
   const plan = (signerId: string, slotId?: string) => {
     const signer = person(signerId)
     return signer ? planSign({ permit: p, ver, rail: rail(), permits: data.permits, signer, roleLabel: (id) => id, now, today, timezone: tz, serverDown: ctx.serverDown, equipment, people: reg.people, form, pathIds: path, slotId, lists: reg.optionLists }) : null
@@ -199,7 +199,9 @@ export function permitReducer(data: PermitData, a: PermitAction, ctx: PermitCtx)
         return { data: { ...data, permits: replace(np), signatures: [...signatures, sig], revisions, formSnapshots }, events }
       }
 
-      const sig: SignatureRec = { id: newId(), permitId: p.id, rev: p.revision, slotId, personId: a.personId, signedAt: now, voidedAt: null, voidedReason: null }
+      const mandate = pl.slot?.eligible.find((e) => e.person.id === a.personId && e.ok)?.delegation
+      const sig: SignatureRec = { id: newId(), permitId: p.id, rev: p.revision, slotId, personId: a.personId, signedAt: now, voidedAt: null, voidedReason: null,
+        ...(mandate ? { delegationId: mandate.id, representedPersonId: mandate.delegatorId } : {}) }
       const next = stateAfterSign(p, ver, [...data.signatures, sig])
       const denied = actDenied(p, { kind: "sign", next }, ctx.serverDown) ?? planDenied(pl)
         ?? (stage ? signatureBlocker({ ver, permit: p, form, people: reg.people, pathIds: path, now, today, lists: reg.optionLists }, stage.id) : null)

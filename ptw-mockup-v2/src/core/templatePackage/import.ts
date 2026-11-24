@@ -216,6 +216,7 @@ export function importarModelo(entrada: unknown, cadastro: Cadastro, opcoes: Opc
       }
       if (names.length) cargoPedido[id] = names
       const slot: SignSlot = { id, meaning: a.significado.trim(), kind: "cargo", roleIds, personId: null, min: a.minimo, required: a.obrigatoria }
+      if (a.administrativa_delegavel) pendencias.push({ descricao: `“${a.significado}” tinha delegação administrativa na origem: escolha a pessoa nominal e revise os cargos antes de habilitar delegação nesta planta`, motivo: "duvida", onde: os, alvo: id })
       slotByRef.set(a.ref, slot)
       return slot
     })

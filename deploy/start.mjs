@@ -5,8 +5,11 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { preparePreviewDirectory } from "./ldap-preview.mjs"
 import { waitForApi } from "./readiness.mjs"
+import { startupTimings } from "./performance.mjs"
 
 const env = { ...process.env }
+const startupStage = startupTimings(env)
+startupStage("initializing")
 const previewLdap = env.PTW_LDAP_MODE === "preview"
 if (previewLdap && env.VERCEL_ENV !== "preview") {
   throw new Error("O LDAP de homologação só pode ser usado em Preview")
@@ -31,6 +34,7 @@ function save(name, value) {
   return file
 }
 const directory = previewLdap ? preparePreviewDirectory(dir, env.PTW_PREVIEW_LOGIN_PASSWORD, env.PTW_PREVIEW_USERS_JSON) : null
+startupStage("directory_prepared")
 let ldap
 try { ldap = directory?.config ?? JSON.parse(env.PTW_LDAP_CONFIG_JSON) } catch {
   throw new Error("PTW_LDAP_CONFIG_JSON deve conter JSON válido")
@@ -72,9 +76,12 @@ function launch(command, args, childEnv) {
 }
 process.on("SIGTERM", () => stop(0))
 process.on("SIGINT", () => stop(0))
+process.on("exit", () => startupStage("exited"))
 if (directory) launch(...directory.command)
 launch(process.execPath, ["dist/server.js"], env)
 try {
   await waitForApi("http://127.0.0.1:3300/api/v1/health")
+  startupStage("api_healthy")
   if (!stopping) launch("/usr/local/bin/caddy", ["run", "--config", "deploy/Caddyfile", "--adapter", "caddyfile"], { PORT: env.PORT ?? "3000", HOME: tmpdir() })
+  if (!stopping) startupStage("proxy_process_started")
 } catch (error) { console.error(error.message); stop(1) }

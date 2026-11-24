@@ -48,7 +48,8 @@ const DETAIL_JSON = `jsonb_build_object(
                               from ptw.permit_answer a where a.unit_id = p.unit_id and a.permit_id = p.id), '{}'::jsonb)),
   'form', ptw.permit_form(p.unit_id, p.id),
   'signatures', coalesce((select jsonb_agg(jsonb_build_object('id', g.id, 'permitId', g.permit_id, 'rev', g.rev, 'slotId', g.slot_id,
-                                   'personId', g.person_id, 'signedAt', g.signed_at, 'voidedAt', g.voided_at, 'voidedReason', g.voided_reason)
+                                   'personId', g.person_id, 'signedAt', g.signed_at, 'voidedAt', g.voided_at, 'voidedReason', g.voided_reason,
+                                   'delegationId', g.delegation_id, 'representedPersonId', g.represented_person_id)
                                  order by g.signed_at, g.id)
                             from ptw.signature g where g.unit_id = p.unit_id and g.permit_id = p.id), '[]'::jsonb),
   'revisions', coalesce((select jsonb_agg(jsonb_build_object('permitId', r.permit_id, 'rev', r.rev, 'at', r.at, 'reason', r.reason,

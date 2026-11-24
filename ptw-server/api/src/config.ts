@@ -38,6 +38,8 @@ export interface Config {
   /** Tamanho máximo do corpo JSON. */
   bodyLimit: number
   logLevel: string
+  /** Opt-in, sampled operational timings; never records SQL or credentials. */
+  performance?: { sampleRate: number }
 }
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -94,7 +96,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     version: env.PTW_API_VERSION ?? "1.0.0-fase1",
     bodyLimit: int(env.PTW_BODY_LIMIT, 8 * 1024 * 1024),
     logLevel: env.PTW_LOG_LEVEL ?? "info",
+    ...(env.PTW_PERF === "1" ? { performance: { sampleRate: sampleRate(env.PTW_PERF_SAMPLE_RATE) } } : {}),
   }
+}
+
+function sampleRate(value: string | undefined): number {
+  const rate = value === undefined ? 0.1 : Number(value)
+  if (!Number.isFinite(rate) || rate < 0 || rate > 1) throw new Error("PTW_PERF_SAMPLE_RATE deve estar entre 0 e 1")
+  return rate
 }
 
 function positive(v: string | undefined, fallback: number): number {

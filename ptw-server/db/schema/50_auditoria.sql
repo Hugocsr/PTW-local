@@ -276,7 +276,8 @@ create function ptw.audit_strip(tbl text, r jsonb) returns jsonb
   return r - array['unit_id', 'search', 'updated_at', 'changed_at', 'row_version', 'path', 'holds', 'num', 'object_key',
                    'type_fam', 'role_fam', 'kind_fam', 'answered_at', 'created_at', 'captured_at', 'stored_at',
                    'snapshot_at', 'activated_at']
-           - case when tbl = 'permit' then '{}'::text[] else array['revision'] end;
+           - case when tbl in ('permit', 'appearance') then '{}'::text[] else array['revision'] end
+           - case when tbl = 'appearance_asset' then array['content'] else '{}'::text[] end;
 
 -- Argumentos: ação de inclusão, de alteração, de remoção, rótulo, coluna que identifica a linha.
 -- data = {"de": {colunas antigas}, "para": {colunas novas}}, só o que mudou. Nada mudou = nada gravado.
@@ -366,6 +367,9 @@ begin
     else
       act := 'pt.alterada';
     end if;
+  elsif tbl = 'appearance' then
+    act := case when new.brand is null then 'identidade.restaurada' else 'identidade.publicada' end;
+    txt := case when new.brand is null then 'Identidade restaurada para o tema da planta' else 'Identidade visual publicada' end;
   elsif tbl = 'template_version' and tg_op = 'UPDATE' and d_new ? 'status' then
     act := case new.status when 'ativa' then 'modelo.versao.ativada' when 'arquivada' then 'modelo.versao.arquivada'
                 else 'modelo.versao.alterada' end;
@@ -400,6 +404,11 @@ do $$
 declare t text[];
 begin
   foreach t slice 1 in array array[
+    ['delegation',            'delegacao.criada',               'delegacao.revogada',               'delegacao.removida',               'Delegação',            'id'],
+    ['person_group',          'cadastro.grupo.criado',           'cadastro.grupo.alterado',           'cadastro.grupo.removido',           'Grupo',                'id'],
+    ['person_group_member',   'cadastro.grupo.membro.incluido',  'cadastro.grupo.membro.alterado',    'cadastro.grupo.membro.removido',    'Membro de grupo',      'group_id'],
+    ['appearance',            'identidade.publicada',           'identidade.publicada',             'identidade.removida',              'Identidade visual',    'unit_id'],
+    ['appearance_asset',      'identidade.imagem.incluida',      'identidade.imagem.alterada',        'identidade.imagem.removida',        'Imagem de identidade', 'id'],
     ['unit',                  'cadastro.unidade.criada',        'cadastro.unidade.alterada',        'cadastro.unidade.removida',        'Unidade',              'id'],
     ['type_def',              'cadastro.tipo.criado',           'cadastro.tipo.alterado',           'cadastro.tipo.removido',           'Tipo',                 'id'],
     ['location',              'cadastro.local.criado',          'cadastro.local.alterado',          'cadastro.local.removido',          'Local',                'id'],
@@ -438,7 +447,7 @@ begin
   select s.meaning into meaning from ptw.sign_slot s where s.unit_id = new.unit_id and s.id = new.slot_id;
   if tg_op = 'INSERT' then
     perform ptw.audit_emit(new.unit_id, 'pt.assinatura', true, 'Assinou: ' || meaning,
-      jsonb_build_object('slot', new.slot_id, 'pessoa', new.person_id), new.permit_id, new.rev, null,
+      jsonb_build_object('slot', new.slot_id, 'pessoa', new.person_id) || case when new.delegation_id is null then '{}'::jsonb else jsonb_build_object('delegacao',new.delegation_id,'representado',new.represented_person_id) end, new.permit_id, new.rev, null,
       'signature', new.id, new.person_id);
   elsif new.voided_at is not null and old.voided_at is null then
     perform ptw.audit_emit(new.unit_id, 'pt.assinatura.anulada', true,

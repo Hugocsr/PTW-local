@@ -4,6 +4,7 @@
  * server is down, which is kept, shown, and sent again with the same `Idempotency-Key`.
  */
 import type { ItemAnswer } from "@/core/form"
+import { delegationStatus } from "@/core/delegation"
 import type { RuleError } from "@/core/ptwErrors"
 import { uuidv7 } from "@/lib/id"
 import { permitReducer } from "@/permit/reducer"
@@ -28,6 +29,7 @@ export function createPermitPort(s: Shared) {
   /** PTs a person asked for by hand: `gone` from Minha área does not drop them. */
   const opened = new Set<string>()
   let mineSince: string | null = null
+  let mineDelegationKey = ""
   let sessionVersion = 0
   const stops: QueuedStop[] = readQueue()
   let flushing = false
@@ -54,7 +56,8 @@ export function createPermitPort(s: Shared) {
   /** Minha área's set (`GET /permits/mine`); after the first read only what changed. */
   async function loadMine(): Promise<RuleError | null> {
     const sessionAtStart = sessionVersion
-    const r = await http.request<{ items: PermitDetail[]; gone?: string[]; asOf: string }>({ method: "GET", path: "/permits/mine", query: { updatedSince: mineSince ?? undefined } })
+    const key = s.registry.get().delegations?.map((d) => `${d.id}:${d.revision}:${delegationStatus(d, s.now())}`).join("|") ?? ""
+    const r = await http.request<{ items: PermitDetail[]; gone?: string[]; asOf: string }>({ method: "GET", path: "/permits/mine", query: { updatedSince: key === mineDelegationKey ? mineSince ?? undefined : undefined } })
     if (!r.ok) return r.error
     if (sessionAtStart !== sessionVersion) return null
     for (const d of r.data.items) await take(d, sessionAtStart)
@@ -65,6 +68,7 @@ export function createPermitPort(s: Shared) {
       s.permits.set({ ...data, permits: data.permits.filter((p) => !gone.includes(p.id)) })
     }
     mineSince = r.data.asOf
+    mineDelegationKey = key
     return null
   }
 
@@ -254,7 +258,7 @@ export function createPermitPort(s: Shared) {
       return r.data.permit
     },
 
-    resetSession() { sessionVersion++; mineSince = null; opened.clear(); justRead.clear() },
+    resetSession() { sessionVersion++; mineSince = null; mineDelegationKey = ""; opened.clear(); justRead.clear() },
     flushStops, loadMine,
     waiting: () => stops.length,
   }

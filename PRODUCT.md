@@ -12,7 +12,7 @@ App: `ptw-mockup-v2` (React + TypeScript + Vite + Tailwind + shadcn/ui), com dad
 
 ## Users
 
-Pessoas da planta que solicitam, analisam, emitem, executam e encerram trabalhos. Cada pessoa começa em Minha área (Sua vez · Aguardando · Em campo); o Quadro reúne as PTs. Permissões administrativas controlam cadastro, modelos, consulta à Auditoria e exportação. Cargos e elegibilidade para atos de PT são definidos no banco e não vêm dos grupos LDAP.
+Pessoas da planta que solicitam, analisam, emitem, executam e encerram trabalhos. Cada pessoa começa em Minha área (Sua vez · Aguardando · Em campo); o Quadro reúne as PTs. Permissões administrativas controlam cadastro, modelos, consulta à Auditoria e exportação. Cargos e elegibilidade para atos de PT são definidos no banco e não vêm dos grupos LDAP. Uma única aplicação reúne as funções operacionais e administrativas sob a mesma sessão e um menu lateral único, sem seletor de área. Destinos de gestão seguem os grants; operadores conservam as consultas autorizadas no grupo Consultas. A identidade visual segue o contrato SGI Forces, respeitando o tema da planta e a paleta de estados.
 
 ## Product Purpose
 
@@ -41,6 +41,8 @@ A [especificação completa](ptw-research/full-platform-spec-2026-11-06.md) regi
 O [cenário piloto](ptw-research/electrical-panel-ptw-use-case-2026-11-06.md) trata de instalação, reforma e comissionamento de painéis elétricos em um CCM existente. O [mapeamento regulatório](ptw-research/brazil-regulatory-mapping-2026-11-06.md) é referência de pesquisa para a revisão dos requisitos de cada planta.
 
 ## Product Principles
+
+Paridade SGI autorizada em 23/11/2026: primeiros módulos funcionais adicionais são editor de identidade, grupos de pessoas e delegação administrativa nominal. Grupo não concede habilitação técnica; delegação não transfere identidade nem libera trabalho por si. SSO/e-mail ficam simulados nesta fase por decisão do responsável; licença será informativa. Demais módulos do programa continuam rastreados no backlog até sua implementação e aceite, sem serem anunciados como recursos entregues.
 
 - A autorização atual para trabalhar deve ser inequívoca.
 - O fluxo deve ser curto, preservando separação de funções e verificações de segurança.

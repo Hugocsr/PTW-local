@@ -88,7 +88,7 @@ export const ESQUEMA_PTW_MODELO: Esquema = {
       ref: texto(), significado: texto(120), significado_original: ORIG,
       cargo: { type: ["string", "array", "null"], minLength: 1, maxLength: 80, items: texto(80), minItems: 1, maxItems: 20 },
       cargos: { type: "array", items: texto(80), minItems: 1, maxItems: 20 },
-      minimo: { type: "integer", minimum: 1, maximum: 20 }, obrigatoria: { type: "boolean" }, obrigatoria_quando: ref("condicao"), ...NOTA,
+      minimo: { type: "integer", minimum: 1, maximum: 20 }, obrigatoria: { type: "boolean" }, administrativa_delegavel: { type: "boolean" }, obrigatoria_quando: ref("condicao"), ...NOTA,
     }),
     etapa: objeto(["ref", "nome", "assinaturas", "secoes"], {
       ref: texto(), nome: texto(80), nome_original: ORIG, tipo: { enum: STAGE_KINDS },

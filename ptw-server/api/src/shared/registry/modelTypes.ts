@@ -25,6 +25,8 @@ export type VersionOrigin = "manual" | "sugerida"
  * (PTW28). At most 20 cargos, none repeated.
  */
 export interface SignSlot {
+  /** Explicit administrative mandate in a free stage; technical anchors are never delegable. */
+  delegable?: boolean
   id: string
   /** 1–120 when set. */
   meaning: string | null

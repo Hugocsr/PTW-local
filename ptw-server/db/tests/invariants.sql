@@ -1738,7 +1738,7 @@ select t.id('ee01'),t.id('ee301'),i,jsonb_build_object('t','documento','code',i|
 delete from ptw.permit_team where unit_id=t.id('ee01') and permit_id=t.id('ee301');
 select t.expect('PTW34','NR10: equipe vazia impede envio',$$select ptw.permit_submit(t.id('ee01'),t.id('ee301'))$$);
 insert into ptw.permit_team(unit_id,permit_id,person_id,role_id) select t.id('ee01'),t.id('ee301'),t.id(x),t.id('ee13') from unnest(array['ee31','ee32','ee33']) x;
-update ptw.person_role set valid_until=current_date-1 where unit_id=t.id('ee01') and person_id=t.id('ee33');
+update ptw.person_role set valid_until=(now() at time zone 'America/Sao_Paulo')::date-1 where unit_id=t.id('ee01') and person_id=t.id('ee33');
 select t.expect('PTW34','NR10: autorização vencida de integrante impede envio',$$select ptw.permit_submit(t.id('ee01'),t.id('ee301'))$$);
 update ptw.person_role set valid_until=current_date+365 where unit_id=t.id('ee01') and person_id=t.id('ee33');
 select ptw.permit_submit(t.id('ee01'),t.id('ee301'));
@@ -1792,5 +1792,49 @@ select set_config('ptw.unit_id',t.id('1')::text,false);
 select set_config('ptw.person_id',t.id('d2')::text,false);
 
 
+-- Identity overrides: actor, unit isolation, immutable assets and chained audit.
+set role ptw_api_test;
+select set_config('ptw.unit_id',t.id('1')::text,false);
+select set_config('ptw.person_id','',false);
+select t.expect('42501','Identidade: publicação anônima recusada',$$insert into ptw.appearance(unit_id,brand,revision,updated_by) values(t.id('1'),null,1,t.id('d2'))$$);
+select set_config('ptw.person_id',t.id('d2')::text,false);
+insert into ptw.appearance(unit_id,brand,revision,updated_by) values(t.id('1'),null,99,t.id('d1'));
+select t.check((select revision=1 and updated_by=t.id('d2') from ptw.appearance),'Identidade: revisão e autoria vêm do banco');
+select t.expect('23503','Identidade: referência sem imagem recusada',$$update ptw.appearance set brand=jsonb_build_object('name','Planta','mark','PT','colors','{}'::jsonb,'logo',repeat('a',64)||'.png') where unit_id=t.id('1')$$);
+select set_config('ptw.unit_id',t.id('2')::text,false);
+select t.check((select count(*)=0 from ptw.appearance),'Identidade: outra unidade não lê a configuração');
+select t.expect('42501','Identidade: outra unidade não publica',$$insert into ptw.appearance(unit_id,brand,revision,updated_by) values(t.id('1'),null,1,t.id('d2'))$$);
+select set_config('ptw.unit_id',t.id('1')::text,false);
+select t.expect('42501','Identidade: API não apaga configuração',$$delete from ptw.appearance$$);
+select t.expect('42501','Identidade: API não apaga imagens',$$delete from ptw.appearance_asset$$);
+update ptw.appearance set brand=null;
+select t.check((select revision=2 from ptw.appearance),'Identidade: restauração incrementa revisão');
+select t.check((select count(*)=2 from ptw.audit_event where action='identidade.restaurada'),'Identidade: restaurações auditadas');
+reset role;
+select t.check(ptw.audit_verify(t.id('1')) is null,'Identidade: cadeia íntegra');
+
+-- Groups do not change technical roles or privileges.
+set role ptw_api_test;
+select set_config('ptw.unit_id',t.id('1')::text,false);
+select set_config('ptw.person_id','',false);
+select t.expect('42501','Grupos: autoria obrigatória',$$insert into ptw.person_group(unit_id,id,name) values(t.id('1'),t.id('aa90'),'Manutenção')$$);
+select set_config('ptw.person_id',t.id('d2')::text,false);
+insert into ptw.person_group(unit_id,id,name) values(t.id('1'),t.id('aa90'),'Manutenção');
+insert into ptw.person_group_member(unit_id,group_id,person_id) values(t.id('1'),t.id('aa90'),t.id('d2'));
+select t.expect('23505','Grupos: membro único',$$insert into ptw.person_group_member(unit_id,group_id,person_id) values(t.id('1'),t.id('aa90'),t.id('d2'))$$);
+select t.expect('23503','Grupos: membro de outra unidade recusado',$$insert into ptw.person_group_member(unit_id,group_id,person_id) values(t.id('1'),t.id('aa90'),t.id('ee31'))$$);
+select set_config('ptw.unit_id',t.id('2')::text,false);
+select t.check((select count(*)=0 from ptw.person_group),'Grupos: isolamento de grupos');
+select t.check((select count(*)=0 from ptw.person_group_member),'Grupos: isolamento de membros');
+select set_config('ptw.unit_id',t.id('1')::text,false);
+select t.expect('42501','Grupos: remoção de grupo não concedida',$$delete from ptw.person_group$$);
+update ptw.person_group set active=false where id=t.id('aa90');
+select t.check((select revision=2 from ptw.person_group where id=t.id('aa90')),'Grupos: desativação revisionada');
+select t.check((select count(*)=1 from ptw.person_group_member where group_id=t.id('aa90')),'Grupos: desativação preserva membros');
+select t.check((select count(*)=1 from ptw.audit_event where action='cadastro.grupo.membro.incluido'),'Grupos: membro auditado');
+reset role;
+select t.check(ptw.audit_verify(t.id('1')) is null,'Grupos: cadeia íntegra');
+
+\ir delegations.sql
 \set QUIET off
 select 'OK: ' || count(*) || ' verificações' as resultado from t.ok;

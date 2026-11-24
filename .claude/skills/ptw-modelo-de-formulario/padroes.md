@@ -2,6 +2,8 @@
 
 Cada caso abaixo já deu errado em um formulário real. Copie a forma; troque rótulos e trechos pelos do seu papel. Os textos de exemplo são fictícios.
 
+**Delegação administrativa:** o campo opcional `administrativa_delegavel: true` conserva a intenção de configuração na exportação. A importação registra uma pendência para selecionar pessoa nominal/cargos e habilitar a aprovação administrativa após revisão; não transfere pessoas nem mandatos entre plantas. Etapas técnicas do ciclo permanecem indelegáveis.
+
 ## 1 Formulário que desabilita uma proteção (intertravamento, bypass, dispositivo de segurança)
 
 Essa PT **acompanha** a PT do serviço no mesmo equipamento. Se o pacote não disser isso, ninguém consegue abri-la em equipamento que já tem PT.

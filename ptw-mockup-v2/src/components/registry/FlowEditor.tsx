@@ -249,7 +249,7 @@ export function FlowEditor({ tpl, set }: { tpl: TemplateContent; set: SetTpl }) 
                             <ToggleGroup type="single" variant="outline" spacing={0} value={kind} className="w-full @md:w-fit" aria-label={`Quem assina: ${sl.meaning ?? ""}`}
                               onValueChange={(v) => {
                                 if (v === "pessoa" && sl.kind !== "pessoa") togglePending(sl.id, true)
-                                else if (v === "cargo") { togglePending(sl.id, false); if (sl.kind === "pessoa") setSlot(st.id, sl.id, { kind: "cargo", personId: null }) }
+                                else if (v === "cargo") { togglePending(sl.id, false); if (sl.kind === "pessoa") setSlot(st.id, sl.id, { kind: "cargo", personId: null, delegable: false }) }
                               }}>
                               <ToggleGroupItem value="cargo" className={cn("min-h-11 flex-1 px-3 md:min-h-9", TOGGLE_ON)}>Cargo</ToggleGroupItem>
                               <ToggleGroupItem value="pessoa" className={cn("min-h-11 flex-1 px-3 md:min-h-9", TOGGLE_ON)}>Pessoa</ToggleGroupItem>
@@ -272,6 +272,10 @@ export function FlowEditor({ tpl, set }: { tpl: TemplateContent; set: SetTpl }) 
                             {kind === "cargo" && <Stepper label="Assinaturas" value={sl.min} onChange={(n) => setSlot(st.id, sl.id, { min: n })} />}
                             <ToggleField label={st.locked ? "Obrigatória (fixa)" : "Obrigatória"} checked={sl.required} disabled={st.locked} onChange={(v) => setSlot(st.id, sl.id, { required: v, ...(v ? {} : { requiredWhen: undefined }) })} />
                           </div>
+                          {!st.kind && kind === "pessoa" && <div className="space-y-3 rounded-lg border p-3">
+                            <ToggleField label="Aprovação administrativa delegável" checked={sl.delegable === true} onChange={(v) => setSlot(st.id, sl.id, { delegable: v })} />
+                            {sl.delegable && <><p className="type-meta">Somente aprovação administrativa. Delegante e substituto precisam de um destes cargos válidos; a assinatura continua em nome de quem age.</p><PickList options={roleOptions} value={sl.roleIds} onChange={(ids) => setSlot(st.id, sl.id, { roleIds: ids })} addLabel="Cargo" ariaLabel={`Cargos da delegação: ${sl.meaning ?? ""}`} empty="Escolha ao menos um cargo para esta aprovação administrativa." invalid={!sl.roleIds.length} /></>}
+                          </div>}
                           {/* A signature the paper asks only in some cases (e.g. "Vigia, quando houver espaço confinado"). The fixed stages always need theirs. */}
                           {sl.required && !st.locked && (
                             <ConditionEditor idBase={`${sl.id}-rw`} value={sl.requiredWhen ?? pendingCond[sl.id]} lists={state.optionLists}

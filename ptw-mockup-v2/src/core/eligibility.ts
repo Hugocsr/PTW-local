@@ -6,6 +6,7 @@
 import type { Person, SignSlot } from "@/registry/types"
 import { cmpInstant, instant } from "./time.ts"
 import { byId, peopleInScope, peopleWithAnyRole } from "./indexes.ts"
+import { delegationMatches, type Delegation } from "./delegation.ts"
 
 export type AccountState = "ativa" | "desativada" | "vencida" | "sem_login"
 /** The one vocabulary for account state, on every screen. */
@@ -16,8 +17,8 @@ export type IneligibleReason = "pessoa inexistente" | "cadastro inativo" | "cada
 /** A signer needs a login (a contact does not sign): the database says it in these words (PTW08). */
 export const NO_LOGIN_REASON = "sem login (contato não assina)"
 
-export interface RoleCheck { person: Person; ok: boolean; reasons: string[] }
-export type SlotRef = Pick<SignSlot, "kind" | "roleIds"> & { personId?: string | null }
+export interface RoleCheck { person: Person; ok: boolean; reasons: string[]; delegation?: { id: string; delegatorId: string } }
+export type SlotRef = Pick<SignSlot, "kind" | "roleIds"> & { personId?: string | null; id?: string; delegable?: boolean }
 
 /** Cargo ids asked for: one, several (any of them qualifies) or none (null / []). */
 export type RoleReq = string | readonly string[] | null | undefined
@@ -87,12 +88,25 @@ export function checkRoleAt(people: Person[], req: RoleReq | { id: string }, pat
 }
 
 /** A named person is checked on record and account only; a cargo slot applies the cargo rule. */
-export function checkSlotAt(people: Person[], _tpl: unknown, sl: SlotRef, pathIds: string[] | null, today: string, now?: string): RoleCheck[] {
+export function checkSlotAt(people: Person[], _tpl: unknown, sl: SlotRef, pathIds: string[] | null, today: string, now?: string, delegations: readonly Delegation[] = []): RoleCheck[] {
   if (slotKind(sl) === "pessoa") {
     const person = sl.personId ? byId(people, sl.personId) : undefined
     if (!person) return []
-    const reasons = signerReasons(person, null, pathIds, today, nowOr(today, now), true)
-    return [{ person, ok: reasons.length === 0, reasons }]
+    const at = nowOr(today, now), roles = sl.delegable ? sl.roleIds : null
+    const reasons = signerReasons(person, roles, pathIds, today, at, true)
+    const out: RoleCheck[] = [{ person, ok: reasons.length === 0, reasons }]
+    if (sl.delegable && sl.roleIds.length && !reasons.length) {
+      const seen = new Set([person.id])
+      for (const d of delegations) {
+        if (!delegationMatches(d, sl, pathIds, at) || seen.has(d.delegateId)) continue
+        const delegate = byId(people, d.delegateId)
+        if (!delegate) continue
+        seen.add(delegate.id)
+        const why = signerReasons(delegate, roles, pathIds, today, at, true)
+        out.push({ person: delegate, ok: !why.length, reasons: why, delegation: { id: d.id, delegatorId: person.id } })
+      }
+    }
+    return out
   }
   return checkRoleAt(people, sl.roleIds, pathIds, true, today, now)
 }

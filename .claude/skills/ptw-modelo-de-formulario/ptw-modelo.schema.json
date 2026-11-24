@@ -534,6 +534,9 @@
         "obrigatoria": {
           "type": "boolean"
         },
+        "administrativa_delegavel": {
+          "type": "boolean"
+        },
         "obrigatoria_quando": {
           "$ref": "#/$defs/condicao"
         },

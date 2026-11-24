@@ -48,6 +48,14 @@ Sistema de Permissão de Trabalho (PT) para uma planta, rodando localmente, sem 
 - A janela de 2027 cabe no turno explícito, inclusive Prorrogar (`PTW34`). Revalidar é ato próprio, pelo emitente original ainda elegível, com documentos/equipe válidos e confirmações de avaliação local e condições preservadas. Registra autoria/turno/justificativa/hash da equipe, invalida o aceite anterior e aguarda novo aceite por outra pessoa. Alterações exigem nova PT neste processo interno.
 - Procedimentos reais e exceções precisam de revisão/aprovação da engenharia/SST. Os modelos Actemium e seus anexos de teste são fictícios. O sistema registra evidências e impede transições; não comprova a condição física do equipamento.
 
+## Paridade SGI — lote local de 23/11/2026
+
+- Programa completo autorizado pelo responsável; seguir `fabrica/specs/integracao-sgi-forces/execucao-completa.md`. SSO/e-mail serão simulados e identificados nesta fase; licença apenas informativa. IA local recomendada para avaliação, sem instalação/modelo contratado e sem atos de segurança automáticos.
+- Identidade visual: editor `#identidade` pelo grant `modelos`, incluindo leitura administrativa. Override por unidade com revisão/autoria, PNG limitado por hash e manifesto público mínimo. Restaurar volta ao arquivo da planta/padrão. Anexos de PT permanecem privados.
+- Grupos `#grupos`: grant `cadastro`, composição persistente e auditada, sem conceder cargos ou grants. Pessoas/cargos/escopos e etapas/separações atuais continuam sendo a autoridade.
+- Delegações `#delegacoes`: administração cria/revoga; participantes leem os próprios mandatos. Apenas assinatura nominal explicitamente administrativa/delegável em etapa livre, com cargo definido; âncoras técnicas indelegáveis. Até sete dias, início inclusivo/fim exclusivo, sem sobreposição. Os dois participantes precisam manter conta/cargo/escopo válidos. A assinatura conserva ator real, representado e mandato; separação considera ambas as identidades. Revogação impede novos usos e não apaga assinaturas passadas.
+- A instalação em uso não é resetada. Atualização de esquema reconstrói uma cópia a partir do esquema canônico e do backup, compara dados originais e auditoria e preserva a seleção anterior para reversão. Evidências e estado efetivamente ativado em `validacao-governanca-identidade.md`.
+
 ## Auditoria (decidida; não reabrir)
 
 - **Tudo é registrado** numa cadeia única encadeada por SHA-256: toda escrita (PT, cadastro, configuração) com antes/depois só do que mudou, cada "Desfazer" como evento próprio, tentativas negadas, acessos (PT aberta, anexo, exportação (sempre com motivo), busca na Auditoria), sessão (login/logout, troca de pessoa simulada) e sistema (queda/volta do servidor, relógio, migrações, backup).
@@ -71,9 +79,10 @@ Sistema de Permissão de Trabalho (PT) para uma planta, rodando localmente, sem 
 
 - Moldura de 72rem **encostada à esquerda**; nada centralizado.
 - Quatro modelos de tela: Lista, Lista‑detalhe, Registro (abas + painel lateral a partir de `xl`), Trabalho do dia.
-- Uma ação preenchida (preta) por região; cor é para estado, não para botão (vermelho só em Parar e remover).
+- Uma ação preenchida na cor de marca por região; a paleta semântica de estado permanece independente (vermelho em Parar e remover).
 - Cor de estado: verde concluído · azul pendente/sua vez · âmbar atenção · vermelho falhou/bloqueado/parado · cinza aguardando/sem destaque. Nunca só cor: sempre ícone ou palavra.
-- Celular: uma coluna, alvos ≥ 44 px abaixo de `md`. Computador: colunas quando o conteúdo é paralelo.
+- Celular: alvos ≥ 44 px abaixo de `md`; conteúdo em uma coluna quando necessário. Drawer abaixo de 1024 px. Computador: colunas quando o conteúdo é paralelo.
+- Uma aplicação com menu lateral único, sem toggle Operação/Administração. Grupos Operação/Cadastros/Configuração/Governança e sistema/Consultas seguem os grants; consultas autorizadas permanecem acessíveis. Sidebar, busca e rotas usam `core/navigation.ts`; exportação não concede gestão. Rotas e autorização do servidor preservadas.
 - Conferir toda mudança de UI em **390, 768, 1024 e 1440 px**: sem rolagem horizontal, sem erro no console.
 - **Imprimir**: a PT sai como formulário de papel próprio (`work/PermitSheet.tsx`), preenchida ou em branco, nunca como retrato da tela. Detalhe em `DESIGN.md`.
 - **Tema da planta**: nome, logotipo, símbolo, três cores e fonte trocáveis por `ptw-server/tema/tema.json`, sem reconstruir (`core/brand.ts`). As cores de estado não entram no tema. Detalhe em `DESIGN.md`.

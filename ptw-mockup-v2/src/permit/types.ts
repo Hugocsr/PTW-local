@@ -63,6 +63,8 @@ export interface PermitRevalidation {
 
 /** `ptw.signature`: never changes nor disappears; it can only be voided, once, with a reason. */
 export interface SignatureRec {
+  delegationId?: string | null
+  representedPersonId?: string | null
   id: string
   permitId: string
   rev: number

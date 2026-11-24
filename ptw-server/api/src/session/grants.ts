@@ -6,6 +6,8 @@ export function checkGrants(req: FastifyRequest): void {
   const op = req.ptw.op
   if (!op?.secured) return
   const needed: Grant[] = []
+  if (op.tags.includes("governanca")) needed.push("cadastro")
+  if (op.tags.includes("identidade")) needed.push("modelos")
   if (op.tags.includes("auditoria")) needed.push("auditoria")
   if (/[Ee]xport/.test(op.operationId)) needed.push("exportacao")
   if (!["GET","HEAD"].includes(op.method)) {

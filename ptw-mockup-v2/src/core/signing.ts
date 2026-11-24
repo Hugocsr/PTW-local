@@ -170,10 +170,11 @@ const finish = (p: Omit<SignPlan, "ok" | "fillOnly">): SignPlan => {
 }
 
 /** The signer's eligibility for a slot, as the database checks it (PTW08): login first, then the person rule. */
-function signerDenied(signer: Person, slot: Pick<SlotView["slot"], "kind" | "roleIds" | "personId">, input: PlanInput): string | null {
+function signerDenied(signer: Person, slot: Pick<SlotView["slot"], "id" | "kind" | "roleIds" | "personId" | "delegable">, input: PlanInput): string | null {
   if (!signer.login) return `Pessoa não elegível: ${NO_LOGIN_REASON}`
-  if (slot.kind === "pessoa" && slot.personId !== signer.id) return "Esta assinatura é da pessoa indicada"
-  const why = personIneligible(signer, slot.kind === "cargo" ? slot.roleIds : null, input.pathIds ?? null, todayOf(input), input.now)
+  const mandate = input.rail.flatMap((s) => s.slots).find((s) => s.slot.id === slot.id)?.eligible.find((e) => e.person.id === signer.id && e.ok)?.delegation
+  if (slot.kind === "pessoa" && slot.personId !== signer.id && !mandate) return "Esta assinatura é da pessoa indicada"
+  const why = personIneligible(signer, slot.kind === "cargo" || slot.delegable ? slot.roleIds : null, input.pathIds ?? null, todayOf(input), input.now)
   return why ? `Pessoa não elegível: ${why}` : null
 }
 
@@ -305,12 +306,14 @@ export function planSign(input: PlanInput): SignPlan {
     if (rule.slotA !== slot.slot.id && rule.slotB !== slot.slot.id) continue
     const otherId = rule.slotA === slot.slot.id ? rule.slotB : rule.slotA
     const other = rail.flatMap((s) => s.slots).find((v) => v.slot.id === otherId)
-    if (other?.signed.some((g) => g.personId === signer.id)) {
+    const represented = picked.slot.eligible.find((e) => e.person.id === signer.id && e.ok)?.delegation?.delegatorId
+    if (other?.signed.some((g) => g.personId === signer.id || g.representedPersonId === signer.id || (represented && (g.personId === represented || g.representedPersonId === represented)))) {
       checks.push({ id: `sep_${otherId}`, ok: false, text: `Você assinou “${other.slot.meaning}” nesta revisão`, deny: deny("PTW09", "A mesma pessoa não pode assinar as duas partes separadas") })
     }
   }
   // PTW30: one signature per person in a stage and revision.
-  const already = !!rail.find((s) => s.stage.id === picked.stage.id)?.slots.some((v) => v.signed.some((g) => g.personId === signer.id))
+  const represented = picked.slot.eligible.find((e) => e.person.id === signer.id && e.ok)?.delegation?.delegatorId
+  const already = !!rail.find((s) => s.stage.id === picked.stage.id)?.slots.some((v) => v.signed.some((g) => g.personId === signer.id || g.representedPersonId === signer.id || (represented && (g.personId === represented || g.representedPersonId === represented))))
   checks.push({ id: "pendente", ok: !already, text: already ? "Você já assinou esta etapa" : "Assinatura ainda pendente", ...(already ? { deny: deny(G7.jaAssinou, `Você já assinou esta etapa (${stageName})`) } : {}) })
   // PTW16 from earlier stages, then the stage's own form (completeness and blocks) while not sealed.
   checks.push(...earlierBlock(input, picked.stage.id))

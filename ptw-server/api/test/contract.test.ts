@@ -16,7 +16,7 @@ import { testConfig } from "./helpers/app.js"
 import { FakeDriver } from "./helpers/fakeDb.js"
 
 const contract = loadContract(defaultOpenapiPath())
-const TOTAL = 82
+const TOTAL = 93
 /** As operações deste pacote (F1-01): tags `sessao` e `sistema`. */
 const BASE = ["getSession", "login", "sessionActivity", "devLogin", "listDevPeople", "logout", "getHealth", "getStatus", "streamEvents"]
 
@@ -36,9 +36,9 @@ describe("contrato", () => {
     expect(contract.basePath).toBe("/api/v1")
   })
 
-  it("só saúde e entrada dispensam sessão", () => {
+  it("só saúde, entrada e identidade pública dispensam sessão", () => {
     const open = [...contract.operations.values()].filter((o) => !o.secured).map((o) => o.operationId).sort()
-    expect(open).toEqual(["devLogin", "getHealth", "listDevPeople", "login"])
+    expect(open).toEqual(["devLogin", "getAppearanceAsset", "getHealth", "getPublicAppearance", "listDevPeople", "login"])
   })
 
   it("todo esquema de toda operação compila no validador da API (corpo, consulta, parâmetros, cabeçalhos, respostas)", () => {

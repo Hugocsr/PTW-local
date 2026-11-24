@@ -459,12 +459,17 @@ create table ptw.signature (
   slot_id       uuid not null,
   person_id     uuid not null,
   signed_at     timestamptz not null default now(),
+  delegation_id uuid,
+  represented_person_id uuid,
   voided_at     timestamptz,
   voided_reason text check (length(voided_reason) between 1 and 500),
   primary key (unit_id, id),
   foreign key (unit_id, permit_id) references ptw.permit (unit_id, id),
   foreign key (unit_id, slot_id) references ptw.sign_slot (unit_id, id),
   foreign key (unit_id, person_id) references ptw.person (unit_id, id),
+  foreign key (unit_id, delegation_id) references ptw.delegation(unit_id,id),
+  foreign key (unit_id, represented_person_id) references ptw.person(unit_id,id),
+  check ((delegation_id is null) = (represented_person_id is null)),
   check ((voided_at is null) = (voided_reason is null))
 );
 -- Uma assinatura válida por pessoa, assinatura do modelo e revisão; também serve à leitura por PT.
@@ -517,6 +522,7 @@ begin
     raise exception 'A assinatura fica em nome de quem está na sessão' using errcode = '42501';
   end if;
   new.signed_at := now(); new.voided_at := null; new.voided_reason := null;
+  new.delegation_id := null; new.represented_person_id := null;
   -- Trava a PT: serializa assinaturas da mesma PT (separação sob corrida).
   select pm.state, pm.revision, pm.version_id, pm.author_id, pm.hold_reason, pm.resumed_at, pm.resumed_by, pm.work_window,
          l.path, (now() at time zone u.timezone)::date as today, u.timezone into p
@@ -587,9 +593,14 @@ begin
     raise exception 'Pessoa não elegível: sem login (contato não assina)' using errcode = 'PTW08';
   end if;
   if sl.kind = 'pessoa' and new.person_id <> sl.person_id then
-    raise exception 'Esta assinatura é da pessoa indicada' using errcode = 'PTW08';
+    select d.id into new.delegation_id from ptw.delegation d
+      where d.unit_id=new.unit_id and d.id=ptw.delegation_for(new.unit_id,new.slot_id,new.person_id,p.path) and d.revoked_at is null for update;
+    if new.delegation_id is null or new.delegation_id is distinct from ptw.delegation_for(new.unit_id,new.slot_id,new.person_id,p.path) then
+      raise exception 'Esta assinatura é da pessoa indicada; não há delegação administrativa válida' using errcode='PTW08';
+    end if;
+    new.represented_person_id := sl.person_id;
   end if;
-  why := ptw.person_ineligible_any(new.unit_id, new.person_id, case when sl.kind = 'cargo' then sl.role_ids end, p.today, p.path);
+  why := ptw.person_ineligible_any(new.unit_id, new.person_id, case when sl.kind = 'cargo' or sl.delegable then sl.role_ids end, p.today, p.path);
   if why is not null then
     raise exception 'Pessoa não elegível: %', why using errcode = 'PTW08';
   end if;
@@ -597,7 +608,7 @@ begin
   perform 1
     from ptw.separation s
     join ptw.signature g on g.unit_id = s.unit_id and g.permit_id = new.permit_id and g.rev = new.rev
-                        and g.person_id = new.person_id and g.voided_at is null
+                        and (g.person_id in (new.person_id,new.represented_person_id) or g.represented_person_id in (new.person_id,new.represented_person_id)) and g.voided_at is null
                         and g.slot_id = case when s.slot_a = new.slot_id then s.slot_b else s.slot_a end
    where s.unit_id = new.unit_id and s.version_id = p.version_id
      and (s.slot_a = new.slot_id or s.slot_b = new.slot_id);
@@ -607,7 +618,7 @@ begin
   -- Uma pessoa assina uma vez por etapa e revisão (qualquer assinatura da etapa).
   perform 1 from ptw.signature g join ptw.sign_slot s2 on s2.unit_id = g.unit_id and s2.id = g.slot_id
    where g.unit_id = new.unit_id and g.permit_id = new.permit_id and g.rev = new.rev and g.voided_at is null
-     and g.person_id = new.person_id and s2.stage_id = sl.stage_id;
+     and (g.person_id in (new.person_id,new.represented_person_id) or g.represented_person_id in (new.person_id,new.represented_person_id)) and s2.stage_id = sl.stage_id;
   if found then
     raise exception 'Você já assinou esta etapa (%)', stg using errcode = 'PTW30';
   end if;
@@ -619,8 +630,8 @@ create trigger signature_bi before insert on ptw.signature
 create function ptw.signature_guard() returns trigger language plpgsql as $$
 begin
   if tg_op = 'DELETE' or old.voided_at is not null or new.voided_at is null
-     or (new.permit_id, new.rev, new.slot_id, new.person_id, new.signed_at)
-        is distinct from (old.permit_id, old.rev, old.slot_id, old.person_id, old.signed_at) then
+     or (new.permit_id, new.rev, new.slot_id, new.person_id, new.signed_at, new.delegation_id, new.represented_person_id)
+        is distinct from (old.permit_id, old.rev, old.slot_id, old.person_id, old.signed_at, old.delegation_id, old.represented_person_id) then
     raise exception 'Assinatura só pode ser anulada' using errcode = 'PTW01';
   end if;
   return new;

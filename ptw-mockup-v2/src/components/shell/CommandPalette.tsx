@@ -4,7 +4,8 @@ import { assetIcon, locationIcon } from "./TypeIcon"
 import { ClipboardListIcon, FileTextIcon, HistoryIcon, PlusIcon, SearchIcon, UserIcon, type LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Command, CommandDialog, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { NAV, NAV_KEYS } from "@/components/shell/nav"
+import { NAV, NAV_GROUP_LABELS, type ViewKey } from "@/components/shell/nav"
+import { navigationGroup, visibleViews } from "@/core/navigation"
 import { StatusBadge } from "@/components/shell/Status"
 import { highlight, matches } from "@/components/shell/commandSearch"
 import { PERMIT_STATE_LABEL } from "@/core/permitState"
@@ -95,7 +96,8 @@ export function CommandPalette() {
   const [remote, setRemote] = useState({ loading: false, down: false, count: 0 })
   const { state } = useRegistry()
   const { permits } = usePermits()
-  const { canAudit, serverDown } = useSim()
+  const access = useSim()
+  const { canEditRegistry, canEditModels, canAudit, canExport, serverDown } = access
   const port = useData()
   const q = text.trim()
 
@@ -132,7 +134,11 @@ export function CommandPalette() {
   }, [permits])
 
   const close = (hash: string) => { change(false); go(hash) }
-  const screens = useMemo(() => NAV_KEYS.filter((k) => k !== "auditoria" || canAudit), [canAudit])
+  const screens = useMemo(() => visibleViews({ canEditRegistry, canEditModels, canAudit, canExport }), [canEditRegistry, canEditModels, canAudit, canExport])
+  const groupLabel = (key: ViewKey) => {
+    const group = navigationGroup(key, access)
+    return group ? NAV_GROUP_LABELS[group] : ""
+  }
   const searching = q.length > 0
   const hits = useMemo(() => {
     if (!searching) return null
@@ -180,7 +186,7 @@ export function CommandPalette() {
                   </CommandGroup>
                 )}
                 <CommandGroup heading="Ir para" className={GROUP}>
-                  {screens.map((k) => <Row key={k} icon={NAV[k].icon} value={`ir-${k}`} onPick={() => close(k)}><span className="type-body">{NAV[k].title}</span></Row>)}
+                  {screens.map((k) => <Row key={k} icon={NAV[k].icon} value={`ir-${k}`} onPick={() => close(k)}><span className="type-body">{NAV[k].title}</span><span className="type-meta">{groupLabel(k)}</span></Row>)}
                 </CommandGroup>
                 <CommandGroup heading="Ações" className={GROUP}>
                   <CommandItem value="acao-nova-pt" disabled={serverDown} onSelect={() => close("nova-pt")} className={ROW}>
@@ -195,7 +201,7 @@ export function CommandPalette() {
               <>
                 {hits.screens.length > 0 && (
                   <CommandGroup heading="Ir para" className={GROUP}>
-                    {hits.screens.map((k) => <Row key={k} icon={NAV[k].icon} value={`ir-${k}`} onPick={() => close(k)}><span className="type-body"><Mark text={NAV[k].title} q={q} /></span></Row>)}
+                    {hits.screens.map((k) => <Row key={k} icon={NAV[k].icon} value={`ir-${k}`} onPick={() => close(k)}><span className="type-body"><Mark text={NAV[k].title} q={q} /></span><span className="type-meta">{groupLabel(k)}</span></Row>)}
                   </CommandGroup>
                 )}
                 {asked === q && <Remote q={q} onStatus={setRemote} close={close} />}

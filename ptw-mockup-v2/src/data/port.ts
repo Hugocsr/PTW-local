@@ -304,6 +304,9 @@ export interface QueryPort {
 /* ---------- the port ---------- */
 
 export interface DataPort {
+  appearance: AppearancePort
+  groups: GroupPort
+  delegations: DelegationPort
   mode: DataMode
   /**
    * True when the caches hold the whole unit (memory): lists filter, sort and page in the render. False
@@ -324,3 +327,20 @@ export interface DataPort {
 
 /** What `src/data/api/index.ts` exports as `createApiPort` (loaded only in `api` mode). */
 export type CreateApiPort = () => DataPort | Promise<DataPort>
+
+export interface AppearancePort {
+  read(): Promise<import("@/core/appearance").AppearanceRecord | import("@/core/ptwErrors").RuleError>
+  save(brand: import("@/core/brand").Brand | null, revision: number): Promise<import("@/core/appearance").AppearanceRecord | import("@/core/ptwErrors").RuleError>
+  upload(base64: string): Promise<{ file: string } | import("@/core/ptwErrors").RuleError>
+}
+
+export interface GroupPort {
+  read(): Promise<import("@/core/governance").PersonGroup[] | RuleError>
+  save(group: import("@/core/governance").GroupInput, revision: number | null): Promise<import("@/core/governance").PersonGroup | RuleError>
+}
+
+export interface DelegationPort {
+  read(): Promise<import("@/core/delegation").Delegation[] | RuleError>
+  create(input: import("@/core/delegation").DelegationInput): Promise<import("@/core/delegation").Delegation | RuleError>
+  revoke(input: import("@/core/delegation").Delegation, reason: string, key: string): Promise<import("@/core/delegation").Delegation | RuleError>
+}

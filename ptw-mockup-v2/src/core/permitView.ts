@@ -11,6 +11,7 @@ import type { StatusTone } from "@/lib/tone"
 import { cmpInstant, DEFAULT_TZ, wallOf } from "./time"
 import { canonicalJson, sha256Hex, type Json } from "./audit"
 import { locationPath, signaturesOf } from "./indexes"
+import type { Delegation } from "./delegation"
 
 export interface SlotView {
   slot: SignSlot
@@ -45,7 +46,7 @@ export function handBackStage(p: Pick<Permit, "state" | "resumedReason">): Stage
 export const liveSig = (p: Pick<Permit, "id" | "revision">) => (g: SignatureRec) => g.permitId === p.id && g.rev === p.revision && g.voidedAt === null
 
 /** `now` (instant) decides whether an account has expired; without it, the start of `today` counts. */
-export function railOf(p: Permit, ver: TemplateVersion, sigs: SignatureRec[], people: Person[], locations: Location[], today: string, now?: string): StageView[] {
+export function railOf(p: Permit, ver: TemplateVersion, sigs: SignatureRec[], people: Person[], locations: Location[], today: string, now?: string, delegations: readonly Delegation[] = []): StageView[] {
   const path = pathIds(locations, p.locationId)
   const anchorKind = handBackStage(p)
   const anchor = anchorKind ? ver.stages.findIndex((s) => s.kind === anchorKind) : -1
@@ -57,7 +58,7 @@ export function railOf(p: Permit, ver: TemplateVersion, sigs: SignatureRec[], pe
       // Voided, or (data from before voiding existed) left on an earlier revision.
       const struck = mine.filter((s) => s.voidedAt !== null || s.rev < p.revision)
       const satisfied = signed.length >= slot.min
-      return { slot, signed, struck, satisfied, eligible: satisfied ? [] : checkSlotAt(people, ver, slot, path, today, now) }
+      return { slot, signed, struck, satisfied, eligible: satisfied ? [] : checkSlotAt(people, ver, slot, path, today, now, delegations) }
     })
     const done = slots.every((s) => s.satisfied || !slotRequired(s.slot, p.answers))
     let status: StageStatus = "feita"

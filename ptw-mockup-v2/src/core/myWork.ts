@@ -16,6 +16,7 @@ import { emissionSlot, needsResume, resumeCandidates } from "./stopResume"
 import { dayOf } from "./time"
 import { rolesText } from "./eligibility"
 import { accountEpoch, byId, signaturesOf } from "./indexes"
+import { delegationStatus, type Delegation } from "./delegation"
 
 export type Group = "emCampo" | "agir" | "bloqueadas" | "proximas" | "aguardando" | "finalizadas"
 export type Act = "assinar" | "entregar" | "retomar" | "abrir"
@@ -60,6 +61,7 @@ interface Input {
   /** Frozen forms (`PermitData.formSnapshots`) and the lists a draft's form reads. */
   formSnapshots?: Record<string, FormSpec>
   optionLists?: OptionList[]
+  delegations?: Delegation[]
 }
 
 type Placed = { group: Group; item: WorkItem } | null
@@ -108,7 +110,7 @@ export function myWork(input: Input, cache?: MyWorkCache): MyWork {
   const nowMs = Date.parse(now)
 
   if (cache) {
-    const globals = [input.timezone, personId, people, locations, templates, equipment.relations, equipment.assets, equipment.partOf.join("|"), formSnapshots, optionLists, roleLabel]
+    const globals = [input.timezone, personId, people, locations, templates, equipment.relations, equipment.assets, equipment.partOf.join("|"), formSnapshots, optionLists, roleLabel, input.delegations, input.delegations?.map((d) => delegationStatus(d, now)).join("|")]
     if (!sameArray(cache.globals, globals)) { cache.globals = globals; cache.entries.clear(); cache.scan = { permits: null, signatures: null, list: [] }; cache.last = null }
     if (cache.scan.permits !== permits || cache.scan.signatures !== signatures) {
       cache.scan = { permits, signatures, list: permits.filter((p) => mayLand(p, signaturesOf(signatures, p.id))) }
@@ -165,7 +167,7 @@ export function myWork(input: Input, cache?: MyWorkCache): MyWork {
       const can = reach.persons.has(personId) || (me!.status !== "inativo" && me!.roles.some((r) => reach.roles.has(r.roleId) && (r.scopeLocationId === null || path.includes(r.scopeLocationId))))
       if (!can || permit.state === "rascunho" || permit.state === "devolvida") return null
     }
-    const rail = railOf(permit, ver, sigs as SignatureRec[], people, locations, today, now)
+    const rail = railOf(permit, ver, sigs as SignatureRec[], people, locations, today, now, input.delegations)
     const resumers = needsResume(permit) ? resumeCandidates(permit, ver, people, locations, today, now) : []
     if (!related) {
       const pick = pickSlot(rail, personId, permit.answers)

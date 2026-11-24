@@ -8,6 +8,7 @@ import postgres from "postgres"
 import type { FastifyRequest } from "fastify"
 import type { Config } from "./config.js"
 import { isRetryable } from "./errors/dbError.js"
+import { timedTransaction } from "./observability/performance.js"
 
 /** A transação que as rotas usam: a `sql` marcada do `postgres` (``tx`select …` ``). */
 export type Tx = postgres.TransactionSql
@@ -56,7 +57,7 @@ export class Db {
     const retries = opts.retries ?? 2
     for (let attempt = 0; ; attempt++) {
       try {
-        return await this.driver.begin(async (tx) => {
+        return await timedTransaction(this.driver, async (tx) => {
           await tx`select ptw.set_context(${ctx.unitId}::uuid, ${ctx.personId}::uuid, ${ctx.roleId ?? null}::uuid, ${ctx.auth}::text,
             ${ctx.client ?? null}::text, ${ctx.requestId ?? null}::text, ${ctx.reason ?? null}::text, ${ctx.undo === true}::boolean)`
           if (opts.statementTimeoutMs !== undefined) {
@@ -76,7 +77,7 @@ export class Db {
    * e o RLS esconde `ptw.unit` de quem não tem contexto): por isso depende de `ptw.unit_by_code`.
    */
   async unitByCode(code: string): Promise<string | null> {
-    const rows = await this.driver.begin((tx) => tx<{ id: string | null }[]>`select ptw.unit_by_code(${code}::text) as id`)
+    const rows = await timedTransaction(this.driver, (tx) => tx<{ id: string | null }[]>`select ptw.unit_by_code(${code}::text) as id`)
     return rows[0]?.id ?? null
   }
 

@@ -21,6 +21,10 @@ import { createQueries } from "./queries"
 import { createPermitPort } from "./permits"
 import { createRegistryWrites, loadReference, syncReference } from "./registry"
 import { emptyPermits, emptyRegistry, type Shared } from "./state"
+import { createClientTimings } from "./performance"
+import { createAppearancePort } from "./appearance"
+import { createGroupPort } from "./groups"
+import { createDelegationPort } from "./delegations"
 
 interface Session { person: Person; unit: { timezone: string }; auth: AuditCtx["auth"]; csrfToken: string; devLogin?: boolean; grants: SessionGrant[]; now: string }
 interface Health { now: string; devLogin: boolean; passwordLogin: boolean }
@@ -46,6 +50,8 @@ function deviceName(): string {
 }
 
 export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
+  const timings = createClientTimings()
+  const bootstrapDone = timings.start("bootstrap")
   const device = deviceName()
   let csrf: string | null = null
   let sessionEpoch = 0
@@ -65,6 +71,7 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
 
   const down = (d: boolean) => { if (session.get().serverDown !== d) patch({ serverDown: d }) }
   const http = createHttp({
+    timings,
     fetch: opts.fetch, base: opts.base,
     clientName: () => device, csrf: () => csrf, sessionVersion: () => sessionEpoch,
     onUnauthorized: () => {
@@ -128,22 +135,32 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
   }
 
   async function signIn(path: string, body: { login: string; password?: string }): Promise<RuleError | null> {
+    const finish = timings.start("login")
+    let ok = false
+    try {
     const epoch = ++sessionEpoch
     const r = await http.request<Session>({ method: "POST", path, body })
     // A refusal can itself end an obsolete session; still show its reason on the entry screen.
     if (!r.ok) return r.error
     if (epoch !== sessionEpoch) return null
-    return enter(r.data, epoch)
+    const error = await enter(r.data, epoch)
+    ok = error === null && session.get().status === "aberta"
+    return error
+    } finally { finish(ok) }
   }
 
   async function readSession(): Promise<RuleError | null> {
+    const finish = timings.start("restore")
+    let ok = false
+    try {
     const epoch = sessionEpoch
     const r = await http.request<Session>({ method: "GET", path: "/session" })
     if (epoch !== sessionEpoch) return null
-    if (r.ok) return enter(r.data, epoch)
+    if (r.ok) { const error = await enter(r.data, epoch); ok = error === null && session.get().status === "aberta"; return error }
     if (r.down || r.status !== 401) { patch({ status: "carregando", serverDown: r.down, error: r.error }); return r.error }
     patch({ status: "ausente", personId: "", error: null })
     return null
+    } finally { finish(ok) }
   }
 
   const sessionPort: SessionPort & { devLogin(login: string): Promise<RuleError | null> } = {
@@ -222,6 +239,9 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
   }
 
   const port: DataPort & { session: typeof sessionPort; permits: typeof permits; audit: typeof auditPort } = {
+    appearance: createAppearancePort(http),
+    groups: createGroupPort(http),
+    delegations: createDelegationPort(http),
     mode: "api",
     whole: false,
     session: sessionPort,
@@ -292,8 +312,8 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
     },
   }
 
-  await readHealth()
-  await readSession()
+  try { const healthError = await readHealth(); const sessionError = await readSession(); bootstrapDone(!healthError && !sessionError) }
+  catch (error) { bootstrapDone(false); throw error }
   return port
 }
 

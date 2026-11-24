@@ -18,7 +18,7 @@ const H = "h-11 md:h-9"
 
 /** The one frame: 72rem, left-aligned beside the sidebar (never centered); children stack 16 apart (header → tabs/toolbar). */
 export function Page({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("flex w-full min-w-0 max-w-[72rem] flex-col gap-4", className)}>{children}</div>
+  return <div className={cn("app-page flex w-full min-w-0 max-w-[72rem] flex-col gap-5", className)}>{children}</div>
 }
 
 /**
@@ -139,7 +139,7 @@ export function PageHeader({ back, title, count, meta, actions, mono }: PageHead
   const backBody = <><ArrowLeftIcon data-icon="inline-start" /><span className="min-w-0 truncate">{back?.label}</span></>
   const backCls = "-ml-2 w-fit max-w-full min-h-11 px-2 text-muted-foreground hover:text-foreground md:min-h-9 print:hidden"
   return (
-    <header className="flex min-w-0 flex-col gap-2">
+    <header className="app-page-header flex min-w-0 flex-col gap-2">
       {back && (back.href
         ? <Button asChild variant="ghost" className={backCls}><a href={back.href}>{backBody}</a></Button>
         : <Button variant="ghost" className={backCls} onClick={back.onClick}>{backBody}</Button>)}
@@ -157,7 +157,6 @@ export function PageHeader({ back, title, count, meta, actions, mono }: PageHead
             </div>
           )}
         </div>
-        <div aria-hidden className="doc-rule mt-1" />
         {meta && <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 pt-1 type-meta">{meta}</div>}
       </div>
       {primary && !inline && <ActionButton a={primary} variant="default" className="w-full md:hidden" />}
@@ -217,7 +216,7 @@ export function SidePanel({ label, actions, properties, children }: {
   return (
     <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start xl:gap-6">
       {(actions || properties) && (
-        <aside aria-label={label} className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-4 xl:col-start-2 xl:row-start-1">
+        <aside aria-label={label} className="flex min-w-0 flex-col gap-4 rounded-2xl border bg-card p-4 shadow-elev-2 xl:sticky xl:top-20 xl:col-start-2 xl:row-start-1">
           {actions}
           {properties && <div className={cn("hidden xl:block", actions && "border-t pt-4")}>{properties}</div>}
         </aside>
@@ -249,7 +248,7 @@ export function ListToolbar({ search, filters, filtering, onClear, count, childr
   const { shown, total, noun } = count
   const word = total === 1 ? noun[0] : noun[1]
   return (
-    <div className="@container flex min-w-0 flex-col gap-3">
+    <div className="app-list-panel @container flex min-w-0 flex-col gap-4">
       <div className="flex flex-col gap-2 @3xl:flex-row @3xl:items-center">
         <div className="relative @3xl:w-80 @3xl:shrink-0">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />

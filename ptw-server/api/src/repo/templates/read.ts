@@ -59,10 +59,10 @@ async function loadChildren(tx: Tx, versionIds: string[]): Promise<Children> {
   const q2 = new Q()
   const slots = await run<{
     id: string; stage_id: string; meaning: string | null; kind: SignSlot["kind"]; roles: string[]; person_id: string | null
-    min: number; required: boolean; rw_item: string | null; rw_line: string | null; rw_values: string[] | null
+    min: number; required: boolean; delegable: boolean; rw_item: string | null; rw_line: string | null; rw_values: string[] | null
   }>(
     tx,
-    `select id, stage_id, meaning, kind, to_jsonb(role_ids) as roles, person_id, min, required, required_when_item as rw_item,
+    `select id, stage_id, meaning, kind, to_jsonb(role_ids) as roles, person_id, min, required, delegable, required_when_item as rw_item,
             required_when_line as rw_line, to_jsonb(required_when_values) as rw_values
        from ptw.sign_slot where unit_id = ptw.current_unit() and version_id = any (${q2.uuids(versionIds)}) order by stage_id, position`,
     q2.params,
@@ -70,6 +70,7 @@ async function loadChildren(tx: Tx, versionIds: string[]): Promise<Children> {
   for (const s of slots) {
     const slot: SignSlot = {
       id: s.id, meaning: s.meaning, kind: s.kind, roleIds: s.roles, personId: s.person_id, min: Number(s.min), required: s.required,
+      ...(s.delegable ? { delegable: true } : {}),
       ...(s.rw_item !== null && s.rw_values !== null ? { requiredWhen: { itemId: s.rw_item, ...(s.rw_line !== null ? { lineId: s.rw_line } : {}), anyOf: s.rw_values } } : {}),
     }
     push(byStage, s.stage_id, slot)

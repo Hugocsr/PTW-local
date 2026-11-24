@@ -9,6 +9,7 @@ import type { Permit, SignatureRec } from "@/permit/types"
 import { isFinalState, nextLabel, railOf, waitsFor } from "./permitView"
 import { needsResume, resumeCandidates } from "./stopResume"
 import { accountEpoch, byId, signaturesOf } from "./indexes"
+import { delegationStatus, type Delegation } from "./delegation"
 
 export interface BoardRow { p: Permit; tpl: PermitTemplate; ver: TemplateVersion; next: string; mine: boolean }
 
@@ -16,11 +17,11 @@ export interface BoardCache { globals: unknown[]; rows: Map<string, { key: unkno
 export const createBoardCache = (): BoardCache => ({ globals: [], rows: new Map() })
 const same = (a: readonly unknown[], b: readonly unknown[]) => a.length === b.length && a.every((x, i) => x === b[i])
 
-export function boardRows(input: { permits: Permit[]; signatures: SignatureRec[]; people: Person[]; locations: Location[]; templates: PermitTemplate[]; personId: string; today: string; now: string }, cache?: BoardCache): BoardRow[] {
+export function boardRows(input: { permits: Permit[]; signatures: SignatureRec[]; people: Person[]; locations: Location[]; templates: PermitTemplate[]; personId: string; today: string; now: string; delegations?: Delegation[] }, cache?: BoardCache): BoardRow[] {
   const { permits, signatures, people, locations, templates, personId, today, now } = input
   const epoch = accountEpoch(people, now)
   if (cache) {
-    const globals = [people, locations, templates, personId]
+    const globals = [people, locations, templates, personId, input.delegations, input.delegations?.map((d) => delegationStatus(d, now)).join("|")]
     if (!same(cache.globals, globals)) { cache.globals = globals; cache.rows.clear() }
   }
   const out: BoardRow[] = []
@@ -37,7 +38,7 @@ export function boardRows(input: { permits: Permit[]; signatures: SignatureRec[]
     let row: BoardRow
     if (isFinalState(p.state)) row = { p, tpl, ver, next: "—", mine: false }
     else {
-      const rail = railOf(p, ver, sigs as SignatureRec[], people, locations, today, now)
+      const rail = railOf(p, ver, sigs as SignatureRec[], people, locations, today, now, input.delegations)
       const resumers = needsResume(p) ? resumeCandidates(p, ver, people, locations, today, now) : []
       row = { p, tpl, ver, next: nextLabel(p, rail, people, resumers), mine: waitsFor(p, rail, personId, resumers) }
     }

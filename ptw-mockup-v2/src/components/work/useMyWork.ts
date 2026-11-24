@@ -53,10 +53,10 @@ export function useMyWork() {
   const roleLabel = sharedLabel(state.roleTypes)
   const equipment = sharedEquipment(state)
   return useMemo(() => {
-    const deps = [sim.personId, sim.now, sim.today, state.units, permits, signatures, formSnapshots, state.people, state.locations, state.templates, state.optionLists, roleLabel, equipment]
+    const deps = [sim.personId, sim.now, sim.today, state.units, permits, signatures, formSnapshots, state.people, state.locations, state.templates, state.optionLists, roleLabel, equipment, state.delegations]
     return sharedWork({
       personId: sim.personId, permits, signatures, people: state.people, locations: state.locations, templates: state.templates,
-      roleLabel, now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, equipment, formSnapshots, optionLists: state.optionLists,
+      roleLabel, now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, equipment, formSnapshots, optionLists: state.optionLists, delegations: state.delegations,
     }, deps)
-  }, [sim.personId, sim.now, sim.today, state.units, permits, signatures, formSnapshots, state.people, state.locations, state.templates, state.optionLists, roleLabel, equipment])
+  }, [sim.personId, sim.now, sim.today, state.units, permits, signatures, formSnapshots, state.people, state.locations, state.templates, state.optionLists, roleLabel, equipment, state.delegations])
 }

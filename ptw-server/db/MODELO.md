@@ -2,6 +2,14 @@
 
 Resumo de `db/schema/` (a fonte; em caso de dúvida, vale o SQL). O app alinha os tipos TypeScript a isto. Tudo vive no schema `ptw`.
 
+## Identidade e governança SGI
+
+- `appearance`: chave `unit_id`, configuração `brand` (nulo restaura arquivo/padrão), `revision`, autoria e data derivadas da sessão/banco. Publicação exige revisão atual; imagens PNG até 256 KiB e 2048 × 2048 ficam em `appearance_asset`, com hash SHA-256, bytes e tamanho. Só imagens da marca atualmente publicada têm rota pública. Conteúdo binário não entra no diff da auditoria.
+- `person_group` / `person_group_member`: grupo por unidade, nome único, descrição, situação/revisão e membros por FK composta. Grupo não transfere cargo/grant. Desativar conserva membros e histórico; atualização de composição é atômica e auditada.
+- `sign_slot.delegable`: falso por padrão; somente pessoa nominal, mínimo um, cargos definidos e etapa livre. Âncoras técnicas não aceitam o indicador. Versões já publicadas continuam imutáveis.
+- `delegation`: slot da versão, delegante nominal, delegado, local opcional, início/fim, motivo, criação e revogação. Até sete dias, fim exclusivo; sobreposição no mesmo slot é recusada por trava transacional. Original imutável; apenas revogação com motivo. RLS por unidade; API filtra participantes e exige cadastro para gestão.
+- `signature.delegation_id` / `represented_person_id`: ambos nulos nas assinaturas antigas/diretas. No uso de mandato, banco conserva pessoa real da sessão e pessoa representada. Conta/cargo/escopo/período dos dois são conferidos no ato e rechecados após obter a trava do mandato. Separação e uma assinatura por etapa consideram ator e representado. Revogar não reescreve assinaturas anteriores. Funções de pendência incluem os delegados válidos, sem conceder autoria original da emissão/revalidação.
+
 **Convenções**
 - Chave: `uuid` v7 (`uuidv7()`; o cliente pode gerar offline). Toda tabela de unidade tem `unit_id` e chave `(unit_id, id)`; as referências são compostas, então nada aponta para outra unidade. A API só vê a unidade da sessão (RLS).
 - Tempo: `timestamptz` (ISO 8601 com fuso no JSON). Dia de validade: `date` (`AAAA-MM-DD`), avaliado no fuso da unidade (`unit.timezone`).

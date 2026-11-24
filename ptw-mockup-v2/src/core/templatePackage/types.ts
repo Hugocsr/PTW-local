@@ -59,7 +59,7 @@ export interface SecaoPacote { ref?: string; titulo: string; titulo_original?: s
  * Gerente da área") or null = the paper does not say who signs (a pendência for the reviewer, never a
  * guess). `cargos` (a list) is accepted in its place; the importer normalizes both to a list.
  */
-export interface AssinaturaPacote extends Nota { ref: string; significado: string; significado_original?: string; cargo?: string | string[] | null; cargos?: string[]; minimo: number; obrigatoria: boolean; /** Exigida só quando o item tem um destes valores. */ obrigatoria_quando?: CondicaoPacote }
+export interface AssinaturaPacote extends Nota { ref: string; significado: string; significado_original?: string; cargo?: string | string[] | null; cargos?: string[]; minimo: number; obrigatoria: boolean; administrativa_delegavel?: boolean; /** Exigida só quando o item tem um destes valores. */ obrigatoria_quando?: CondicaoPacote }
 export interface EtapaPacote { ref: string; nome: string; nome_original?: string; tipo?: StageKind; assinaturas: AssinaturaPacote[]; secoes: SecaoPacote[]; origem?: OrigemTrecho }
 export interface SeparacaoPacote { a: string; b: string; travada?: boolean; origem?: OrigemTrecho }
 export interface ListaPacote { nome: string; nome_original?: string; itens: string[]; /** Same order as `itens`, in the document's language. */ itens_originais?: string[]; origem?: OrigemTrecho }

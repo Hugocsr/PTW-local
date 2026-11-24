@@ -27,7 +27,7 @@ COPY --from=api /app/dist ./dist
 COPY --from=api /app/node_modules ./node_modules
 COPY --from=api /app/package.json /app/openapi.yaml ./
 COPY --from=web /src/ptw-mockup-v2/dist /srv
-COPY deploy/Caddyfile deploy/start.mjs deploy/ldap-preview.mjs deploy/preview-users.mjs deploy/readiness.mjs ./deploy/
+COPY deploy/Caddyfile deploy/start.mjs deploy/ldap-preview.mjs deploy/preview-users.mjs deploy/readiness.mjs deploy/performance.mjs ./deploy/
 RUN /usr/local/bin/caddy validate --config deploy/Caddyfile --adapter caddyfile
 USER node
 EXPOSE 3000

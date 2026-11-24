@@ -275,6 +275,7 @@ create table ptw.sign_slot (
   person_id            uuid,
   min                  smallint not null default 1 check (min between 1 and 20),
   required             boolean not null default true,
+  delegable            boolean not null default false,
   required_when_item   text check (length(required_when_item) between 1 and 64),
   required_when_values text[] check (cardinality(required_when_values) between 1 and 50),
   required_when_line   text check (length(required_when_line) between 1 and 64),
@@ -309,6 +310,27 @@ begin
 end $$;
 create trigger sign_slot_roles before insert or update of role_ids, unit_id on ptw.sign_slot
   for each row execute function ptw.sign_slot_roles_check();
+
+-- Only explicitly administrative named approvals in free stages may have a substitute.
+create function ptw.sign_slot_delegation_check() returns trigger language plpgsql as $$
+begin
+  if new.delegable and (new.kind <> 'pessoa' or new.min <> 1 or cardinality(new.role_ids) = 0
+      or exists(select 1 from ptw.stage s where s.unit_id=new.unit_id and s.id=new.stage_id and s.kind is not null)) then
+    raise check_violation using message = 'Delegação exige aprovação administrativa nominal, etapa livre, uma assinatura e cargo definido';
+  end if;
+  return new;
+end $$;
+create trigger sign_slot_delegation before insert or update on ptw.sign_slot
+  for each row execute function ptw.sign_slot_delegation_check();
+
+create function ptw.stage_delegation_check() returns trigger language plpgsql as $$
+begin
+  if new.kind is not null and exists(select 1 from ptw.sign_slot s where s.unit_id=new.unit_id and s.stage_id=new.id and s.delegable) then
+    raise check_violation using message='Uma etapa técnica não pode conter aprovação delegável';
+  end if;
+  return new;
+end $$;
+create trigger stage_delegation before update on ptw.stage for each row execute function ptw.stage_delegation_check();
 
 -- O outro lado da chave: cargo usado numa assinatura de modelo não sai nem muda de família.
 create function ptw.type_def_slot_guard() returns trigger language plpgsql as $$

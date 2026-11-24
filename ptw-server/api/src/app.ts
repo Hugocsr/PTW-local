@@ -28,6 +28,8 @@ import { checkCommonHeaders, clientOf, reasonOf, requestIdOf, undoOf } from "./h
 import type { AppState, OpOptions, Probe } from "./http/state.js"
 import { authenticate } from "./session/auth.js"
 import { checkGrants } from "./session/grants.js"
+import { installPerformance } from "./observability/hooks.js"
+import { timeAuthentication } from "./observability/performance.js"
 import { DbSessionStore, type SessionStore } from "./session/store.js"
 
 export type OpRequest<K extends OperationId> = FastifyRequest<{ Params: OpParams<K>; Querystring: OpQuery<K>; Body: OpBody<K> }>
@@ -109,7 +111,7 @@ export async function buildApp(opts: BuildOptions): Promise<FastifyInstance> {
   const shutdown: (() => Promise<void>)[] = []
 
   const app = Fastify({
-    logger: opts.logger ?? { level: config.logLevel },
+    ...(typeof opts.logger === "object" ? { loggerInstance: opts.logger } : { logger: opts.logger ?? { level: config.logLevel } }),
     genReqId: (req) => requestIdOf(req.headers),
     bodyLimit: config.bodyLimit,
     trustProxy: true,
@@ -120,6 +122,7 @@ export async function buildApp(opts: BuildOptions): Promise<FastifyInstance> {
   })
 
   let unitId: string | null = isUuid(config.unit) ? config.unit : null
+  installPerformance(app, config)
   let unitPending: Promise<string> | null = null
   const state: AppState = {
     config,
@@ -187,7 +190,7 @@ export async function buildApp(opts: BuildOptions): Promise<FastifyInstance> {
     if (o.enabled && !o.enabled()) throw pta.notFound()
     if (o.standalone) return
     req.ptw.unitId = await state.unit()
-    await authenticate(req, op.secured)
+    await timeAuthentication(() => authenticate(req, op.secured))
     checkGrants(req)
     if (isWrite(req.method)) {
       if (op.secured) checkCsrf(req)

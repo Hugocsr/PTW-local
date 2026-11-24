@@ -122,7 +122,21 @@ export function createMemoryPort(scenario: Scenario, { tz = DEFAULT_TZ, onReset 
 
   return {
     mode: "memoria",
+    appearance: {
+      read: async () => ({ code: "PTA13", message: "Editor disponível somente com API persistente" }),
+      save: async () => ({ code: "PTA13", message: "Editor disponível somente com API persistente" }),
+      upload: async () => ({ code: "PTA13", message: "Editor disponível somente com API persistente" }),
+    },
     whole: true,
+    delegations: {
+      read: async () => ({ code: "PTA13", message: "Gestão de delegações exige a API persistente" }),
+      create: async () => ({ code: "PTA13", message: "Gestão de delegações exige a API persistente" }),
+      revoke: async () => ({ code: "PTA13", message: "Gestão de delegações exige a API persistente" }),
+    },
+    groups: {
+      read: async () => ({ code: "PTA13", message: "Grupos exigem a API persistente" }),
+      save: async () => ({ code: "PTA13", message: "Grupos exigem a API persistente" }),
+    },
 
     session: {
       get: session.get, subscribe: session.subscribe,

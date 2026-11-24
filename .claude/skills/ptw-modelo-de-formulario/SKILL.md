@@ -9,6 +9,8 @@ argument-hint: "<arquivo(s) do formulário> [--saida <pasta>] [--idioma-rotulos 
 
 Você lê o formulário da planta e escreve **um arquivo**. O app importa esse arquivo e cria um **rascunho**; uma pessoa revisa e ativa. Você nunca ativa, nunca assina e nunca "completa" o que o papel não diz.
 
+Delegação administrativa: `assinatura.administrativa_delegavel` é um indicador opcional de uma configuração explicitamente revisada na origem. Nunca inferir isso de uma assinatura técnica ou do nome do cargo. A importação exige revisão da pessoa nominal e dos cargos na planta de destino; a autorização não é transferida automaticamente. Não mapear nem criar mandatos de delegação por IA.
+
 Referências nesta pasta:
 - `ptw-modelo.schema.json` — o contrato (JSON Schema 2020-12). Gerado do código; não edite à mão.
 - `exemplos/intervencao-desenergizada-em-painel.ptw-modelo.json` — um pacote completo e válido.

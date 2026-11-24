@@ -1,0 +1,47 @@
+/** Canonical destinations; navigation never grants permission to write or sign. */
+export const NAVIGATION_VIEWS = ["minha-area", "quadro", "desabilitados", "locais", "ativos", "pessoas", "modelos", "tipos", "listas", "identidade", "grupos", "delegacoes", "auditoria"] as const
+export type NavigationView = typeof NAVIGATION_VIEWS[number]
+export interface NavigationAccess { canEditRegistry: boolean; canEditModels: boolean; canAudit: boolean; canExport: boolean }
+export const NAVIGATION_GROUPS = ["operation", "registry", "configuration", "governance", "reference"] as const
+export type NavigationGroup = typeof NAVIGATION_GROUPS[number]
+export interface NavigationSection { group: NavigationGroup; views: NavigationView[] }
+
+/** Reference reads remain available to signed-in people; restricted views keep their own grant. */
+export function canReadView(view: NavigationView, access: NavigationAccess): boolean {
+  switch (view) {
+    case "minha-area": case "quadro": case "desabilitados":
+    case "locais": case "ativos": case "pessoas": case "modelos": case "tipos": case "listas": return true
+    case "auditoria": return access.canAudit
+    case "identidade": return access.canEditModels
+    case "grupos": return access.canEditRegistry
+    case "delegacoes": return true
+    default: return false
+  }
+}
+
+/** A destination appears once, as management or consultation, according to its existing domain grant. */
+export function navigationGroup(view: NavigationView, access: NavigationAccess): NavigationGroup | null {
+  if (!canReadView(view, access)) return null
+  switch (view) {
+    case "minha-area": case "quadro": case "desabilitados": return "operation"
+    case "locais": case "ativos": case "pessoas": return access.canEditRegistry ? "registry" : "reference"
+    case "modelos": return access.canEditModels ? "configuration" : "reference"
+    case "tipos": case "listas": return access.canEditRegistry ? "configuration" : "reference"
+    case "auditoria": return "governance"
+    case "identidade": return "configuration"
+    case "grupos": return "governance"
+    case "delegacoes": return "governance"
+    default: return null
+  }
+}
+
+/** Sidebar, search and direct routes share the same read policy. */
+export function visibleViews(access: NavigationAccess): NavigationView[] {
+  return NAVIGATION_VIEWS.filter((view) => canReadView(view, access))
+}
+
+/** Ordered, nonempty sections for the current session, independent of the active destination. */
+export function navigationSections(access: NavigationAccess): NavigationSection[] {
+  const views = visibleViews(access)
+  return NAVIGATION_GROUPS.map((group) => ({ group, views: views.filter((view) => navigationGroup(view, access) === group) })).filter((section) => section.views.length > 0)
+}

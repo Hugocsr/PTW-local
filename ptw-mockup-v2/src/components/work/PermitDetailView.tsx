@@ -112,8 +112,8 @@ export function PermitDetailView({ id, tab }: { id: string; tab: string }) {
     if (p && a) record([accessEvent(`acesso.anexo.${how}`, { permit: { id: p.id, revision: p.revision }, attachment: { id: a.id, permitId: a.permitId, fileName: a.fileName, kind: a.kind, sha256: a.sha256 } }, ctx())])
   }, [record, ctx])
   const rail = useMemo(
-    () => (permit && ver ? railOf(permit, ver, data.signatures, state.people, state.locations, sim.today, sim.now) : []),
-    [permit, ver, data.signatures, state.people, state.locations, sim.today, sim.now],
+    () => (permit && ver ? railOf(permit, ver, data.signatures, state.people, state.locations, sim.today, sim.now, state.delegations) : []),
+    [permit, ver, data.signatures, state.people, state.locations, sim.today, sim.now, state.delegations],
   )
 
   if (!permit || !tpl || !ver) {

@@ -71,7 +71,7 @@ export function exportarModelo(tpl: PermitTemplate, cadastro: Cadastro, opcoes: 
       if (sl.meaning === null) pendencias.push({ descricao: "Assinatura sem significado no modelo de origem: escreva o que ela atesta", motivo: "duvida", onde: sl.id })
       if (sl.kind === "pessoa") pendencias.push({ descricao: `“${sl.meaning}” é assinada por uma pessoa nomeada; na outra planta, escolha a pessoa`, motivo: "duvida", onde: sl.id })
       const quando = sl.requiredWhen ? condOut(sl.requiredWhen) : undefined
-      return { ref: sl.id, significado: sl.meaning ?? "Assinatura", cargo, minimo: sl.min, obrigatoria: sl.required, ...(quando ? { obrigatoria_quando: quando } : {}) }
+      return { ref: sl.id, significado: sl.meaning ?? "Assinatura", cargo, minimo: sl.min, obrigatoria: sl.required, ...(sl.delegable ? { administrativa_delegavel: true } : {}), ...(quando ? { obrigatoria_quando: quando } : {}) }
     }),
     secoes: (ver.form?.sections ?? []).filter((s) => s.stageId === st.id || (s.stageId === undefined && st === ver.stages[0])).map((s) => ({ ref: s.id, titulo: s.title, itens: s.items.map(exportItem) })),
   }))

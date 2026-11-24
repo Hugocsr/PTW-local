@@ -72,14 +72,16 @@ export function LoginView() {
   const loading = state.status === "carregando" && !problem
   const ready = (state.passwordLogin || state.devLogin) && state.status === "ausente"
   return (
-    <main className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-surface-canvas px-4 py-10">
+    <main className="app-login relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-surface-canvas px-4 py-10">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50rem_30rem_at_50%_-10%,var(--brand-glow),transparent_70%)]" />
-      <div className="relative flex w-full max-w-[26rem] flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500 ease-out motion-reduce:animate-none">
+      <div className="relative flex w-full max-w-[28rem] flex-col gap-6 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500 ease-out motion-reduce:animate-none">
         <div className={cn("flex items-center justify-center", brand.logoUrl ? "flex-col gap-4" : "gap-3")}>
           <BrandLogo className="h-10 max-w-64 object-center" />
           {!brand.logoUrl && <BrandMark className="size-11 rounded-xl text-base font-semibold" />}
-          <h1 className="text-2xl font-semibold tracking-[-0.03em]">{brand.name}</h1>
+          <h1 className="type-page">{brand.name}</h1>
         </div>
+
+        <p className="-mt-2 text-center type-body text-muted-foreground">Gestão de permissões de trabalho</p>
 
         <div className="flex flex-col gap-5 rounded-2xl border bg-card p-5 shadow-[0_1px_2px_oklch(0.2_0.02_262/0.06),0_16px_40px_-16px_oklch(0.2_0.04_262/0.22)] sm:p-7">
           {both && (

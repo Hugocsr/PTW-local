@@ -35,6 +35,12 @@ Antes de dar algo por pronto: `npm run check` limpo (ou `sh ../check.sh` na raiz
 
 ## Convenções
 
+- SGI-11A/07/08: `AppearanceView`, `GroupsView`, `DelegationsView`, contratos em `data/port.ts` e hooks próprios. Identidade usa `modelos`, grupos usam `cadastro`, delegações próprias são consulta autenticada; gestão usa `cadastro`. `core/appearance`, `governance` e `delegation` mantêm regras puras. `SignSlot.delegable` é explícito e opcional (ausente = falso); não se aplica às etapas técnicas. Cache de pendências considera alterações/vigência dos mandatos; sem eles, não há leitura adicional de delegações no bootstrap.
+
+- SGI-16: `core/navigation.ts` organiza o menu único por grants e consultas existentes; sidebar, busca global e acesso de rota compartilham a política. Sem seletor de área. Tipos/Listas usam cadastro; Modelos usa modelos; Auditoria usa auditoria. `WorkSummary` recebe contagens do cache existente. `workspace.css` moderniza superfícies somente em tela; impressão independente. `useIsMobile` define drawer abaixo de 1024 px.
+
+- PERF-01: `src/data/api/performance.ts` emite métricas sem conteúdo/credenciais somente quando a aba opta por `sessionStorage['ptw.performance']='1'`. `http.ts` correlaciona pelo request ID existente; `index.ts` mede bootstrap/restore/login sem mudar sua ordem. Não persistir telemetria ou autorização em armazenamento do navegador.
+
 - Toda tela usa `Page` + `PageHeader`; não crie larguras ou cabeçalhos próprios.
 - Cor de estado só por `StatusBadge` / `TONE_*`; não escreva classes de cor soltas.
 - Tamanhos de toque: `min-h-11 md:min-h-9`, ícones `size-11 md:size-9`.
