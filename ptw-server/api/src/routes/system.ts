@@ -116,7 +116,7 @@ export default defineRoutes((api) => {
     }
     const off = state.events.subscribe((n) => {
       if (n.unit !== unitId) return
-      res.write(`id: ${n.seq}\nevent: ptw\ndata: ${JSON.stringify({ seq: n.seq, permit: n.permit })}\n\n`)
+      res.write(`id: ${n.seq}\nevent: ptw\ndata: ${JSON.stringify({ seq: n.seq, permit: n.permit, domains: n.domains })}\n\n`)
     })
     let checking = false
     const beat = setInterval(() => {

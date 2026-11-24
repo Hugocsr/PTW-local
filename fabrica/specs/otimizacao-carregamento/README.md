@@ -1,6 +1,6 @@
 # Spec do programa — otimização do carregamento
 
-Estado: **proposta, não validada**. Responsável pela validação: responsável pelo produto. Data: 18/11/2026.
+Estado: **execução por recortes**. Criada em 18/11/2026; atualizada em 24/11/2026. PERF-01 e o lote PERF-02/PERF-03A foram autorizados pelo responsável pelo produto; demais recortes e aceite global continuam pendentes.
 
 [Backlog e sequência de execução](../../tasks/otimizacao-carregamento.md).
 
@@ -9,6 +9,8 @@ Estado: **proposta, não validada**. Responsável pela validação: responsável
 Entrar e recarregar a aplicação exigem várias chamadas e viagens sequenciais ao banco. O objetivo é apresentar telas úteis mais rapidamente e reduzir trabalho repetido, sem mostrar liberação de trabalho baseada em dados incompletos ou desatualizados.
 
 ## Evidência de partida
+
+Atualização: [diagnóstico E2E do SGI em 24/11/2026](09-diagnostico-e2e-sgi.md). Inclui repetição de consultas em Locais, sincronização, ciclo das instâncias e consistência das gravações. PERF-01 está presente no release SGI, desativada por padrão; isso não conclui a baseline repetida nem autoriza implementar as demais tasks.
 
 Diagnóstico de 18/11/2026, commit `4857d82f411cdd92013c61e99016fbf9fb8ec9e7`, deploy `dpl_9xQfdDNA2Pz6EBVQKKbRiLwuugWP`:
 
@@ -61,9 +63,12 @@ As alterações futuras de contrato começam em `openapi.yaml`; decisões que ex
 
 ## Specs filhas
 
+[Implementação e validação local de PERF-03A/PERF-02 — 24/11/2026](10-validacao-local.md). As duas implementações foram autorizadas pelo responsável; a publicação e o aceite global continuam pendentes.
+
 1. [PERF-01 — instrumentação](01-instrumentacao.md)
 2. [PERF-02 — sincronização](02-sincronizacao.md)
 3. [PERF-03 — leituras da API](03-leituras-api.md)
+   - [PERF-03A — contagens de ativos por página de locais](03a-contagens-locais.md), primeiro recorte refinado em 24/11/2026.
 4. [PERF-04 — carga inicial](04-carga-inicial.md)
 5. [PERF-05 — região](05-regiao.md)
 6. [PERF-06 — Container e conexões](06-container-conexoes.md)

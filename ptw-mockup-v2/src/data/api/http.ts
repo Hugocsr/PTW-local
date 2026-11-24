@@ -133,12 +133,13 @@ export function createHttp(o: HttpOptions = {}): Http {
     try {
       res = await doFetch(url(r.path, r.query), { method: r.method, headers: h, body, credentials: "same-origin", signal: AbortSignal.timeout(r.file ? 120_000 : 20_000) })
     } catch {
-      o.onReach?.(false)
+      if (o.sessionVersion?.() === sessionVersion) o.onReach?.(false)
       return { ok: false, error: noServer(), status: 0, down: true }
     }
+    if (READS.has(r.method) && o.sessionVersion?.() !== sessionVersion) return { ok: false, error: noServer(), status: 0, down: false }
     const down = res.status === 502 || res.status === 503
     status = res.status
-    o.onReach?.(!down)
+    if (o.sessionVersion?.() === sessionVersion) o.onReach?.(!down)
     if (!res.ok) {
       const text = await res.text().catch(() => "")
       if (o.timings?.enabled) bytes = new TextEncoder().encode(text).byteLength
@@ -152,6 +153,7 @@ export function createHttp(o: HttpOptions = {}): Http {
     if (as === "none" || res.status === 204 || r.method === "HEAD") return { ok: true, data: undefined as T, status: res.status, etag, replayed }
     try {
       const text = await res.text()
+      if (READS.has(r.method) && o.sessionVersion?.() !== sessionVersion) return { ok: false, error: noServer(), status: 0, down: false }
       if (o.timings?.enabled) bytes = new TextEncoder().encode(text).byteLength
       return { ok: true, data: (as === "text" ? text : JSON.parse(text)) as T, status: res.status, etag, replayed }
     } catch {

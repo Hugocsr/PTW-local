@@ -15,6 +15,8 @@ import type { RuleError } from "@/core/ptwErrors"
 import { DEFAULT_TZ, dayOf, isoAt, msOf } from "@/core/time"
 import type { Person, RegistryState } from "@/registry/types"
 import { box } from "../cell"
+import { DOMAINS, noticeDomains, syncCoordinator, type Domain } from "./sync"
+import { scoped } from "./scope"
 import { isUndoing, type AuditExportFiles, type AuditPort, type DataPort, type EntryPerson, type SessionGrant, type SessionPort, type SessionState } from "../port"
 import { createHttp, noServer, type HttpOptions } from "./http"
 import { createQueries } from "./queries"
@@ -91,6 +93,7 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
     registry: box<RegistryState>(emptyRegistry()),
     permits: box(emptyPermits()),
     changed: box(0),
+    changes: { assets: box(0), permits: box(0), audit: box(0), appearance: box(0), groups: box(0), delegations: box(0) },
     assets: new Map(),
     tz: () => tz,
     now: nowIso,
@@ -111,10 +114,11 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
     tz = x.unit.timezone || DEFAULT_TZ
     offset = msOf(x.now, tz) - Date.now()
     patch({ status: "carregando", personId: x.person.id, error: null, devLogin: x.devLogin === true, grants: x.grants })
+    s.changed.set(s.changed.get() + 1)
     s.assets.clear(); s.permits.set(emptyPermits()); s.registry.set(emptyRegistry()); s.audit.set([])
     permits.resetSession()
     const since = nowIso()
-    const e = (await loadReference(s)) ?? (await permits.loadMine())
+    const e = (await loadReference(scoped(s, () => epoch === sessionEpoch))) ?? (await permits.loadMine())
     if (epoch !== sessionEpoch) return null
     if (e) {
       if (session.get().status !== "ausente") patch({ status: "carregando", error: e })
@@ -255,17 +259,15 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
       let timer: ReturnType<typeof setTimeout> | undefined
       let source: EventSource | undefined
 
-      const changed = () => s.changed.set(s.changed.get() + 1)
-      const refresh = async () => {
-        if (session.get().status !== "aberta") return
-        const since = nowIso()
-        const e = syncedAt ? await syncReference(s, syncedAt) : null
-        if (!e) syncedAt = since
-        await permits.loadMine()
-        changed()
-      }
+      let coordinator: ReturnType<typeof syncCoordinator> | undefined
+      const bump = (domain: keyof Shared["changes"]) => s.changes[domain].set(s.changes[domain].get() + 1)
+      const refresh = (domains: readonly Domain[] = DOMAINS, recover = false) => coordinator?.request(domains, recover)
       let pending: ReturnType<typeof setTimeout> | undefined
-      const soon = () => { clearTimeout(pending); pending = setTimeout(() => void refresh(), 300) }
+      const queued = new Set<Domain>()
+      const soon = (event: Event) => {
+        noticeDomains((event as MessageEvent<string>).data).forEach(d => queued.add(d))
+        clearTimeout(pending); pending = setTimeout(() => { refresh([...queued]); queued.clear() }, 300)
+      }
 
       const poll = async () => {
         if (stopped) return
@@ -299,16 +301,48 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
         const wanted = current.status === "aberta" ? current.personId : ""
         if (wanted === streamPerson) return
         streamPerson = wanted
+        coordinator?.close(); coordinator = undefined; queued.clear(); clearTimeout(pending)
         source?.close(); source = undefined
+        if (wanted) {
+          const epoch = sessionEpoch
+          const unitId = s.registry.get().units[0]?.id
+          const valid = () => !stopped && epoch === sessionEpoch && unitId === s.registry.get().units[0]?.id && session.get().status === "aberta"
+          const watermarks = new Map<Domain, string>(DOMAINS.map(d => [d, syncedAt ?? nowIso()]))
+          coordinator = syncCoordinator(async domains => {
+            const generation = s.changed.get()
+            const current = () => valid() && generation === s.changed.get()
+            const shared = scoped(s, current)
+            const started = nowIso()
+            const since = domains.map(d => watermarks.get(d)!).sort()[0]
+            const beforeRegistry = JSON.stringify(s.registry.get())
+            const beforePermits = JSON.stringify(s.permits.get())
+            const error = await syncReference(shared, since, domains)
+            if (error || !current()) return false
+            const referenceChanged = beforeRegistry !== JSON.stringify(s.registry.get())
+            if (domains.some(d => ["permits", "people", "templates", "delegations", "locations", "assets", "relations", "types", "optionLists"].includes(d))) {
+              if (await permits.loadMine() || !current()) return false
+            }
+            domains.forEach(d => watermarks.set(d, started))
+            if (domains.some(d => ["assets", "locations", "relations"].includes(d))) bump("assets")
+            if (referenceChanged || domains.some(d => ["assets", "locations", "relations"].includes(d)) || beforePermits !== JSON.stringify(s.permits.get())) bump("permits")
+            for (const domain of ["appearance", "groups", "delegations"] as const) if (domains.includes(domain)) bump(domain)
+            // Read notices do not trigger another audited search. The fallback refreshes the page.
+            if (domains.length > 1) bump("audit")
+            return true
+          }, valid, opts.syncEvery ?? 30_000)
+        }
         if (ES && wanted) {
           source = new ES(http.url("/events"), { withCredentials: true })
           source.addEventListener("ptw", soon)
+          source.addEventListener("open", () => refresh(DOMAINS, true))
         }
       }
       const offSession = session.subscribe(connect)
       connect()
+      const online = () => refresh(DOMAINS, true)
+      if (typeof window !== "undefined") window.addEventListener("online", online)
       void (async () => { if (session.get().status === "carregando") await readSession(); void poll() })()
-      return () => { stopped = true; offSession(); clearTimeout(timer); clearTimeout(pending); clearInterval(tick); clearInterval(every); source?.close() }
+      return () => { stopped = true; coordinator?.close(); offSession(); if (typeof window !== "undefined") window.removeEventListener("online", online); clearTimeout(timer); clearTimeout(pending); clearInterval(tick); clearInterval(every); source?.close() }
     },
   }
 

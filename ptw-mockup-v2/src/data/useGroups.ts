@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
 import type { GroupInput, PersonGroup } from "@/core/governance"
 import type { RuleError } from "@/core/ptwErrors"
-import { useData } from "./context"
+import { useCell, useData } from "./context"
 
 /** Groups are server records; reload/races never replace a draft without an explicit user action. */
 export function useGroups() {
-  const { groups } = useData()
+  const { groups, queries } = useData()
+  const epoch = useCell(queries.changes?.groups ?? queries.changed)
   const [items, setItems] = useState<PersonGroup[] | null>(null)
   const [error, setError] = useState<RuleError | null>(null)
   const [busy, setBusy] = useState(false)
@@ -13,7 +14,7 @@ export function useGroups() {
     let active = true
     void groups.read().then((r) => { if (active) { if (Array.isArray(r)) setItems(r); else setError(r) } })
     return () => { active = false }
-  }, [groups])
+  }, [groups, epoch])
   const reload = useCallback(async () => {
     setBusy(true)
     const r = await groups.read()

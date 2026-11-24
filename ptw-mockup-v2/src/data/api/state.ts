@@ -44,6 +44,7 @@ export interface Shared {
   audit: Box<AuditEvent[]>
   /** Grows when the server says something changed (`queries.changed`). */
   changed: Box<number>
+  changes: Record<"assets" | "permits" | "audit" | "appearance" | "groups" | "delegations", Box<number>>
   /** Assets known so far, by id (the registry's `assets` is this, in insertion order). */
   assets: Map<string, Asset>
   /** The unit's time zone. */

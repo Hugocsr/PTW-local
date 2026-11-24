@@ -3,6 +3,17 @@ import { createApiPort } from "./index"
 import { baseRoutes, boot, detailOf, err, fakeServer, NETWORK, permitIn, person, reg, sessionOf } from "./testkit"
 
 describe("API como origem única da interface", () => {
+  it("uma leitura atrasada de Minha área não substitui a versão mais recente da PT", async () => {
+    const p = permitIn("ativa")
+    let calls = 0
+    const newer = detailOf(p, { rowVersion: p.rowVersion + 1, scope: "Servidor confirmou versão nova" })
+    const { port } = await boot("Marina Costa", [p], {
+      "GET /permits/mine": () => ({ body: { items: [calls++ === 0 ? newer : detailOf(p)], asOf: newer.now } }),
+    })
+    await port.permits.loadMine()
+    expect(port.permits.get().permits.find(x => x.id === p.id)?.rowVersion).toBe(newer.permit.rowVersion)
+    expect(port.permits.get().permits.find(x => x.id === p.id)?.scope).toBe(newer.permit.scope)
+  })
   it("falha ao carregar o cadastro não abre uma tela aparentemente vazia", async () => {
     const server = fakeServer(baseRoutes("Marina Costa", [], { "GET /templates": () => err(500, "PTA99", "Falha de leitura") }))
     const port = await createApiPort({ fetch: server.fetch })

@@ -50,6 +50,7 @@ export type PagedSegmentFilter = Omit<SegmentFilter<never>, "test">
 export type PagedSelectFilter = Omit<SelectFilter<never>, "test">
 
 interface Props<T> {
+  wrapPage?: (items: T[], children: ReactNode) => ReactNode
   rows: T[]
   columns: Column<T>[]
   rowKey: (row: T) => string
@@ -306,7 +307,7 @@ function TableFrame<T>({ list, columns, rowKey, searchLabel, filter, selectFilte
  * pagination. Page resets on any filter or sort change, the count is announced to screen readers, and
  * "Limpar filtros" appears only while something is filtered.
  */
-function DataTableImpl<T>({ rows, columns, rowKey, searchText, searchLabel, filter, selectFilter, defaultSort, defaultSegment, onRowClick, selectedKey, noun, pageSizes = [10, 25, 50], empty, stateKey }: Props<T>) {
+function DataTableImpl<T>({ rows, columns, rowKey, searchText, searchLabel, filter, selectFilter, defaultSort, defaultSegment, onRowClick, selectedKey, noun, pageSizes = [10, 25, 50], empty, stateKey, wrapPage }: Props<T>) {
   const list = useListState({ stateKey, defaultSort, defaultSegment, pageSizes })
   const { q, seg, pick, sort, size, page } = list
 
@@ -328,8 +329,9 @@ function DataTableImpl<T>({ rows, columns, rowKey, searchText, searchLabel, filt
 
   if (rows.length === 0) return <>{empty ?? <Empty><EmptyHeader><EmptyTitle>Nada por aqui ainda</EmptyTitle></EmptyHeader></Empty>}</>
 
-  return <TableFrame list={list} columns={columns} rowKey={rowKey} searchLabel={searchLabel} filter={filter} selectFilter={selectFilter} onRowClick={onRowClick} selectedKey={selectedKey}
+  const table = <TableFrame list={list} columns={columns} rowKey={rowKey} searchLabel={searchLabel} filter={filter} selectFilter={selectFilter} onRowClick={onRowClick} selectedKey={selectedKey}
     noun={noun} pageSizes={pageSizes} items={items} total={filtered.length} all={rows.length} page={cur} />
+  return wrapPage ? wrapPage(items, table) : table
 }
 
 /**

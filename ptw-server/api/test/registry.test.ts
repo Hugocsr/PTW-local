@@ -81,16 +81,31 @@ const call = async (method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", url: st
 const sql = (d: FakeDriver, re: RegExp) => d.find(re).map((x) => x.statement)
 const denied = (d: FakeDriver) => sql(d, /select ptw\.audit_denied\(/)
 
-describe("contrato: as 27 operações do cadastro têm rota", () => {
+describe("contrato: as 28 operações do cadastro têm rota", () => {
   it("lista as operações e confere a cobertura", async () => {
     t = await start()
-    expect(CADASTRO).toHaveLength(27)
+    expect(CADASTRO).toHaveLength(28)
     const { withoutRoute } = coverage(t.app)
     expect(CADASTRO.filter((o) => withoutRoute.includes(o))).toEqual([])
   })
 })
 
 describe("leitura: página, busca, filtros e ordem são SQL", () => {
+  it("contagens em lote: uma consulta de conjunto, ordem, zero e 404 sem resposta parcial", async () => {
+    t = await start(); const s = await t.login()
+    t.driver.on(/select root.id, count\(distinct al.asset_id\)/, [{ id: LOC2, count: 0 }, { id: LOC, count: 3 }])
+    const res = await call("GET", `/locations/asset-counts?locationIds=${LOC}&locationIds=${LOC2}`, s.headers)
+    expect(res.statusCode, res.body).toBe(200)
+    expect(res.headers["cache-control"]).toBe("no-store")
+    expect(res.json()).toEqual({ items: [{ locationId: LOC, count: 3 }, { locationId: LOC2, count: 0 }] })
+    expect(sql(t.driver, /select root.id, count/)).toHaveLength(1)
+    t.driver.on(/select root.id, count/, [{ id: LOC, count: 3 }])
+    expect((await call("GET", `/locations/asset-counts?locationIds=${LOC}&locationIds=${LOC2}`, s.headers)).statusCode).toBe(404)
+    for (const query of ["", "?locationIds=bad", `?locationIds=${LOC}&locationIds=${LOC}`, "?" + Array.from({ length: 101 }, (_, i) => `locationIds=${id(i + 1000)}`).join("&")]) {
+      expect((await call("GET", "/locations/asset-counts" + query, s.headers)).statusCode).toBe(400)
+    }
+    expect((await call("GET", `/locations/asset-counts?locationIds=${LOC}`, {})).statusCode).toBe(401)
+  })
   it("locais: filtros, busca sem acento, ordem e página vão ao banco; a resposta segue o contrato", async () => {
     t = await start()
     const s = await t.login()
@@ -413,6 +428,35 @@ describe.skipIf(!HAS_DB)("com banco (PostgreSQL de verdade, como ptw_api)", () =
   afterAll(async () => {
     await app?.close()
     await db?.drop()
+  })
+
+  it("contagens reais incluem descendentes e inativos, deduplicam vínculos e isolam unidades", async () => {
+    const root = (await req("POST", "/locations", {}, { typeId: T.local, code: "COUNT-R", name: "Raiz" })).json() as { id: string }
+    const children: string[] = []
+    for (let i = 0; i < 2; i++) children.push(((await req("POST", "/locations", {}, { typeId: T.local, parentId: root.id, code: `COUNT-${i}`, name: "Filho" })).json() as { id: string }).id)
+    const empty = (await req("POST", "/locations", {}, { typeId: T.local, code: "COUNT-E", name: "Vazio" })).json() as { id: string }
+    const made = await req("POST", "/assets", {}, { typeId: T.ativo, code: "COUNT-A", name: "Ativo compartilhado", locationIds: children, status: "inativo" })
+    expect(made.statusCode, made.body).toBe(201)
+    const ids = [root.id, ...children, empty.id]
+    const counts = await req("GET", "/locations/asset-counts?" + ids.map(l => `locationIds=${l}`).join("&"))
+    expect(counts.statusCode, counts.body).toBe(200)
+    expect(counts.json()).toEqual({ items: ids.map((locationId, i) => ({ locationId, count: i === 3 ? 0 : 1 })) })
+    for (const locationId of ids) {
+      const assets = await req("GET", `/assets?locationId=${locationId}&pageSize=1`)
+      expect(assets.json().total).toBe(counts.json().items.find((x: { locationId: string }) => x.locationId === locationId).count)
+    }
+    const foreign = id(0xc011)
+    await db.owner.begin(async tx => {
+      await tx.unsafe(`insert into ptw.unit(id,code,name) values ('${foreign}','COUNT-OTHER','Outra unidade')`)
+      await tx.unsafe(`select ptw.set_context('${foreign}',null,null,'servico')`)
+      await tx.unsafe(`insert into ptw.type_def(unit_id,id,family,label) values ('${foreign}','${foreign}','local','Local externo')`)
+      await tx.unsafe(`insert into ptw.location(unit_id,id,type_id,code,name) values ('${foreign}','${foreign}','${foreign}','EXT','Externo')`)
+    })
+    for (const other of [foreign, id(0xc012)]) {
+      const r = await req("GET", `/locations/asset-counts?locationIds=${root.id}&locationIds=${other}`)
+      expect(r.statusCode, r.body).toBe(404)
+      expect(r.json()).not.toHaveProperty("items")
+    }
   })
 
   it("local: cria, move, recusa ciclo (PTW02) e a recusa fica na trilha", async () => {

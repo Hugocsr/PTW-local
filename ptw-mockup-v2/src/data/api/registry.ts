@@ -11,6 +11,7 @@ import type { RegistryAction } from "../memory/registry"
 import { noServer, type Res } from "./http"
 import { addAssets, putTemplate, refusal, undoNow, type Page, type Shared } from "./state"
 import type { Delegation } from "@/core/delegation"
+import { DOMAINS, type Domain } from "./sync"
 
 async function loadDelegations(s: Shared, r: RegistryState): Promise<RuleError | null> {
   const hasMandates = r.templates.some((t) => t.versions.some((v) => v.stages.some((st) => st.slots.some((sl) => sl.delegable))))
@@ -69,7 +70,7 @@ export async function loadReference(s: Shared): Promise<RuleError | null> {
  * matches the server's total (something was removed) is read again whole. Types and relations are small:
  * read again.
  */
-export async function syncReference(s: Shared, since: string): Promise<RuleError | null> {
+export async function syncReference(s: Shared, since: string, domains: readonly Domain[] = DOMAINS): Promise<RuleError | null> {
   const merge = async <T extends { id: string }>(path: string, key: "locations" | "people" | "optionLists" | "templates", query: Record<string, string> = {}): Promise<RuleError | null> => {
     const news = await getAll<T>(s, path, { ...query, updatedSince: since })
     if (failed(news)) return news
@@ -88,15 +89,23 @@ export async function syncReference(s: Shared, since: string): Promise<RuleError
     return null
   }
   for (const [path, key, q] of [["/locations", "locations"], ["/people", "people"], ["/option-lists", "optionLists"], ["/templates", "templates", { content: "all" }]] as const) {
+    if (!domains.includes(key)) continue
     const e = await merge(path, key, q as Record<string, string> | undefined)
     if (e) return e
   }
-  const [types, relations] = await Promise.all([getAll<WireType>(s, "/types"), getAll<AssetRelation>(s, "/asset-relations")])
-  if (failed(types)) return types
+  const before = s.registry.get()
+  const [types, relations] = await Promise.all([
+    domains.includes("types") ? getAll<WireType>(s, "/types") : Promise.resolve(null),
+    domains.includes("relations") ? getAll<AssetRelation>(s, "/asset-relations") : Promise.resolve(before.relations),
+  ])
+  if (types && failed(types)) return types
   if (failed(relations)) return relations
-  const r: RegistryState = { ...s.registry.get(), locationTypes: [], assetTypes: [], roleTypes: [], relationKinds: [], relations }
-  for (const w of types) { const { list, type } = toType(w); if (list) r[list] = [...r[list], type] }
-  const delegationError = await loadDelegations(s, r)
+  const r: RegistryState = { ...s.registry.get(), relations }
+  if (types) {
+    r.locationTypes = []; r.assetTypes = []; r.roleTypes = []; r.relationKinds = []
+    for (const w of types) { const { list, type } = toType(w); if (list) r[list] = [...r[list], type] }
+  }
+  const delegationError = domains.includes("delegations") || domains.includes("templates") ? await loadDelegations(s, r) : null
   if (delegationError) return delegationError
   s.registry.set(r)
   return null
@@ -301,7 +310,10 @@ export function createRegistryWrites(s: Shared) {
     write(action: RegistryAction): Act {
       if (s.session.get().serverDown) return settled(noServer())
       const undo = undoNow()
-      const done = run(action, undo)
+      const done = run(action, undo).then(error => {
+        if (!error) s.changed.set(s.changed.get() + 1)
+        return error
+      })
       return { refused: null, done }
     },
   }

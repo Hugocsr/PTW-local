@@ -4,8 +4,13 @@ import { idempotent } from "../../http/idempotency.js"
 import { requireIfMatch, setEtag } from "../../http/ifMatch.js"
 import { createLocation, getLocation, listLocations, updateLocation } from "../../repo/registry/locations.js"
 import { pathId } from "../../repo/registry/sql.js"
+import { locationAssetCounts } from "../../repo/registry/locationCounts.js"
 
 export default defineRoutes((api) => {
+  api.op("locationAssetCounts", (req, reply) => {
+    reply.header("Cache-Control", "no-store")
+    return withCtx(req, tx => locationAssetCounts(tx, req.query.locationIds))
+  })
   api.op("listLocations", (req) => withCtx(req, (tx) => listLocations(tx, req.query)))
   api.op("createLocation", (req, reply) => idempotent(req, reply, (tx) => createLocation(tx, req.body), { status: 201, etag: (b) => b.revision }), { deniedAction: "cadastro.local.criado" })
   api.op("getLocation", async (req, reply) => {

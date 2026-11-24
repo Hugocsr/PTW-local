@@ -8,6 +8,20 @@ const make = (handlers: Parameters<typeof fakeServer>[0], o: Parameters<typeof c
 }
 
 describe("cliente HTTP", () => {
+  it("resposta de leitura da sessão anterior não publica dados, disponibilidade ou logout", async () => {
+    for (const status of [200, 401, -1]) {
+      let epoch = 1, release!: () => void
+      const reach = vi.fn(), unauthorized = vi.fn()
+      const { http } = make({ "GET /old": async () => {
+        await new Promise<void>(r => { release = r })
+        return { status, body: { old: true } }
+      } }, { sessionVersion: () => epoch, onReach: reach, onUnauthorized: unauthorized })
+      const pending = http.request({ method: "GET", path: "/old" })
+      epoch = 2; release()
+      expect((await pending).ok).toBe(false)
+      expect(reach).not.toHaveBeenCalled(); expect(unauthorized).not.toHaveBeenCalled()
+    }
+  })
   it("leitura: X-Request-Id e X-Ptw-Client, sem CSRF, Idempotency-Key nem If-Match", async () => {
     const { srv, http } = make({ "GET /health": () => ({ body: { ok: true } }) })
     const r = await http.request({ method: "GET", path: "/health" })

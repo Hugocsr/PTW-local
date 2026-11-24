@@ -287,6 +287,8 @@ export interface EquipmentHold {
 export interface QueryPort {
   /** Grows when the server says something changed (`GET /events`): the hooks ask again. Never changes in memory. */
   changed: Cell<number>
+  changes?: Partial<Record<"assets" | "permits" | "audit" | "appearance" | "groups" | "delegations", Cell<number>>>
+  locationAssetCounts?(ids: string[]): Promise<{ locationId: string; count: number }[]>
   /** `GET /permits` (+ `/permits/counts` for `all`). Another person's draft never appears. */
   permitBoard(view: ListView): Promise<Page<BoardRow>>
   /** `GET /assets` (filters `typeId`, `locationId` = this place or below). */

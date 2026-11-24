@@ -17,7 +17,7 @@ docker compose stop            # pare ao terminar: a máquina tem pouca memória
 
 ## Regras
 
-- SGI-11A/07/08: `25_appearance.sql` e `26_governance.sql` persistem marca/imagens, grupos/membros e mandatos administrativos. RLS e trilha em 50/60; assinatura deriva representação da sessão e de mandato válido, nunca do corpo. `db/tests/delegations.sql` é incluído pelos invariantes. API tem 93 operações. Gestão de identidade exige `modelos`, grupos e mandatos exigem `cadastro`; participantes consultam somente seus mandatos. Atualização da instalação atual por cópia/restauração, sem reset do banco em uso.
+- SGI-11A/07/08: `25_appearance.sql` e `26_governance.sql` persistem marca/imagens, grupos/membros e mandatos administrativos. RLS e trilha em 50/60; assinatura deriva representação da sessão e de mandato válido, nunca do corpo. `db/tests/delegations.sql` é incluído pelos invariantes. API tem 94 operações. Gestão de identidade exige `modelos`, grupos e mandatos exigem `cadastro`; participantes consultam somente seus mandatos. Atualização da instalação atual por cópia/restauração, sem reset do banco em uso.
 
 - PERF-01: `PTW_PERF=1` habilita métricas operacionais amostradas (10% padrão, `PTW_PERF_SAMPLE_RATE`). Elas não substituem auditoria, não registram SQL/argumentos/cookies e não alteram regras/pools. Tempos de consulta incluem rede/driver; não representam SQL puro. Ativação, baseline e limitações em `tools/performance/README.md`.
 

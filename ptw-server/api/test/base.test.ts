@@ -856,12 +856,13 @@ describe.skipIf(!HAS_DB)("com banco (PostgreSQL de verdade, como ptw_api)", () =
     await new Promise((r) => setTimeout(r, 300))
     await recordStarted(app.ptw)
     let text = ""
-    while (!/event: ptw\ndata: \{"seq":\d+,"permit":null\}/.test(text)) {
+    while (!/event: ptw\ndata: \{"seq":\d+,"permit":null(?:,"domains":\["audit"\])?\}/.test(text)) {
       const { value, done } = await reader.read()
       if (done) break
       text += decoder.decode(value, { stream: true })
     }
-    expect(text).toMatch(/event: ptw\ndata: \{"seq":\d+,"permit":null\}/)
+    expect(text).toMatch(/event: ptw\ndata: \{"seq":\d+,"permit":null(?:,"domains":\["audit"\])?\}/)
+    expect(text).toContain('"domains":["audit"]')
     ac.abort()
     await reader.cancel().catch(() => {})
   })

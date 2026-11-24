@@ -11,6 +11,7 @@ import type { AuditFacets, AuditPage, AuditQuery, EquipmentHold, ListView, Page,
 import { addAssets, type Page as Wire, type Shared } from "./state"
 import type { Permit } from "@/permit/types"
 import type { RuleError } from "@/core/ptwErrors"
+import { readCache } from "./readCache"
 
 interface WireBoardRow { permit: Omit<Permit, "answers" | "answerMeta">; next: string; mine: boolean; answers?: Permit["answers"] }
 
@@ -26,12 +27,29 @@ async function must<T>(p: Promise<{ ok: true; data: T } | { ok: false; error: Ru
 
 export function createQueries(s: Shared): QueryPort {
   const { http } = s
+  const assetTotals = readCache<number>()
+  const localCounts = readCache<{ locationId: string; count: number }[]>()
+  let identity = ""
+  s.session.subscribe(() => {
+    const session = s.session.get(), next = `${session.status}:${session.personId}`
+    if (identity !== next) { identity = next; assetTotals.clear(); localCounts.clear() }
+  })
+  const generation = () => `${s.registry.get().units[0]?.id}:${s.session.get().status}:${s.session.get().personId}:${s.changed.get()}:${s.changes.assets.get()}`
   // The header counts (rows with no filter) are asked once per change of the data.
-  let counts: { at: number; permits?: number; assets?: number } = { at: -1 }
-  const totals = () => { const at = s.changed.get(); if (counts.at !== at) counts = { at } ; return counts }
+  let counts: { at: string; permits?: number; assets?: number } = { at: "" }
+  const totals = () => { const at = `${s.changed.get()}:${s.changes.permits.get()}`; if (counts.at !== at) counts = { at } ; return counts }
 
   return {
     changed: s.changed,
+    changes: s.changes,
+    locationAssetCounts(ids) {
+      const ordered = [...new Set(ids)].sort()
+      if (!ordered.length) return Promise.resolve([])
+      return localCounts(generation(), ordered.join(","), async () => {
+        const r = await must(http.request<{ items: { locationId: string; count: number }[] }>({ method: "GET", path: "/locations/asset-counts", query: { locationIds: ordered } }))
+        return r.items
+      })
+    },
 
     async equipmentHolds(assetIds): Promise<EquipmentHold[]> {
       if (!assetIds.length) return []
@@ -72,10 +90,9 @@ export function createQueries(s: Shared): QueryPort {
     async assets(view): Promise<Page<Asset>> {
       const f = view.filters ?? {}
       const q = { q: view.q.trim() || undefined, typeId: f.typeId && f.typeId !== "all" ? f.typeId : undefined, locationId: f.locationId && f.locationId !== "all" ? f.locationId : undefined, sort: sortOf(view), page: view.page, pageSize: view.pageSize }
-      const c = totals()
       const [page, all] = await Promise.all([
         must(http.request<Wire<Asset>>({ method: "GET", path: "/assets", query: q })),
-        c.assets !== undefined ? Promise.resolve(c.assets) : must(http.request<Wire<Asset>>({ method: "GET", path: "/assets", query: { page: 0, pageSize: 1 } })).then((x) => (c.assets = x.total)),
+        assetTotals(generation(), "all", async () => (await must(http.request<Wire<Asset>>({ method: "GET", path: "/assets", query: { page: 0, pageSize: 1 } }))).total),
       ])
       addAssets(s, page.items)
       return { items: page.items, total: page.total, all, page: page.page, pageSize: page.pageSize }

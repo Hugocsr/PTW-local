@@ -8,6 +8,7 @@ export interface PtwNotice {
   unit: string
   permit: string | null
   seq: number
+  domains?: unknown
 }
 
 type Listener = (n: PtwNotice) => void
@@ -40,9 +41,11 @@ export class EventHub {
   dispatch(payload: string): void {
     let n: PtwNotice
     try {
-      const j = JSON.parse(payload) as { unit?: unknown; permit?: unknown; seq?: unknown }
+      const j = JSON.parse(payload) as { unit?: unknown; permit?: unknown; seq?: unknown; domains?: unknown }
       if (typeof j.unit !== "string" || j.seq === undefined) return
+      if (!Number.isSafeInteger(Number(j.seq)) || Number(j.seq) < 0) return
       n = { unit: j.unit, permit: typeof j.permit === "string" ? j.permit : null, seq: Number(j.seq) }
+      if (j.domains !== undefined) n.domains = j.domains
     } catch {
       return
     }

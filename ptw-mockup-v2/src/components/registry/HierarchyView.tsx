@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState, type ReactNode } from "react"
 import { AssetIcon } from "@/components/shell/TypeIcon"
 import { runAsUndo } from "@/audit/store"
 import { ArrowRightIcon, BanIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, CornerDownRightIcon, PencilIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
@@ -20,8 +20,9 @@ import { navigate } from "@/components/work/nav"
 import { TONE_TEXT } from "@/components/shell/Status"
 import { assetIcon, Flags, LockedReason, TypeLine, locationIcon, PersonAvatar, useRecordBack } from "./common"
 import { DataTable, type Column } from "./DataTable"
-import { useAssetPage, useAssetSearch, useData, useLocationAssets } from "@/data/hooks"
+import { useAssetSearch, useData, useLocationAssets } from "@/data/hooks"
 import { FormDialog, SelectField, STATUS_OPTIONS, TextField, splitAliases } from "./forms"
+import { LocationAssetCount, LocationCounts } from "./LocationCounts"
 
 const open = (id: string) => navigate(`locais/${id}`)
 
@@ -31,11 +32,6 @@ const MAX_INDENT = 6
 
 interface Row { l: Location; depth: number; parents: string; rank: number; assets: number }
 
-/** Rendered only for visible rows, so the count comes from one bounded server query per row. */
-function LocationAssetCount({ id }: { id: string }) {
-  const page = useAssetPage({ q: "", filters: { locationId: id }, sort: null, page: 0, pageSize: 1 })
-  return <span className="tabular-nums" title={page.error?.message}>{page.loading ? "…" : page.error ? "Não disponível" : page.total}</span>
-}
 
 /**
  * Locais: one table with every place, in hierarchy order (children right under their parent, indented by
@@ -51,6 +47,7 @@ export function HierarchyView() {
   const { whole } = useData()
   const assets = state.assets
   const [creating, setCreating] = useState(false)
+  const wrapPage = useCallback((items: Row[], children: ReactNode) => <LocationCounts ids={items.map(r => r.l.id)}>{children}</LocationCounts>, [])
 
   const rows = useMemo<Row[]>(() => {
     // Hierarchy order: depth-first, siblings by name.
@@ -119,6 +116,7 @@ export function HierarchyView() {
         actions={sim.canEditRegistry ? { primary: { label: "Novo local", icon: PlusIcon, disabled: down, onClick: () => setCreating(true) } } : undefined} />
       {down && <DownBanner now={sim.now} />}
       <DataTable<Row>
+        wrapPage={wrapPage}
         rows={rows}
         columns={columns}
         rowKey={(r) => r.l.id}

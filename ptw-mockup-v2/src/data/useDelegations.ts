@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
 import type { Delegation, DelegationInput } from "@/core/delegation"
 import type { RuleError } from "@/core/ptwErrors"
-import { useData } from "./context"
+import { useCell, useData } from "./context"
 
 /** Mandates are immutable records; revocation changes future uses, never a past signature. */
 export function useDelegations() {
-  const { delegations } = useData()
+  const { delegations, queries } = useData()
+  const epoch = useCell(queries.changes?.delegations ?? queries.changed)
   const [items, setItems] = useState<Delegation[] | null>(null)
   const [error, setError] = useState<RuleError | null>(null)
   const [busy, setBusy] = useState(false)
@@ -13,7 +14,7 @@ export function useDelegations() {
     let active = true
     void delegations.read().then((r) => { if (active) { if (Array.isArray(r)) setItems(r); else setError(r) } })
     return () => { active = false }
-  }, [delegations])
+  }, [delegations, epoch])
   const reload = useCallback(async () => {
     setBusy(true)
     const r = await delegations.read()

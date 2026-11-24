@@ -324,6 +324,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/locations/asset-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Contagem distinta de ativos nos locais solicitados e seus descendentes. */
+        get: operations["locationAssetCounts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/locations/{id}": {
         parameters: {
             query?: never;
@@ -1336,7 +1353,12 @@ export interface paths {
         };
         /**
          * Avisos em tempo real (SSE) do `NOTIFY ptw` — o cliente relê o que mudou.
-         * @description Cada mensagem: `event: ptw`, `data: {"seq": n, "permit": id|null}` (só da unidade da sessão). `Last-Event-ID` = último `seq` visto.
+         * @description Cada mensagem `event: ptw` contém `seq`, `permit` (id ou null) e opcionalmente
+         *     `domains`: permits, locations, assets, people, types, optionLists, templates,
+         *     relations, delegations, appearance, groups, audit. Somente a unidade da sessão.
+         *     Exemplo: {"seq": 42, "permit": null, "domains": ["assets", "audit"]}.
+         *     Payload legado, desconhecido ou reconexão exige releitura ampla. Não há replay.
+         *     Last-Event-ID é o último seq observado, não um contador contíguo por cliente.
          */
         get: operations["streamEvents"];
         put?: never;
@@ -3107,6 +3129,35 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Rule"];
+            "4XX": components["responses"]["Error"];
+        };
+    };
+    locationAssetCounts: {
+        parameters: {
+            query: {
+                locationIds: components["schemas"]["Uuid"][];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Uma contagem por local, na ordem solicitada; inclui todas as situações de ativo. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            locationId: components["schemas"]["Uuid"];
+                            count: number;
+                        }[];
+                    };
+                };
+            };
+            404: components["responses"]["Error"];
             "4XX": components["responses"]["Error"];
         };
     };

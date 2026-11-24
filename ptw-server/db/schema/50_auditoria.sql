@@ -209,7 +209,17 @@ create trigger audit_no_truncate before truncate on ptw.audit_event
 -- Aviso em tempo real: a API escuta "ptw" e repassa por SSE; o cliente relê o estado.
 create function ptw.audit_notify() returns trigger language plpgsql as $$
 begin
-  perform pg_notify('ptw', json_build_object('unit', new.unit_id, 'permit', new.permit_id, 'seq', new.seq)::text);
+  perform pg_notify('ptw', json_build_object('unit', new.unit_id, 'permit', new.permit_id, 'seq', new.seq,
+    'domains', case
+      when new.action like 'acesso.%' or new.action in ('sistema.servidor.iniciado', 'sistema.servidor.parado') then array['audit']
+      when new.action like 'pt.%' then array['permits', 'audit']
+      when new.action like 'modelo.%' then array['templates', 'audit']
+      when new.action like 'cadastro.ativo.%' then array['assets', 'permits', 'audit']
+      when new.action like 'cadastro.local.%' then array['locations', 'assets', 'permits', 'audit']
+      when new.action like 'cadastro.pessoa.%' then array['people', 'permits', 'audit']
+      when new.action like 'cadastro.tipo.%' then array['types', 'templates', 'permits', 'audit']
+      when new.action like 'cadastro.lista.%' then array['optionLists', 'templates', 'permits', 'audit']
+      else null end)::text);
   return null;
 end $$;
 create trigger audit_notify after insert on ptw.audit_event

@@ -50,6 +50,7 @@ export function createPermitPort(s: Shared) {
     if (epoch !== sessionVersion) return
     await ensureVersion(d.permit)
     if (epoch !== sessionVersion) return
+    if ((permitOf(d.permit.id)?.rowVersion ?? -1) > d.permit.rowVersion) return
     mergeDetail(s, d)
   }
 
@@ -160,7 +161,7 @@ export function createPermitPort(s: Shared) {
       const epoch = sessionVersion
       const r = await http.request<PermitDetail>({ method: "POST", path: "/permits", body: { ...input, id: input.id ?? uuidv7() }, key: input.id ?? uuidv7() })
       if (!r.ok) return r.error
-      await take(r.data, epoch); s.changed.set(s.changed.get() + 1)
+      await take(r.data, epoch); s.changes.permits.set(s.changes.permits.get() + 1)
       return r.data.permit
     },
     async updateDraft(id, input) {
@@ -170,7 +171,7 @@ export function createPermitPort(s: Shared) {
       if (!p) return refusal("PTA04", "PT não encontrada")
       const r = await http.request<PermitDetail>({ method: "PATCH", path: `/permits/${id}`, body: input, ifMatch: p.rowVersion })
       if (!r.ok) return r.error
-      await take(r.data, epoch); s.changed.set(s.changed.get() + 1)
+      await take(r.data, epoch); s.changes.permits.set(s.changes.permits.get() + 1)
       return r.data.permit
     },
     async discard(id, reason) {
@@ -180,7 +181,7 @@ export function createPermitPort(s: Shared) {
       if (!p) return refusal("PTA04", "PT não encontrada")
       const r = await http.request<PermitDetail>({ method: "POST", path: `/permits/${id}/discard`, body: { reason }, ifMatch: p.rowVersion })
       if (!r.ok) return r.error
-      await take(r.data, epoch); s.changed.set(s.changed.get() + 1)
+      await take(r.data, epoch); s.changes.permits.set(s.changes.permits.get() + 1)
       return null
     },
 

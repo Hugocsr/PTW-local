@@ -2,6 +2,12 @@
 
 Resumo de `db/schema/` (a fonte; em caso de dúvida, vale o SQL). O app alinha os tipos TypeScript a isto. Tudo vive no schema `ptw`.
 
+## Avisos de atualização por domínio (PERF-02)
+
+`audit_notify` continua notificando cada inclusão da trilha no canal `ptw`, com unidade, PT e sequência. Acrescenta `domains` quando a ação é conhecida; acesso e ciclo de servidor indicam somente `audit`. Escritas de PT/cadastro indicam os domínios afetados e auditoria. Ação desconhecida usa null, que exige releitura ampla no cliente. Não altera eventos armazenados, retenção ou hash. O SSE remove a unidade do corpo público e entrega somente à sessão da unidade correta. Formatos antigos, reconexão e volta da rede têm recuperação ampla; o fallback periódico permanece.
+
+`GET /locations/asset-counts` não acrescenta tabela ou visão: agrega ativos distintos vinculados ao local e descendentes no contexto transacional da API, com RLS. Lote de até 100 UUIDs únicos; qualquer local inexistente/externo resulta em 404 genérico. A contagem mantém todas as situações de ativo da listagem atual.
+
 ## Identidade e governança SGI
 
 - `appearance`: chave `unit_id`, configuração `brand` (nulo restaura arquivo/padrão), `revision`, autoria e data derivadas da sessão/banco. Publicação exige revisão atual; imagens PNG até 256 KiB e 2048 × 2048 ficam em `appearance_asset`, com hash SHA-256, bytes e tamanho. Só imagens da marca atualmente publicada têm rota pública. Conteúdo binário não entra no diff da auditoria.

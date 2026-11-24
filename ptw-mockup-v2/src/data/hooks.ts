@@ -79,10 +79,11 @@ const failure = (e: unknown): RuleError =>
  * One read of the data layer, asked again when `key` changes or the server says something changed. Off
  * (`enabled` false) it asks nothing. The last answer stays while the next one is on its way.
  */
-function useRemote<T>(enabled: boolean, key: string, run: () => Promise<T>): { data: T | null } & Loading {
+function useRemote<T>(enabled: boolean, key: string, run: () => Promise<T>, domain: "assets" | "permits" | "audit" = "permits"): { data: T | null } & Loading {
   const { queries } = useData()
   const changed = useCell(queries.changed)
-  const want = `${changed}|${key}`
+  const domainChanged = useCell(queries.changes?.[domain] ?? queries.changed)
+  const want = `${changed}:${domainChanged}|${key}`
   const [got, setGot] = useState<{ want: string; data: T | null; error: RuleError | null } | null>(null)
   useEffect(() => {
     if (!enabled) return
@@ -141,8 +142,17 @@ export function useAssetPage(asked: ListView, local?: Partial<ListLocal<Asset>>)
   const { assets, locations } = useRegistry().state
   const match = useMemo(() => withLocal(assetLocal(locations), local), [locations, local])
   const here = useMemo(() => (port.whole ? pageOf(assets, view, match) : null), [port.whole, assets, view, match])
-  const remote = useRemote(!port.whole, JSON.stringify(view), () => port.queries.assets(view))
+  const remote = useRemote(!port.whole, JSON.stringify(view), () => port.queries.assets(view), "assets")
   return here ? { ...here, loading: false, error: null } : { ...(remote.data ?? emptyPage<Asset>(view)), loading: remote.loading, error: remote.error }
+}
+
+/** One bounded request for the visible locations; memory rows already have their counts. */
+export function useLocationAssetCounts(ids: string[]) {
+  const port = useData()
+  const ordered = [...new Set(ids)].sort()
+  const key = ordered.join(",")
+  const remote = useRemote(!port.whole && ordered.length > 0, key, () => port.queries.locationAssetCounts!(ordered), "assets")
+  return { ...remote, counts: new Map(remote.data?.map(x => [x.locationId, x.count]) ?? []) }
 }
 
 /** The most assets of one place the server gives at once (the contract's largest page). */
@@ -153,7 +163,7 @@ export function useLocationAssets(locationId: string): { items: Asset[]; total: 
   const port = useData()
   const { assets, locations } = useRegistry().state
   const here = useMemo(() => (port.whole ? assetsUnder(assets, locations, locationId) : null), [port.whole, assets, locations, locationId])
-  const remote = useRemote(!port.whole, locationId, () => port.queries.assets({ q: "", filters: { locationId }, sort: null, page: 0, pageSize: LOCATION_ASSETS_MAX }))
+  const remote = useRemote(!port.whole, locationId, () => port.queries.assets({ q: "", filters: { locationId }, sort: null, page: 0, pageSize: LOCATION_ASSETS_MAX }), "assets")
   return here ? { items: here, total: here.length, loading: false, error: null } : { items: remote.data?.items ?? NO_ROWS, total: remote.data?.total ?? 0, loading: remote.loading, error: remote.error }
 }
 
@@ -195,7 +205,7 @@ export function useAssetSearch(q: string, max: number, skip: (a: Asset) => boole
     const t = setTimeout(() => setWaited(q), 300)
     return () => clearTimeout(t)
   }, [port.whole, q])
-  const remote = useRemote(!port.whole, waited.trim(), () => port.queries.assets({ q: waited, filters: {}, sort: { id: "code", dir: "asc" }, page: 0, pageSize: ASSET_SEARCH_ASK }))
+  const remote = useRemote(!port.whole, waited.trim(), () => port.queries.assets({ q: waited, filters: {}, sort: { id: "code", dir: "asc" }, page: 0, pageSize: ASSET_SEARCH_ASK }), "assets")
   const there = useMemo(() => (remote.data?.items ?? NO_ROWS).filter((a) => !skip(a)).slice(0, max), [remote.data, max, skip])
   return here ? { items: here, loading: false, error: null } : { items: there, loading: remote.loading, error: remote.error }
 }
@@ -214,7 +224,7 @@ export function usePermitHistory(permitId: string): AuditRows & { accesses: numb
   const port = useData()
   const { log } = useAudit()
   const mine = useMemo(() => port.whole ? log.filter((e) => e.permit === permitId) : null, [port.whole, log, permitId])
-  const remote = useRemote(!port.whole, permitId, () => port.queries.permitHistory!(permitId))
+  const remote = useRemote(!port.whole, permitId, () => port.queries.permitHistory!(permitId), "audit")
   if (mine) {
     const items = mine.filter((e) => !e.action.startsWith("acesso."))
     return { items, matched: items.length, nextBefore: null, accesses: mine.length - items.length, loading: false, error: null }
@@ -234,7 +244,7 @@ export function useAuditPage(query: AuditQuery, text?: (e: AuditEvent) => string
   // The filtered rows are kept while only the cursor or the page size change ("Mostrar mais").
   const rows = useMemo(() => (port.whole ? auditRows(log, filters, text) : null), [port.whole, log, key, text]) // eslint-disable-line react-hooks/exhaustive-deps -- `filters` is described by `key`
   const here = useMemo(() => (rows ? auditPageOf(rows, before, limit) : null), [rows, before, limit])
-  const remote = useRemote(!port.whole, JSON.stringify(query), () => port.queries.auditEvents(query))
+  const remote = useRemote(!port.whole, JSON.stringify(query), () => port.queries.auditEvents(query), "audit")
   return here ? { ...here, loading: false, error: null } : { items: remote.data?.items ?? NO_ROWS, matched: remote.data?.matched ?? null, nextBefore: remote.data?.nextBefore ?? null, loading: remote.loading, error: remote.error }
 }
 
@@ -244,7 +254,7 @@ export function useAuditFacets(): AuditFacets & Loading {
   const { log } = useAudit()
   const { people } = useRegistry().state
   const here = useMemo(() => (port.whole ? auditFacetsOf(log, people) : null), [port.whole, log, people])
-  const remote = useRemote(!port.whole, "facets", () => port.queries.auditFacets())
+  const remote = useRemote(!port.whole, "facets", () => port.queries.auditFacets(), "audit")
   const none = useMemo<AuditFacets>(() => ({ actorIds: [], areas: [], total: 0 }), [])
   return here ? { ...here, loading: false, error: null } : { ...(remote.data ?? none), loading: remote.loading, error: remote.error }
 }
