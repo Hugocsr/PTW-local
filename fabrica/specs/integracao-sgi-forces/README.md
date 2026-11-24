@@ -8,7 +8,7 @@ Uma aplicação com a experiência visual do SGI Forces e as regras, persistênc
 
 Decisão arquitetural validada pelo responsável em 23/11/2026: **uma aplicação com duas áreas**, Operação e Administração, exibidas conforme permissões. Um frontend e uma API. Trocar de área não troca pessoa, cargo, unidade ou autorização. Essa decisão não valida automaticamente o conteúdo funcional/visual dos lotes seguintes.
 
-Aditivo solicitado em 23/11/2026: remover o toggle Operação/Administração e reunir as telas no menu lateral conforme perfil/permissões. SGI-16 e o lote de identidade/grupos/delegações estão ativos em https://localhost; [evidências atuais](validacao-governanca-identidade.md). Não houve publicação Git/Vercel.
+Aditivo solicitado em 23/11/2026: remover o toggle Operação/Administração e reunir as telas no menu lateral conforme perfil/permissões. SGI-16 e o lote de identidade/grupos/delegações estão ativos em https://localhost e publicados no Preview Vercel; [evidências locais](validacao-governanca-identidade.md) e [publicação hospedada](../../../deploy/releases/2026-11-23-sgi.md). Os módulos restantes continuam pendentes.
 
 Fontes: HTMLs `SGI Forces Backoffice (standalone).html` e `SGI Forces Front-Office (standalone) (1).html`, em `C:/Users/Pichau/Desktop/outsystems/PTW/SGI`. Análise de código e navegação estão no scratchpad `outputs/sgi-analysis-2026-11-23`. Os originais não foram modificados; não adicionar seus assets, dados de exemplo ou referências de marca ao bundle do produto sem seleção/revisão.
 

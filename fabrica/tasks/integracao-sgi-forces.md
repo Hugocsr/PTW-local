@@ -1,12 +1,12 @@
 # Backlog — integração SGI Forces / PTW-SGI
 
-Estado: **programa completo autorizado; menu único, identidade, grupos e delegação administrativa ativos no Docker**, 23/11/2026. [Spec geral](../specs/integracao-sgi-forces/README.md). [Validação atual](../specs/integracao-sgi-forces/validacao-governanca-identidade.md). Sem Git/Vercel.
+Estado: **programa completo autorizado; menu único, identidade, grupos e delegação administrativa ativos no Docker e no Preview Vercel**, 23/11/2026. [Spec geral](../specs/integracao-sgi-forces/README.md). [Validação local](../specs/integracao-sgi-forces/validacao-governanca-identidade.md). [Publicação e aceite hospedado](../../deploy/releases/2026-11-23-sgi.md). Demais módulos pendentes.
 
 SGI-01/02/16 e SGI-11A estão implementadas; SGI-07 mínimo acrescenta grupos aos cadastros/cargos/alçadas existentes e SGI-08 entrega mandato administrativo nominal. As duas PTs Actemium já encerradas foram revalidadas na instalação atualizada, com anexos e auditoria preservados; a ativação não executou ciclos novos. As demais entregas do programa continuam autorizadas e pendentes. SGI-07 completo inclui reuso de alçadas ainda pendente; SGI-11B/idiomas não está implementada. No PostgreSQL nativo passaram 643 verificações e a corrida de mandatos sobrepostos; a corrida assinatura/revogação permanece pendente.
 
 | Ordem do programa | Situação comprovada |
 |---|---|
-| 1. Dois ciclos, anexos e auditoria | PTs já encerradas revalidadas na ativação; anexos e cadeia preservados. Novos ciclos completos não executados nesta ativação |
+| 1. Dois ciclos, anexos e auditoria | Docker: PTs já encerradas revalidadas. Preview: dois ciclos novos encerrados após publicação, com anexos e auditoria íntegros |
 | 2. Identidade visual | Implementada e ativa |
 | 3. Governança e delegações | Grupos e delegações administrativas nominais ativos; reuso ampliado de alçadas pendente |
 | 4. Ativos/ficha/importações/proteções | Pendente |
@@ -104,3 +104,5 @@ A sequência acima foi proposta antes da ativação de SGI-16, SGI-11A e do mín
 23/11/2026 — Programa completo autorizado e primeiros módulos adicionais ativados no Docker: SGI-11A, SGI-07 mínimo (grupos reais) e SGI-08 administrativo nominal, além do menu SGI-16. Reuso ampliado de alçadas e etapas 4–9 continuam pendentes. A autorização elimina a espera por novo aceite genérico de execução; refinamentos materiais de domínio/integração continuam registrados antes do código. Relatório e limites em validacao-governanca-identidade.md.
 
 23/11/2026 — Relatório nativo confirmado: 643 verificações aprovadas, auditoria íntegra e corrida de delegações sobrepostas com uma criação aceita e outra recusada por `23505`. Banco de teste separado, sem alterar dados da aplicação. Corrida assinatura/revogação ainda pendente; sem Git/Vercel.
+
+23/11/2026 — Publicação autorizada e executada na branch `ptw-sgi`, commit funcional `51f19b5`. Preview concluído; três perfis LDAP, grants, identidade/grupos persistentes e delegação administrativa com assinatura/representação/revogação aprovados. Dois ciclos elétricos novos e uma PT administrativa fictícia encerrados. Dados anteriores e prefixo da cadeia preservados. Production e Docker local não alterados; detalhes e limites no registro da publicação.

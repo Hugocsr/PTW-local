@@ -2,6 +2,8 @@
 
 Estado: execução autorizada em 23/11/2026 pelo responsável: “suba essa versão pro git e vercel”. Este contrato aplica a publicação já solicitada ao lote local validado; não autoriza implementar os módulos restantes.
 
+Código funcional publicado no commit `51f19b5ebeb6e0444bfebc09974c17e0eabc1735`, branch `ptw-sgi`, com árvore idêntica ao build local. Vercel concluiu o deploy; evidências e limitações do aceite em [registro da publicação](../../../deploy/releases/2026-11-23-sgi.md).
+
 ## Escopo e destino
 
 - Publicar o merge visual, menu lateral por permissões, editor de identidade, grupos e delegações administrativas nominais. Incluir a instrumentação PERF-01 já presente no código, desligada por padrão; preservar o ajuste de conexões transacionais existente.

@@ -28,6 +28,8 @@ O validador usa papel exclusivo sem login por execução, registra os hashes do 
 
 ## Pendências e limites
 
+Após autorização específica de publicação, este lote também foi publicado na branch `ptw-sgi` e no Preview Vercel. Novos ciclos hospedados das duas PTs elétricas e uma PT fictícia de delegação foram encerrados com anexos/auditoria conferidos. Essa execução hospedada é distinta da revalidação das PTs já encerradas no Docker. [Registro de publicação e limitações](../../../deploy/releases/2026-11-23-sgi.md).
+
 Não confundir esta entrega com biblioteca de alçadas reutilizáveis, árvore empresarial/importações, catálogo de risco/SLA/checklists, assistente integral, notificações/idiomas, multi-planta, SSO/e-mail, organização/licença, PDF arquivado ou voz/IA/PIN/biometria. Esses itens permanecem no programa autorizado. SSO/e-mail serão simulados; licença informativa; IA local é recomendação a avaliar, sem modelo instalado.
 
 A concorrência de criação de mandatos foi conferida no PostgreSQL nativo. A corrida simultânea entre assinatura e revogação ainda requer bateria própria e não é inferida desse resultado. Os casos sequenciais de revogação/validade/separação passaram; novos usos nunca são aceitos apenas pela indicação visual do frontend. O validador `outputs/sgi-enterprise/validar-banco-local.py` sempre usa banco novo.
