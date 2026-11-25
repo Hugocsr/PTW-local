@@ -2,14 +2,14 @@ import { useState } from "react"
 import { ArrowLeftIcon, ArrowRightIcon, ShieldCheckIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { runAsUndo } from "@/audit/store"
-import { byActive, TYPE_CATALOG_ABOUT, typeActions, typeInUse, typeUsage, type ActiveFilter, type TypeCatalog } from "@/core/catalogs"
+import { filterItems, TYPE_CATALOG_ABOUT, typeActions, typeInUse, typeUsage, type ActiveFilter, type TypeCatalog } from "@/core/catalogs"
 import { useAssetTypeCounts } from "@/data/hooks"
 import { useRegistry } from "@/registry/store"
 import { useSim } from "@/sim/SimProvider"
 import { Button } from "@/components/ui/button"
 import { assetIcon, locationIcon, LockedReason, TypeIconPicker } from "../common"
 import { CatalogIcon } from "./CatalogsView"
-import { ActiveSwitch, AddRow, FilterSelect, ItemRow, SavedName } from "./shared"
+import { ActiveSwitch, AddRow, FilterSelect, InfoTip, ItemRow, ItemSearch, SavedName } from "./shared"
 
 /** Name of a type: 1 to 80 characters (database). */
 const MAX_LABEL = 80
@@ -18,14 +18,15 @@ const MAX_LABEL = 80
  * One type family in Catálogos (SPEC 005): every type as a row (icon, name, usage, Ativo, Remover),
  * alphabetical. System types (Planta, Área, "é parte de") are renamed only.
  */
-export function TypeCatalogPanel({ catalog, focusId, onBack }: { catalog: TypeCatalog; focusId: string | null; onBack: () => void }) {
+export function TypeCatalogPanel({ catalog, onBack }: { catalog: TypeCatalog; onBack: () => void }) {
   const { state, addType, renameType, removeType, restoreType, setTypeIcon, setTypeActive } = useRegistry()
   const sim = useSim()
   const down = sim.serverDown, edit = sim.canEditRegistry
   const [filter, setFilter] = useState<ActiveFilter>("todos")
+  const [q, setQ] = useState("")
   const key = catalog.key
   const all = state[key]
-  const items = byActive(all, filter).slice().sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
+  const items = filterItems(all, filter, q, (t) => t.label).sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
   const dup = (label: string, exceptId?: string) => all.some((t) => t.label.trim().toLowerCase() === label.trim().toLowerCase() && t.id !== exceptId)
   const problem = (v: string, exceptId?: string) => !v.trim() ? "Informe um nome." : v.trim().length > MAX_LABEL ? `No máximo ${MAX_LABEL} caracteres.` : dup(v, exceptId) ? "Já existe um tipo com este nome." : null
   const relation = key === "relationKinds"
@@ -47,11 +48,13 @@ export function TypeCatalogPanel({ catalog, focusId, onBack }: { catalog: TypeCa
           </div>
         </div>
       </header>
-      <div className="flex items-center gap-2 border-b px-4 py-2 md:px-5">
+      <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2 md:px-5">
         <FilterSelect value={filter} onChange={setFilter} />
-        <span className="ml-auto type-meta">{items.length} {items.length === 1 ? "tipo" : "tipos"} · ordem alfabética</span>
+        <ItemSearch value={q} onChange={setQ} />
+        <InfoTip label="Sobre os tipos deste catálogo">Tipos em uso não podem ser removidos, só desativados. Os do sistema (com cadeado) só podem ser renomeados.</InfoTip>
+        <span role="status" className="ml-auto type-meta">{items.length} de {all.length} {all.length === 1 ? "tipo" : "tipos"} · ordem alfabética</span>
       </div>
-      {items.length === 0 ? <p className="p-6 text-center type-meta">{all.length ? "Nenhum tipo neste filtro." : "Nenhum tipo cadastrado."}</p> : (
+      {items.length === 0 ? <p className="p-6 text-center type-meta">{!all.length ? "Nenhum tipo cadastrado." : q.trim() ? `Nenhum tipo com “${q.trim()}” neste filtro.` : "Nenhum tipo neste filtro."}</p> : (
         <ul aria-label={`Itens de ${catalog.title}`}>
           {items.map((t) => {
             const used = counting || typeInUse(state, key, t.id, nAssets(t.id))
@@ -69,7 +72,7 @@ export function TypeCatalogPanel({ catalog, focusId, onBack }: { catalog: TypeCa
                 </div>
               : <span className="type-body">{relation ? `A ${t.label} B` : t.label}</span>
             return (
-              <ItemRow key={t.id} focus={focusId === t.id} muted={!t.active} media={media} name={name}
+              <ItemRow key={t.id} muted={!t.active} media={media} name={name}
                 usage={act.locked ? "Usado pelas regras do sistema" + (usage ? ` · ${usage}` : "") : usage || "Sem uso"}
                 actions={act.locked ? (edit ? <LockedReason label={`${t.label} é do sistema: não pode ser removido nem desativado`}
                     reason={key === "relationKinds" ? "Define o aninhamento e a trava de equipamento (um equipamento, uma PT aberta). Pode ser renomeado." : "Define o nível da Gestão de Ativos (planta ou área). Pode ser renomeado."} /> : undefined)
@@ -89,7 +92,7 @@ export function TypeCatalogPanel({ catalog, focusId, onBack }: { catalog: TypeCa
         </ul>
       )}
       {edit && <AddRow placeholder={`${catalog.newLabel}…`} problem={(v) => problem(v)} disabled={down}
-        onAdd={async (v) => { if (!await addType(key, v)) return false; toast.success("Tipo adicionado", { description: v }); return true }} />}
+        onAdd={async (v) => { if (!await addType(key, v)) return false; toast.success(q.trim() && !filterItems([{ active: true, label: v }], filter, q, (t) => t.label).length ? "Tipo adicionado: limpe a busca para vê-lo" : "Tipo adicionado", { description: v }); return true }} />}
     </section>
   )
 }

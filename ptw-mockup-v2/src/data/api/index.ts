@@ -253,7 +253,11 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
 
   const port: DataPort & { session: typeof sessionPort; permits: typeof permits; audit: typeof auditPort } = {
     appearance: createAppearancePort(http),
-    groups: createGroupPort(http),
+    groups: createGroupPort(http, (person) => {
+      const r = s.registry.get()
+      s.registry.set({ ...r, people: r.people.some((p) => p.id === person.id) ? r.people.map((p) => (p.id === person.id ? person : p)) : [...r.people, person] })
+      s.changes.groups.set(s.changes.groups.get() + 1)
+    }),
     delegations: createDelegationPort(http),
     mode: "api",
     whole: false,

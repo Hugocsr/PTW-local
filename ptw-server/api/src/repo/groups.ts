@@ -1,6 +1,8 @@
 import type { AccessProfile, AccessProfileInput, GrantSource, GroupInput, PersonGroup } from "../shared/core/governance.js"
 import type { Tx } from "../db.js"
-import { pta } from "../errors/apiError.js"
+import { ApiError, pta } from "../errors/apiError.js"
+import type { Schemas } from "../contract/types.js"
+import { getPerson, updatePerson } from "./registry/people.js"
 import type { SessionInfo } from "../http/state.js"
 
 export async function listGroups(tx: Tx): Promise<PersonGroup[]> {
@@ -96,4 +98,33 @@ export async function personAccess(tx: Tx, personId: string): Promise<GrantSourc
       join ptw.access_profile p on p.unit_id = ptw.current_unit() and p.id = s.profile_id
      order by 1, 4, 5`
   return rows.map((r) => ({ grant: r.grant_key, from: "grupo", groupId: r.group_id, profileId: r.profile_id, groupName: r.group_name, profileName: r.profile_name }))
+}
+
+export interface AssignmentGroup { id: string; revision: number; member: boolean }
+
+/**
+ * SPEC 007: o acesso de uma pessoa num só passo. Cada grupo listado é conferido pela revisão lida e só
+ * muda se a pessoa entrar ou sair; os cargos (se vierem) passam pela mesma `updatePerson`. Tudo na
+ * transação de quem chama: uma recusa (42501, 409, última pessoa com cadastro) não grava nada.
+ */
+export async function saveAccessAssignments(tx: Tx, personId: string, personRevision: number,
+  groups: readonly AssignmentGroup[], roles: Schemas["RoleAssignment"][] | undefined, session?: SessionInfo | null): Promise<{ person: Schemas["Person"]; groups: PersonGroup[] }> {
+  const person = await getPerson(tx, personId)
+  if (person.revision !== personRevision) throw pta.staleRevision(person.revision)
+  if (new Set(groups.map((g) => g.id)).size !== groups.length) throw pta.badRequest("Grupo repetido")
+  const current = new Map((await listGroups(tx)).map((g) => [g.id, g]))
+  for (const want of groups) {
+    const g = current.get(want.id)
+    if (!g) throw pta.notFound(`O grupo ${want.id} não existe nesta unidade`)
+    const isMember = g.memberIds.includes(personId)
+    if (isMember === want.member) continue
+    if (g.revision !== want.revision) throw new ApiError(409, "PTA06", `O grupo «${g.name}» mudou: reabra para ver a versão atual`, { detail: String(g.revision) })
+    if (want.member && !g.active) throw pta.badRequest(`O grupo «${g.name}» está inativo`)
+    if (want.member && !person.login) throw pta.badRequest("Pessoa sem login não recebe grupo: defina um login para dar perfis")
+    const memberIds = want.member ? [...g.memberIds, personId] : g.memberIds.filter((m) => m !== personId)
+    await saveGroup(tx, { id: g.id, name: g.name, description: g.description, active: g.active, memberIds, profileIds: g.profileIds, plantIds: g.plantIds }, g.revision, null)
+  }
+  const saved = roles === undefined ? person : await updatePerson(tx, personId, personRevision, { name: person.name, roles })
+  await keepAnAdmin(tx, session)
+  return { person: saved, groups: await listGroups(tx) }
 }

@@ -4,7 +4,6 @@ import { InfoIcon, KeyRoundIcon, PlusIcon, ShieldAlertIcon, UserRoundIcon, XIcon
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -20,8 +19,6 @@ import { StatusBadge, TONE_TEXT, type StatusTone } from "@/components/shell/Stat
 import { Page, PageHeader, PageSection } from "@/components/shell/Page"
 import { Flags, PersonAvatar, useRecordBack } from "./common"
 import { RecordHeader } from "./AssetsView"
-import { navigate } from "@/components/work/nav"
-import { DataTable } from "./DataTable"
 import { FormDialog, SelectField, STATUS_OPTIONS, TextField } from "./forms"
 import { Validity } from "./HierarchyView"
 import { PersonAccessSection } from "./Groups/PersonAccess"
@@ -36,89 +33,13 @@ const ACCOUNT_ICON: Record<AccountState, { icon: typeof KeyRoundIcon; tone: Stat
   vencida: { icon: ShieldAlertIcon, tone: "attention" },
 }
 
-function AccountMark({ state, badge = false }: { state: AccountState; badge?: boolean }) {
+export function AccountMark({ state, badge = false }: { state: AccountState; badge?: boolean }) {
   const a = ACCOUNT_ICON[state]
   if (badge) return <StatusBadge tone={a.tone} icon={a.icon}>{ACCOUNT_LABEL[state]}</StatusBadge>
   return (
     <span className={cn("inline-flex items-center gap-1 type-meta whitespace-nowrap", TONE_TEXT[a.tone])}>
       <a.icon className="size-3.5 shrink-0" aria-hidden />{ACCOUNT_LABEL[state]}
     </span>
-  )
-}
-
-const open = (id: string) => navigate(`pessoas/${id}`)
-
-/** Model A (Lista): every person in one table; a row opens that person's page (`#pessoas/<id>`), like Ativos and Locais. */
-export function PeopleView() {
-  const { state, upsert, now } = useRegistry()
-  const sim = useSim()
-  const { now: simNow, today } = sim
-  const down = sim.serverDown
-  const { people } = state
-  const [adding, setAdding] = useState(false)
-  const companies = [...new Set(people.map((p) => p.company))]
-
-  return (
-    <Page>
-      <PageHeader title="Pessoas" count={people.length}
-        actions={sim.canEditRegistry ? { primary: { label: "Nova pessoa", icon: PlusIcon, disabled: down, onClick: () => setAdding(true) } } : undefined} />
-      {down && <DownBanner now={sim.now} />}
-      <DataTable<Person>
-        rows={people}
-        rowKey={(p) => p.id}
-        noun={["pessoa", "pessoas"]}
-        pageSizes={[25, 50, 100]}
-        selectFilter={{ label: "Filtrar por empresa", allLabel: "Todas as empresas", options: companies.map((c) => ({ value: c, label: c })), test: (p, v) => p.company === v }}
-        searchLabel="Buscar por nome, login ou matrícula"
-        searchText={(p) => [p.name, p.login ?? "", p.employeeId, p.company].join(" ")}
-        onRowClick={(p) => open(p.id)}
-        defaultSort={{ id: "name", dir: "asc" }}
-        empty={<Empty><EmptyHeader><EmptyTitle>Nenhuma pessoa cadastrada</EmptyTitle></EmptyHeader></Empty>}
-        columns={[
-          {
-            id: "name", header: "Pessoa", className: "whitespace-normal", sort: (a, b) => a.name.localeCompare(b.name, "pt-BR"),
-            cell: (p) => (
-              <button type="button" onClick={(e) => { e.stopPropagation(); open(p.id) }}
-                className="flex min-h-11 w-full items-center gap-2 text-left hover:underline focus-visible:underline focus-visible:outline-none">
-                <PersonAvatar name={p.name} className="size-8 shrink-0" />
-                <span className="flex min-w-0 flex-col">
-                  <span className="type-body font-medium md:whitespace-nowrap">{p.name}</span>
-                  <span className="type-meta md:hidden">{p.company}</span>
-                  {/* Below sm the Conta column is hidden: the exception shows under the name. */}
-                  {accountStateAt(p, simNow) !== "ativa" && <span className="sm:hidden"><AccountMark state={accountStateAt(p, simNow)} /></span>}
-                </span>
-              </button>
-            ),
-          },
-          { id: "company", header: "Empresa", className: "hidden md:table-cell", sort: (a, b) => a.company.localeCompare(b.company, "pt-BR"), cell: (p) => p.company },
-          { id: "login", header: "Login", className: "hidden lg:table-cell", cell: (p) => (p.login ? <span className="type-data text-foreground/80">{p.login}</span> : <span className="text-muted-foreground">—</span>) },
-          {
-            id: "roles", header: "Cargos", className: "hidden whitespace-normal lg:table-cell",
-            // The names, not a count: who can sign what is why this list exists. Expired ones read amber, with the word.
-            cell: (p) => {
-              // One name per cargo, however many places it covers; "vencido" only when every grant of it has expired.
-              const names = [...new Set(p.roles.map((r) => r.roleId))].map((id) => ({ id, name: label(state.roleTypes, id), expired: p.roles.filter((r) => r.roleId === id).every((r) => r.validUntil < today) }))
-              if (names.length === 0) return <span className="text-muted-foreground">—</span>
-              return (
-                <span className="flex flex-wrap gap-x-1.5 gap-y-0.5">
-                  {names.map((n, i) => <span key={n.id} className={cn(n.expired && TONE_TEXT.attention)}>{n.name}{n.expired ? " (vencido)" : ""}{i < names.length - 1 ? "," : ""}</span>)}
-                </span>
-              )
-            },
-          },
-          {
-            id: "account", header: "Conta", className: "hidden sm:table-cell",
-            sort: (a, b) => ACCOUNT_LABEL[accountStateAt(a, simNow)].localeCompare(ACCOUNT_LABEL[accountStateAt(b, simNow)], "pt-BR"),
-            // Only the exception shows in the list; "Conta ativa" lives on the person's page.
-            cell: (p) => (accountStateAt(p, simNow) === "ativa" ? null : <AccountMark state={accountStateAt(p, simNow)} />),
-          },
-        ]}
-      />
-      {adding && (
-        <PersonDialog existing={null} now={now()} onClose={() => setAdding(false)}
-          onSaved={async (p) => { if (!await upsert("people", p)) return; toast.success("Pessoa criada", { description: p.name }); setAdding(false); open(p.id) }} />
-      )}
-    </Page>
   )
 }
 
@@ -269,7 +190,7 @@ function AddRole({ p, disabled }: { p: Person; disabled?: boolean }) {
   )
 }
 
-function PersonDialog({ existing, now, onClose, onSaved }: { existing: Person | null; now: string; onClose: () => void; onSaved: (p: Person, isNew: boolean) => Promise<void> }) {
+export function PersonDialog({ existing, now, onClose, onSaved }: { existing: Person | null; now: string; onClose: () => void; onSaved: (p: Person, isNew: boolean) => Promise<void> }) {
   const { state } = useRegistry()
   const [name, setName] = useState(existing?.name ?? "")
   const [company, setCompany] = useState(existing?.company ?? "")

@@ -29,7 +29,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Edita uma delegação agendada (SPEC 003); o delegante não muda. */
+        /** Edita uma delegação agendada (SPEC 003), inclusive o delegante; depois do início, só revogar. */
         put: operations["updateDelegation"];
         post?: never;
         delete?: never;
@@ -133,6 +133,26 @@ export interface paths {
         /** Permissões concedidas à pessoa pelos grupos (origem: grupo e perfil). Para quem tem cadastro, ou a própria pessoa. */
         get: operations["getPersonAccess"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/people/{id}/access-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description uuid do registro. */
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        /** SPEC 007: entra e sai de grupos e troca os cargos da pessoa numa só transação. Só os grupos listados mudam; cada um com a revisão lida. If-Match = revisão da pessoa. */
+        put: operations["putPersonAccessAssignments"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1463,10 +1483,12 @@ export interface components {
             endsAt: string;
             reason: string;
         };
-        /** @description Campos editáveis de uma delegação agendada (o delegante e o id não mudam). */
+        /** @description Campos editáveis de uma delegação agendada (o id e a autoria não mudam). */
         DelegationUpdate: {
             /** Format: uuid */
             slotId: string | null;
+            /** Format: uuid */
+            delegatorId: string;
             /** Format: uuid */
             delegateId: string;
             /** Format: uuid */
@@ -1526,6 +1548,21 @@ export interface components {
             profileIds: string[];
             plantIds: string[];
             revision: number;
+        };
+        AccessAssignmentInput: {
+            /** @description Grupos a conferir: `member` diz se a pessoa fica nele. Grupo ausente não muda. */
+            groups: {
+                /** Format: uuid */
+                id: string;
+                revision: number;
+                member: boolean;
+            }[];
+            /** @description Ausente = cargos não mudam. */
+            roles?: components["schemas"]["RoleAssignment"][];
+        };
+        AccessAssignmentResult: {
+            person: components["schemas"]["Person"];
+            groups: components["schemas"]["PersonGroup"][];
         };
         /** @enum {string} */
         Grant: "cadastro" | "modelos" | "auditoria" | "exportacao";
@@ -2910,6 +2947,41 @@ export interface operations {
                     "application/json": components["schemas"]["GrantSource"][];
                 };
             };
+        };
+    };
+    putPersonAccessAssignments: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Revisão que o cliente leu, entre aspas: `"7"`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                /** @description uuid do registro. */
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccessAssignmentInput"];
+            };
+        };
+        responses: {
+            /** @description Acesso gravado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessAssignmentResult"];
+                };
+            };
+            403: components["responses"]["Forbidden"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["Rule"];
+            428: components["responses"]["PreconditionRequired"];
+            "4XX": components["responses"]["Error"];
         };
     };
     getPublicAppearance: {

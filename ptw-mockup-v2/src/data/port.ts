@@ -338,6 +338,12 @@ export interface AppearancePort {
   upload(base64: string): Promise<{ file: string } | import("@/core/ptwErrors").RuleError>
 }
 
+/** Corpo da rota da SPEC 007: só os grupos cuja participação muda; `roles` ausente = cargos não mudam. */
+export interface AccessAssignment {
+  groups: { id: string; revision: number; member: boolean }[]
+  roles?: import("@/registry/types").Person["roles"]
+}
+
 export interface GroupPort {
   read(): Promise<import("@/core/governance").PersonGroup[] | RuleError>
   save(group: import("@/core/governance").GroupInput, revision: number | null): Promise<import("@/core/governance").PersonGroup | RuleError>
@@ -346,6 +352,11 @@ export interface GroupPort {
   saveProfile(profile: import("@/core/governance").AccessProfileInput, revision: number | null): Promise<import("@/core/governance").AccessProfile | RuleError>
   /** Permissions a person gets from groups (`GET /people/{id}/access`). */
   personAccess(personId: string): Promise<import("@/core/governance").GrantSource[] | RuleError>
+  /**
+   * SPEC 007: entra e sai de grupos e troca os cargos numa só transação (`PUT /people/{id}/access-assignments`).
+   * `personRevision` vai no If-Match; a pessoa devolvida já está no cadastro em cache.
+   */
+  saveAssignments(personId: string, personRevision: number, body: AccessAssignment): Promise<{ person: import("@/registry/types").Person; groups: import("@/core/governance").PersonGroup[] } | RuleError>
 }
 
 export interface DelegationPort {

@@ -36,3 +36,17 @@ it("nome vazio/duplicação de membro não são aceitos e o contrato não aceita
   }
   expect(t.driver.find(/insert into ptw.person_group/)).toHaveLength(0)
 })
+
+it("SPEC 007: acesso da pessoa exige cadastro e If-Match, e não grava quando recusado", async () => {
+  const t = await start(), s = await t.login()
+  const url = "/api/v1/people/00000000-0000-7000-8000-0000000000d1/access-assignments"
+  const payload = { groups: [{ id: input.id, revision: 1, member: true }] }
+  const no = await t.app.inject({ method: "PUT", url, headers: s.headers, payload })
+  expect(no.statusCode, no.body).toBe(428)
+  const extra = await t.app.inject({ method: "PUT", url, headers: { ...s.headers, "if-match": '"1"' }, payload: { ...payload, grants: ["cadastro"] } })
+  expect(extra.statusCode, extra.body).toBe(400)
+  for (const record of (t.app.ptw.sessions as MemorySessionStore).sessions.values()) record.grants = []
+  const denied = await t.app.inject({ method: "PUT", url, headers: { ...s.headers, "if-match": '"1"' }, payload })
+  expect(denied.statusCode, denied.body).toBe(403)
+  expect(t.driver.find(/insert into ptw.person_group_member/)).toHaveLength(0)
+})

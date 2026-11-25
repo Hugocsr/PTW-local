@@ -140,6 +140,7 @@ export function createMemoryPort(scenario: Scenario, { tz = DEFAULT_TZ, onReset 
       profiles: async () => ({ code: "PTA13", message: "Perfis de acesso exigem a API persistente" }),
       saveProfile: async () => ({ code: "PTA13", message: "Perfis de acesso exigem a API persistente" }),
       personAccess: async () => ({ code: "PTA13", message: "Perfis de acesso exigem a API persistente" }),
+      saveAssignments: async () => ({ code: "PTA13", message: "Grupos exigem a API persistente" }),
     },
 
     session: {

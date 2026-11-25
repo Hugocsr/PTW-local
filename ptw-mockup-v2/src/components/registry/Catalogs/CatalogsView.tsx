@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { ArrowRightIcon, BoxIcon, ListIcon, MapPinIcon, PlusIcon, SearchIcon, ShieldCheckIcon, type LucideIcon } from "lucide-react"
 import { toast } from "sonner"
-import { catalogOf, isListCatalog, listCatalogId, listIdOf, searchCatalogs, TYPE_CATALOGS, typeCatalog, type CatalogId, type TypeCatalogId } from "@/core/catalogs"
+import { catalogOf, filterCatalogs, isListCatalog, listCatalogId, listIdOf, TYPE_CATALOGS, typeCatalog, type CatalogId, type TypeCatalogId } from "@/core/catalogs"
 import { cn } from "@/lib/utils"
 import { newId, useRegistry } from "@/registry/store"
 import type { OptionList } from "@/registry/types"
@@ -34,16 +34,16 @@ export function CatalogsView({ tab }: { tab?: string }) {
   const { state, upsert, now } = useRegistry()
   const sim = useSim()
   const [q, setQ] = useState("")
-  const [focus, setFocus] = useState<{ catalog: CatalogId; itemId: string } | null>(null)
   const [creating, setCreating] = useState(false)
   const current = catalogOf(tab, state.optionLists)
   const opened = !!tab
   const lists = useMemo(() => [...state.optionLists].sort((a, b) => a.name.localeCompare(b.name, "pt-BR")), [state.optionLists])
-  const hits = useMemo(() => searchCatalogs(state, q), [state, q])
-  const open = (id: CatalogId, itemId?: string | null) => { setFocus(itemId ? { catalog: id, itemId } : null); navigate(`catalogos/${id}`) }
+  // SPEC 006: this search finds catalogs by name; items are searched inside the open catalog.
+  const types = filterCatalogs(TYPE_CATALOGS, q)
+  const shownLists = filterCatalogs(lists.map((l) => ({ ...l, title: l.name })), q)
+  const open = (id: CatalogId) => navigate(`catalogos/${id}`)
   const list = listIdOf(current) ? state.optionLists.find((l) => l.id === listIdOf(current)) : undefined
   const type = typeCatalog(current)
-  const focusId = focus?.catalog === current ? focus.itemId : null
   const total = TYPE_CATALOGS.length + lists.length
 
   const row = (id: CatalogId, title: string, hint: string, n: number) => (
@@ -66,40 +66,30 @@ export function CatalogsView({ tab }: { tab?: string }) {
         <nav aria-label="Catálogos" className={cn("flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card shadow-(--shadow-elev-2) lg:sticky lg:top-20", opened && "max-lg:hidden")}>
           <div className="relative border-b p-3">
             <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-6 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input aria-label="Buscar em todos os catálogos" placeholder="Buscar em todos os catálogos" value={q} onChange={(e) => setQ(e.target.value)} className="min-h-11 pl-9 md:min-h-9" />
+            <Input aria-label="Buscar catálogo" placeholder="Buscar catálogo" value={q} onChange={(e) => setQ(e.target.value)} className="min-h-11 pl-9 md:min-h-9" />
           </div>
-          {q.trim() ? (
-            <ul aria-label="Resultados da busca" className="flex max-h-[calc(100svh-14rem)] flex-col gap-0.5 overflow-y-auto p-2">
-              {hits.length === 0 && <li className="p-4 text-center type-meta">Nada encontrado.</li>}
-              {hits.map((h) => (
-                <li key={`${h.catalog}-${h.itemId ?? "c"}`}>
-                  <button type="button" onClick={() => { open(h.catalog, h.itemId); setQ("") }}
-                    className="flex min-h-11 w-full flex-col items-start rounded-md px-3 py-1.5 text-left hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring">
-                    <span className="type-body font-medium">{h.label}</span>
-                    <span className="type-meta">{h.itemId ? h.catalogTitle : isListCatalog(h.catalog) ? "Lista de opções" : "Catálogo de tipos"}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="flex max-h-[calc(100svh-14rem)] flex-col overflow-y-auto pb-2">
+          <div className="flex max-h-[calc(100svh-14rem)] flex-col overflow-y-auto pb-2">
+            {!types.length && !shownLists.length && <p className="p-4 text-center type-meta">Nenhum catálogo com “{q.trim()}”.</p>}
+            {types.length > 0 && <>
               <p className="px-4 pt-3 pb-1 type-label">Tipos</p>
-              <ul className="flex flex-col gap-0.5 px-2">{TYPE_CATALOGS.map((c) => row(c.id, c.title, c.hint, state[c.key].filter((t) => t.active).length))}</ul>
+              <ul className="flex flex-col gap-0.5 px-2">{types.map((c) => row(c.id, c.title, c.hint, state[c.key].filter((t) => t.active).length))}</ul>
+            </>}
+            {(shownLists.length > 0 || !q.trim()) && <>
               <div className="mt-2 flex items-center justify-between gap-2 border-t px-4 pt-3 pb-1">
                 <p className="type-label">Listas de opções</p>
                 {sim.canEditRegistry && <Button variant="outline" size="sm" className="min-h-11 text-primary hover:text-primary md:min-h-8" disabled={sim.serverDown} onClick={() => setCreating(true)}><PlusIcon data-icon="inline-start" />Nova lista</Button>}
               </div>
               <ul className="flex flex-col gap-0.5 px-2">
                 {lists.length === 0 && <li className="p-3 type-meta">Nenhuma lista ainda.</li>}
-                {lists.map((l) => row(listCatalogId(l.id), l.name, "Lista de opções", l.items.filter((i) => i.active).length))}
+                {shownLists.map((l) => row(listCatalogId(l.id), l.name, "Lista de opções", l.items.filter((i) => i.active).length))}
               </ul>
-            </div>
-          )}
+            </>}
+          </div>
           <p className="sr-only" role="status">{total} catálogos</p>
         </nav>
         <div className={cn("min-w-0", !opened && "max-lg:hidden")}>
-          {list ? <ListCatalogPanel key={list.id} list={list} focusId={focusId} onBack={() => navigate("catalogos")} onRemoved={() => navigate("catalogos/tipos-local")} />
-            : type ? <TypeCatalogPanel key={type.id} catalog={type} focusId={focusId} onBack={() => navigate("catalogos")} /> : null}
+          {list ? <ListCatalogPanel key={list.id} list={list} onBack={() => navigate("catalogos")} onRemoved={() => navigate("catalogos/tipos-local")} />
+            : type ? <TypeCatalogPanel key={type.id} catalog={type} onBack={() => navigate("catalogos")} /> : null}
         </div>
       </div>
       {creating && <ListNameDialog list={null} onClose={() => setCreating(false)}

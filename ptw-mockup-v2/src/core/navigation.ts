@@ -2,8 +2,9 @@
 /** "dashboard" joins Minha área and Desabilitados agora (SPEC 001); old routes are aliases in App. */
 /** "catalogos" (SPEC 005) joins Tipos and Listas; `#tipos` and `#listas` are aliases in App. */
 /** "grupos" and "perfis" (SPEC 002) form the SGI "Acesso" section: groups grant access profiles to their members. */
+/** "pessoas" is "Usuários" in Acesso (SPEC 007, SGI): the key stays, `#usuarios` is an alias in App. */
 /** "ativos" is Gestão de Ativos (SGI): plants, areas and equipment on one screen; the old "locais" route opens it. */
-export const NAVIGATION_VIEWS = ["dashboard", "quadro", "ativos", "pessoas", "grupos", "perfis", "modelos", "catalogos", "identidade", "delegacoes", "auditoria"] as const
+export const NAVIGATION_VIEWS = ["dashboard", "quadro", "ativos", "grupos", "pessoas", "perfis", "modelos", "catalogos", "identidade", "delegacoes", "auditoria"] as const
 export type NavigationView = typeof NAVIGATION_VIEWS[number]
 export interface NavigationAccess { canEditRegistry: boolean; canEditModels: boolean; canAudit: boolean; canExport: boolean }
 export const NAVIGATION_GROUPS = ["operation", "registry", "access", "configuration", "governance", "reference"] as const
@@ -28,8 +29,8 @@ export function navigationGroup(view: NavigationView, access: NavigationAccess):
   if (!canReadView(view, access)) return null
   switch (view) {
     case "dashboard": case "quadro": return "operation"
-    case "ativos": case "pessoas": return access.canEditRegistry ? "registry" : "reference"
-    case "perfis": return access.canEditRegistry ? "access" : "reference"
+    case "ativos": return access.canEditRegistry ? "registry" : "reference"
+    case "pessoas": case "perfis": return access.canEditRegistry ? "access" : "reference"
     case "modelos": return access.canEditModels ? "configuration" : "reference"
     case "catalogos": return access.canEditRegistry ? "configuration" : "reference"
     case "auditoria": return "governance"

@@ -105,22 +105,16 @@ export type ActiveFilter = "todos" | "ativos" | "inativos"
 export const byActive = <T extends { active: boolean }>(items: readonly T[], f: ActiveFilter) =>
   items.filter((i) => f === "todos" || (f === "ativos") === i.active)
 
-const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("pt-BR")
+const fold = (s: string) => s.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase("pt-BR").trim()
+/** Does the text contain the query, ignoring accents and case? An empty query matches everything. */
+export const matchesText = (text: string, q: string) => fold(text).includes(fold(q))
 
-export interface CatalogHit { catalog: CatalogId; catalogTitle: string; itemId: string | null; label: string }
+/** SPEC 006: the left search finds catalogs by name only (never items). */
+export function filterCatalogs<T extends { title: string }>(catalogs: readonly T[], q: string): T[] {
+  return catalogs.filter((c) => matchesText(c.title, q))
+}
 
-/** Search across every catalog: catalog names and item names, accents ignored. */
-export function searchCatalogs(s: RegistryState, q: string, max = 30): CatalogHit[] {
-  const needle = fold(q.trim())
-  if (!needle) return []
-  const hits: CatalogHit[] = []
-  for (const c of TYPE_CATALOGS) {
-    if (fold(c.title).includes(needle)) hits.push({ catalog: c.id, catalogTitle: c.title, itemId: null, label: c.title })
-    for (const t of s[c.key]) if (fold(t.label).includes(needle)) hits.push({ catalog: c.id, catalogTitle: c.title, itemId: t.id, label: t.label })
-  }
-  for (const l of s.optionLists) {
-    if (fold(l.name).includes(needle)) hits.push({ catalog: listCatalogId(l.id), catalogTitle: l.name, itemId: null, label: l.name })
-    for (const i of l.items) if (fold(i.label).includes(needle)) hits.push({ catalog: listCatalogId(l.id), catalogTitle: l.name, itemId: i.id, label: i.label })
-  }
-  return hits.slice(0, max)
+/** SPEC 006: the search inside a catalog, combined with the Ativos/Inativos filter. */
+export function filterItems<T extends { active: boolean }>(items: readonly T[], f: ActiveFilter, q: string, name: (i: T) => string): T[] {
+  return byActive(items, f).filter((i) => matchesText(name(i), q))
 }

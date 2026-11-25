@@ -1,4 +1,4 @@
-import { BoxIcon, LayoutGridIcon, ListTreeIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, LibraryBigIcon, PaletteIcon, ShieldCheckIcon, UsersIcon, UsersRoundIcon } from "lucide-react"
+import { BoxIcon, LayoutGridIcon, ListTreeIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, LibraryBigIcon, PaletteIcon, ShieldCheckIcon, UserRoundIcon, UsersIcon, UsersRoundIcon } from "lucide-react"
 import type { NavigationGroup, NavigationView } from "@/core/navigation"
 
 /**
@@ -9,7 +9,7 @@ export const NAV = {
   dashboard: { title: "Dashboard", icon: LayoutGridIcon },
   quadro: { title: "Quadro de PTs", icon: ClipboardListIcon },
   ativos: { title: "Gestão de Ativos", icon: ListTreeIcon },
-  pessoas: { title: "Pessoas", icon: UsersIcon },
+  pessoas: { title: "Usuários", icon: UserRoundIcon, keywords: "pessoas usuários cargos perfis grupos acesso" },
   modelos: { title: "Modelos de PT", icon: FileTextIcon },
   catalogos: { title: "Catálogos", icon: LibraryBigIcon, keywords: "tipos listas cargos relações opções" },
   auditoria: { title: "Auditoria", icon: ScrollTextIcon },

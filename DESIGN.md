@@ -517,7 +517,7 @@ Login conserva os modos anunciados pelo servidor, erros, inatividade e autentica
 
 Extensão SGI-11A/07/08: `Identidade visual` em Configuração (`modelos`), `Grupos SGI` e `Perfis de acesso` na seção Acesso (SPEC 002; Grupos só com `cadastro`, Perfis em Consultas para quem não o tem) e `Delegações` em Governança para consulta própria (gestão só `cadastro`). As telas usam Page/PageHeader, estados de erro/carregamento e confirmação do servidor. Identidade tem prévia local, paletas, PNG e restauração confirmada; grupos têm editor de membros; delegações mostram representação e vigência, criam e revogam por formulário. Assinatura, histórico visual e folha impressa identificam o representado preservando o ator real. A cor do estado da PT não é personalizada pelo editor.
 
-`core/navigation.ts` é a política única de destinos: Operação sempre disponível à conta autenticada; Locais/Ativos/Pessoas em Cadastros com `cadastro`; Modelos em Configuração com `modelos`; Catálogos (tipos e listas, SPEC 005) em Configuração com `cadastro`; Auditoria em Governança e sistema com `auditoria`. Cada referência sem grant de gestão permanece em Consultas, conforme sua leitura já autorizada. Nenhum grupo vazio, duplicação ou link para módulo não implementado.
+`core/navigation.ts` é a política única de destinos: Operação sempre disponível à conta autenticada; Ativos em Cadastros com `cadastro`; Usuários (`#pessoas`, SPEC 007) em Acesso com `cadastro`; Modelos em Configuração com `modelos`; Catálogos (tipos e listas, SPEC 005) em Configuração com `cadastro`; Auditoria em Governança e sistema com `auditoria`. Cada referência sem grant de gestão permanece em Consultas, conforme sua leitura já autorizada. Nenhum grupo vazio, duplicação ou link para módulo não implementado.
 
 Sidebar, busca Ctrl+K e breadcrumbs usam a mesma classificação; a busca identifica o grupo de cada destino. A rota consulta a mesma política de leitura, além da autorização efetiva do servidor. Se houver perda de leitura enquanto uma tela está aberta, a pessoa volta à Minha área com aviso. Nenhum estado de área é salvo no navegador. Drawer mantém foco contido, Escape e retorno ao botão; mudar de tela o fecha.
 
@@ -636,7 +636,7 @@ Tipos e Listas viram uma tela só: **Configuração › Catálogos** (`#catalogo
 
 - **Layout:** duas colunas, no molde de Grupos SGI.
   - **À esquerda:**
-    - busca em todos os catálogos, por nome do catálogo ou do item, sem acento;
+    - "Buscar catálogo": filtra só pelo nome do catálogo, sem acento (SPEC 006);
     - **TIPOS:** Tipos de local, Tipos de ativo, Cargos e Relações, em quadrado navy;
     - **LISTAS DE OPÇÕES:** uma linha por lista, em quadrado índigo suave, com "+ Nova lista";
     - a contagem de itens ativos em pílula.
@@ -652,7 +652,35 @@ Tipos e Listas viram uma tela só: **Configuração › Catálogos** (`#catalogo
   - **Tipos:** ordem alfabética. Os do sistema (Planta, Área, "é parte de") têm cadeado e só podem ser renomeados. Remover tem "Desfazer".
   - **Listas:** a ordem é a das perguntas, com subir/descer. Itens nunca são removidos. A lista tem "Renomear" e "Remover", este só sem uso e com confirmação.
 - **Uso dos tipos de ativo:** com o servidor, vem de `GET /assets?typeId=` (um total por tipo), porque a lista de ativos não fica em memória.
-- **Busca:** o resultado abre o catálogo com o item em destaque (`st-attention-surface`) e rolado até ele.
+- **Busca de itens (SPEC 006):** "Buscar item" fica logo após o filtro Ativos/Inativos e busca só no catálogo aberto, sem acento, combinada com o filtro. ✕ ou Esc limpa; trocar de catálogo limpa. O status mostra "N de M itens". Durante a busca, subir/descer ficam travados ("Limpe a busca para reordenar"); item novo fora do filtro avisa por toast.
+- **Aviso em tooltip (SPEC 006):** as regras do catálogo ficam num ⓘ ao lado da busca (`InfoTip`), aberto por hover do mouse, foco do teclado ou toque; Esc fecha. Listas: "Itens não são removidos…"; Tipos: em uso só desativa, cadeado só renomeia.
 - **Celular:** lista de catálogos → itens, com "← Catálogos".
 - **Busca Ctrl+K:** "tipos", "listas", "cargos" e "relações" também acham Catálogos.
 
+### Usuários (SPEC 007, 25/11/2026)
+
+A tela **Pessoas** vira **Acesso › Usuários**, no formato da tela Usuários do protótipo SGI. A chave da rota continua `pessoas`; `#usuarios` é apelido. Quem não tem cadastro a vê em Consultas, só leitura. O conceito de acesso não muda: perfis só vêm de grupos (SPEC 002) e cargos ficam na pessoa.
+
+- **Tabela** (`Users/UsersView.tsx`):
+  - **Ativo:** chave; desativada nas pessoas do AD ("Situação vem do AD").
+  - **Usuário:** avatar, nome e empresa.
+  - **Login:** o login, ou "sem login".
+  - **Plantas:** pílulas de código; somam as plantas dos grupos ativos e a raiz do local de cada cargo.
+  - **Perfis:** pílulas dos perfis ativos dos grupos ativos.
+  - **Cargos:** os nomes; o vencido aparece em âmbar.
+  - **Ações:** "Editar acesso".
+  - Abaixo de lg, plantas, perfis e cargos vão para baixo do nome. Filtros: planta (select) e situação (Todos/Ativos/Inativos/Sem login). O nome abre a página da pessoa.
+- **Modal "Acesso do usuário"** (`Users/AccessDialog.tsx`):
+  - **Grupos:** pílulas clicáveis (`aria-pressed`) com o perfil do grupo.
+    - Travado, com cadeado e motivo, quando o perfil dá o que quem edita não tem.
+    - Grupo inativo só aparece se a pessoa ainda está nele.
+    - Sem login, não há grupos.
+  - **"Com isso, terá":** perfis, permissões e plantas do conjunto escolhido, ao vivo.
+  - **Cargos:** lista com ✕ e linha de inclusão (cargo, local, válido até), sem outro modal.
+  - Nada grava antes de "Salvar alterações". Esc ou ✕ com mudança pede "Descartar?".
+- **Gravação:** `PUT /people/{id}/access-assignments`.
+  - Envia só os grupos cuja participação mudou, cada um com a revisão lida, mais os cargos se mudaram. If-Match é a revisão da pessoa.
+  - Uma transação: tudo ou nada, com auditoria por membro e por cargo.
+  - Na memória (sem API), só os cargos.
+- **Chave Ativo:** confirma ("Desativar «Nome»? … O histórico é preservado.") e não tira a pessoa dos grupos.
+- **Regras puras:** `core/userAccess.ts` (`userAccess`, `accessOfGroups`, `groupLocked`, `membershipChanges`).

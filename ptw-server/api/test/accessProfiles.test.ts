@@ -15,8 +15,8 @@ describe.skipIf(!HAS_DB)("com banco: Grupos e Perfis de acesso (SPEC 002)", () =
   let db: TestDb
   let app: Awaited<ReturnType<typeof buildApp>>
   const x = (n: number) => `00000000-0000-7000-8000-${n.toString(16).padStart(12, "0")}`
-  const P = { paulo: x(0x8d1), rafael: x(0x8d2) }
-  const T = { local: x(0x8a1), planta: x(0x8a2) }
+  const P = { paulo: x(0x8d1), rafael: x(0x8d2), sofia: x(0x8d3), contato: x(0x8d4) }
+  const T = { local: x(0x8a1), planta: x(0x8a2), cargo: x(0x8a3) }
   const L = { norte: x(0x8b1) }
   type Who = "ana" | "paulo" | "rafael"
   const sessions = new Map<Who, Record<string, string>>()
@@ -53,8 +53,10 @@ describe.skipIf(!HAS_DB)("com banco: Grupos e Perfis de acesso (SPEC 002)", () =
       const U = T_UNIT
       await tx.unsafe(`select ptw.set_context('${U}', null, null, 'servico', 'teste', 'semente-perfis')`)
       await tx.unsafe(`insert into ptw.type_def (unit_id, id, family, label, system_key) values ('${U}', '${T.planta}', 'local', 'Planta', 'planta'), ('${U}', '${T.local}', 'local', 'Área', 'area')`)
+      await tx.unsafe(`insert into ptw.type_def (unit_id, id, family, label) values ('${U}', '${T.cargo}', 'cargo', 'Executante')`)
       await tx.unsafe(`insert into ptw.location (unit_id, id, type_id, code, name) values ('${U}', '${L.norte}', '${T.planta}', 'PNO', 'Planta Norte')`)
-      await tx.unsafe(`insert into ptw.person (unit_id, id, name, login) values ('${U}', '${P.paulo}', 'Paulo Lima', 'paulo'), ('${U}', '${P.rafael}', 'Rafael Nunes', 'rafael')`)
+      await tx.unsafe(`insert into ptw.person (unit_id, id, name, login) values ('${U}', '${P.paulo}', 'Paulo Lima', 'paulo'), ('${U}', '${P.rafael}', 'Rafael Nunes', 'rafael'), ('${U}', '${P.sofia}', 'Sofia Reis', 'sofia')`)
+      await tx.unsafe(`insert into ptw.person (unit_id, id, name) values ('${U}', '${P.contato}', 'Contato Sem Login')`)
     })
     app = await buildApp({
       config: testConfig({ unit: T_UNIT, db: db.config, checkResponses: true }),
@@ -175,5 +177,50 @@ describe.skipIf(!HAS_DB)("com banco: Grupos e Perfis de acesso (SPEC 002)", () =
     for (const a of ["cadastro.perfil.criado", "cadastro.perfil.alterado", "cadastro.grupo.perfil.incluido", "cadastro.grupo.planta.incluida", "cadastro.grupo.membro.incluido", "cadastro.grupo.membro.removido"]) expect(actions, a).toContain(a)
     const v = await db.owner`select ptw.audit_verify(${T_UNIT}::uuid) as broken`
     expect(v[0].broken).toBeNull()
+  })
+  // ---------- SPEC 007: grupos e cargos da pessoa num só passo ----------
+  const revOf = async (id: string) => Number((await db.owner<{ revision: number }[]>`select revision from ptw.person where id = ${id}::uuid`)[0].revision)
+  const assign = async (who: Who, personId: string, body: Record<string, unknown>, rev?: number) =>
+    call(who, "PUT", `/people/${personId}/access-assignments`, body, { "if-match": `"${rev ?? await revOf(personId)}"` })
+  const role = { roleId: T.cargo, scopeLocationId: L.norte, validUntil: "2026-12-31" }
+
+  it("CT-09 SPEC 007: Ana põe Sofia no grupo e dá um cargo, numa chamada", async () => {
+    const r = await assign("ana", P.sofia, { groups: [{ id: norte.id, revision: norte.revision, member: true }], roles: [role] })
+    expect(r.status, r.body).toBe(200)
+    const out = r.json() as { person: { roles: unknown[]; revision: number }; groups: { id: string; memberIds: string[]; revision: number }[] }
+    expect(out.person.roles).toMatchObject([role])
+    const g = out.groups.find((x) => x.id === norte.id)!
+    expect(g.memberIds).toContain(P.sofia)
+    norte = { ...norte, ...g }
+    const access = await call("ana", "GET", `/people/${P.sofia}/access`)
+    expect(access.json()).toMatchObject([{ grant: "cadastro", groupId: norte.id }])
+  })
+
+  it("CT-10 SPEC 007: revisão do grupo ou da pessoa desatualizada recusa sem gravar nada", async () => {
+    let r = await assign("ana", P.sofia, { groups: [{ id: norte.id, revision: norte.revision - 1, member: false }], roles: [] })
+    expect(r.status, r.body).toBe(409)
+    expect(r.json().message).toContain(norte.name)
+    r = await assign("ana", P.sofia, { groups: [], roles: [] }, (await revOf(P.sofia)) - 1)
+    expect(r.status, r.body).toBe(409)
+    const roles = await db.owner`select 1 from ptw.person_role where person_id = ${P.sofia}::uuid`
+    expect(roles).toHaveLength(1)
+  })
+
+  it("CT-11 SPEC 007: sem login não entra em grupo; quem só tem cadastro não concede auditoria", async () => {
+    let r = await assign("ana", P.contato, { groups: [{ id: norte.id, revision: norte.revision, member: true }] })
+    expect(r.status, r.body).toBe(400)
+    r = await assign("ana", P.contato, { groups: [], roles: [role] })
+    expect(r.status, r.body).toBe(200)
+    const auditor = (await call("ana", "POST", "/access-profiles", profile("Auditor", ["auditoria"]))).json()
+    const auditores = (await call("ana", "POST", "/person-groups", group("Auditores", { profileIds: [auditor.id] }))).json()
+    r = await assign("rafael", P.sofia, { groups: [{ id: auditores.id, revision: auditores.revision, member: true }] })
+    expect(r.status, r.body).toBe(403)
+  })
+
+  it("CT-12 SPEC 007: tudo ou nada — cargo inválido desfaz a saída do grupo", async () => {
+    const r = await assign("ana", P.sofia, { groups: [{ id: norte.id, revision: norte.revision, member: false }], roles: [{ ...role, roleId: x(0x8ff) }] })
+    expect(r.status).toBeGreaterThanOrEqual(400)
+    const g = (await call("ana", "GET", "/person-groups")).json() as { id: string; memberIds: string[] }[]
+    expect(g.find((x) => x.id === norte.id)!.memberIds).toContain(P.sofia)
   })
 })

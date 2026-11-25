@@ -130,7 +130,7 @@ export function Created({ r, p, state, byAlvo, showAll, setShowAll }: {
             {[...new Set([...slots.flatMap((s) => s.sl.roleIds), ...items.flatMap((i) => (i.kind === "pessoa" && i.roleId ? [i.roleId] : []))].filter(Boolean))].map((id) => (
               <li key={id} className="flex min-h-11 flex-wrap items-center gap-2 py-1.5 md:min-h-9">
                 <span className="type-body">{allRoles.find((x) => x.id === id)?.label ?? id}</span><Novo novo={newRole.has(id)} />
-                {newRole.has(id) && <span className={cn("type-meta", TONE_TEXT.attention)}>Ninguém tem este cargo: ninguém assina até alguém recebê-lo em Pessoas</span>}
+                {newRole.has(id) && <span className={cn("type-meta", TONE_TEXT.attention)}>Ninguém tem este cargo: ninguém assina até alguém recebê-lo em Usuários</span>}
               </li>
             ))}
             {slots.some((s) => s.sl.roleIds.length === 0) && <li className={cn("flex min-h-11 items-center gap-2 py-1.5 type-body md:min-h-9", TONE_TEXT.attention)}><TriangleAlertIcon className="size-4 shrink-0" aria-hidden />{n(slots.filter((s) => s.sl.roleIds.length === 0).length, "assinatura sem cargo", "assinaturas sem cargo")}: escolha no Fluxo</li>}

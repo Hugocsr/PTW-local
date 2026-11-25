@@ -46,7 +46,7 @@ const RECORD_HREF: Record<string, { href: string; label: string }> = {}
 const link = (tables: string[], href: string, label: string) => tables.forEach((t) => { RECORD_HREF[t] = { href, label } })
 link(["location"], "#locais", "Abrir Locais")
 link(["asset", "asset_location", "asset_relation"], "#ativos", "Abrir Ativos")
-link(["person", "person_role"], "#pessoas", "Abrir Pessoas")
+link(["person", "person_role"], "#pessoas", "Abrir Usuários")
 link(["type_def"], "#catalogos/tipos-local", "Abrir Catálogos")
 link(["option_list", "option_item"], "#catalogos", "Abrir Catálogos")
 link(["template", "template_version", "version_location_type", "version_asset_type", "stage", "sign_slot", "separation"], "#modelos", "Abrir Modelos de PT")

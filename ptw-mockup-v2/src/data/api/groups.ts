@@ -1,8 +1,10 @@
 import type { AccessProfile, GrantSource, PersonGroup } from "@/core/governance"
+import type { Person } from "@/registry/types"
 import type { GroupPort } from "../port"
 import type { Http } from "./http"
 
-export function createGroupPort(http: Http): GroupPort {
+/** `onAssigned` puts the person the server returned into the registry cache (SPEC 007). */
+export function createGroupPort(http: Http, onAssigned: (person: Person) => void = () => {}): GroupPort {
   return {
     read: async () => {
       const r = await http.request<PersonGroup[]>({ method: "GET", path: "/person-groups" })
@@ -27,6 +29,12 @@ export function createGroupPort(http: Http): GroupPort {
     personAccess: async (personId) => {
       const r = await http.request<GrantSource[]>({ method: "GET", path: `/people/${personId}/access` })
       return r.ok ? r.data : r.error
+    },
+    saveAssignments: async (personId, personRevision, body) => {
+      const r = await http.request<{ person: Person; groups: PersonGroup[] }>({ method: "PUT", path: `/people/${personId}/access-assignments`, body, ifMatch: personRevision })
+      if (!r.ok) return r.error
+      onAssigned(r.data.person)
+      return r.data
     },
   }
 }

@@ -34,7 +34,7 @@ const LocationDetailView = lazy(() => import("@/components/registry/HierarchyVie
 const AssetDetailView = lazy(() => import("@/components/registry/AssetsView").then((m) => ({ default: m.AssetDetailView })))
 const AssetManagementView = lazy(() => import("@/components/registry/AssetManagement").then((m) => ({ default: m.AssetManagementView })))
 const PersonDetailView = lazy(() => import("@/components/registry/PeopleView").then((m) => ({ default: m.PersonDetailView })))
-const PeopleView = lazy(() => import("@/components/registry/PeopleView").then((m) => ({ default: m.PeopleView })))
+const UsersView = lazy(() => import("@/components/registry/Users/UsersView").then((m) => ({ default: m.UsersView })))
 const TemplatesView = lazy(() => import("@/components/registry/TemplatesView").then((m) => ({ default: m.TemplatesView })))
 const AuditView = lazy(() => import("@/components/audit/AuditView").then((m) => ({ default: m.AuditView })))
 const CatalogsView = lazy(() => import("@/components/registry/Catalogs/CatalogsView").then((m) => ({ default: m.CatalogsView })))
@@ -46,7 +46,7 @@ const DelegationsView = lazy(() => import("@/components/registry/DelegationsView
 /** Screen per route; titles, groups and icons live in the menu table (`shell/nav.ts`). */
 const VIEWS = {
   dashboard: DashboardView, quadro: QuadroView, ativos: AssetManagementView,
-  pessoas: PeopleView, modelos: TemplatesView, catalogos: CatalogsView, auditoria: AuditView, identidade: AppearanceView, grupos: GroupsView, perfis: ProfilesView, delegacoes: DelegationsView,
+  pessoas: UsersView, modelos: TemplatesView, catalogos: CatalogsView, auditoria: AuditView, identidade: AppearanceView, grupos: GroupsView, perfis: ProfilesView, delegacoes: DelegationsView,
 } satisfies Record<ViewKey, unknown>
 
 /**
@@ -56,7 +56,7 @@ const VIEWS = {
  */
 type Route = { view: ViewKey; permitId?: string; tab?: string; recordId?: string; newPermit?: boolean; page?: "ativo" | "local" }
 /** Old names: Locais is part of Gestão de Ativos (SGI). Minha área, Pendências, Campo and Desabilitados are the Dashboard (SPEC 001, legacyDashboardHash). */
-const ALIAS: Record<string, string> = { locais: "ativos" }
+const ALIAS: Record<string, string> = { locais: "ativos", usuarios: "pessoas" }
 const fromHash = (): Route => {
   const [head, id, tab] = window.location.hash.slice(1).split("/")
   if (head === "nova-pt") return { view: "quadro", newPermit: true }
@@ -69,7 +69,7 @@ const fromHash = (): Route => {
   // One asset or one place on its own page; an id that matches nothing shows "não encontrado" there.
   if ((head === "ativo" || head === "local") && id) return { view: "ativos", recordId: id, page: head }
   if ((head === "ativos" || head === "locais") && id) return { view: "ativos", recordId: id }
-  if (head === "pessoas" && id) return { view: head, recordId: id }
+  if ((head === "pessoas" || head === "usuarios") && id) return { view: "pessoas", recordId: id }
   // SPEC 005: Catálogos replaces Tipos and Listas; the old routes open the matching catalog.
   if (head === "tipos") return { view: "catalogos", tab: "tipos-local" }
   if (head === "listas") return { view: "catalogos", tab: id ? `lista/${id}` : undefined }

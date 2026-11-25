@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { ArrowLeftIcon, ChevronDownIcon, ChevronUpIcon, InfoIcon, PencilIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, ChevronDownIcon, ChevronUpIcon, PencilIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
-import { byActive, listUses, moveItem, type ActiveFilter } from "@/core/catalogs"
+import { filterItems, listUses, moveItem, type ActiveFilter } from "@/core/catalogs"
 import { newId, useRegistry } from "@/registry/store"
 import type { OptionList } from "@/registry/types"
 import { useSim } from "@/sim/SimProvider"
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CatalogIcon } from "./CatalogsView"
 import { ListNameDialog } from "./ListNameDialog"
-import { ActiveSwitch, AddRow, FilterSelect, ItemRow, SavedName } from "./shared"
+import { ActiveSwitch, AddRow, FilterSelect, InfoTip, ItemRow, ItemSearch, SavedName } from "./shared"
 
 const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
 /** Database size of an item: 1–200. */
@@ -19,11 +19,12 @@ const MAX_ITEM = 200
  * One option list in Catálogos (SPEC 005): items in their order (subir/descer), name, Ativo. Items are
  * never removed (answers point at them); the list is removed only when no model uses it.
  */
-export function ListCatalogPanel({ list, focusId, onBack, onRemoved }: { list: OptionList; focusId: string | null; onBack: () => void; onRemoved: () => void }) {
+export function ListCatalogPanel({ list, onBack, onRemoved }: { list: OptionList; onBack: () => void; onRemoved: () => void }) {
   const { state, upsert, removeOptionList } = useRegistry()
   const sim = useSim()
   const down = sim.serverDown, edit = sim.canEditRegistry
   const [filter, setFilter] = useState<ActiveFilter>("todos")
+  const [q, setQ] = useState("")
   const [renaming, setRenaming] = useState(false)
   const [removing, setRemoving] = useState(false)
   const uses = listUses(state, list.id)
@@ -34,7 +35,9 @@ export function ListCatalogPanel({ list, focusId, onBack, onRemoved }: { list: O
     const twin = list.items.find((i) => i.id !== except && same(i.label, label))
     return twin ? (twin.active ? "Este item já existe." : "Este item já existe, inativo: reative-o na lista.") : null
   }
-  const shown = byActive(list.items, filter)
+  const shown = filterItems(list.items, filter, q, (i) => i.label)
+  // With a search on, moving an item could swap it with one that is not on screen (SPEC 006).
+  const searching = !!q.trim()
   const active = list.items.filter((i) => i.active).length
 
   return (
@@ -61,9 +64,11 @@ export function ListCatalogPanel({ list, focusId, onBack, onRemoved }: { list: O
       </header>
       <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2 md:px-5">
         <FilterSelect value={filter} onChange={setFilter} />
-        <p className="flex items-center gap-1.5 type-meta"><InfoIcon className="size-3.5 shrink-0" aria-hidden />Itens não são removidos: inative para deixar de oferecer. Respostas antigas continuam legíveis.</p>
+        <ItemSearch value={q} onChange={setQ} />
+        <InfoTip label="Sobre os itens desta lista">Itens não são removidos: inative para deixar de oferecer. Respostas antigas continuam legíveis.</InfoTip>
+        <span role="status" className="ml-auto type-meta">{shown.length} de {list.items.length} {list.items.length === 1 ? "item" : "itens"}</span>
       </div>
-      {shown.length === 0 ? <p className="p-6 text-center type-meta">{list.items.length ? "Nenhum item neste filtro." : "Nenhum item ainda."}</p> : (
+      {shown.length === 0 ? <p className="p-6 text-center type-meta">{!list.items.length ? "Nenhum item ainda." : searching ? `Nenhum item com “${q.trim()}” neste filtro.` : "Nenhum item neste filtro."}</p> : (
         <ol aria-label={`Itens de ${list.name}`}>
           {shown.map((it) => {
             const k = list.items.indexOf(it)
@@ -71,15 +76,15 @@ export function ListCatalogPanel({ list, focusId, onBack, onRemoved }: { list: O
               <div className="flex shrink-0 items-center gap-1">
                 <span className="w-6 text-right type-meta tabular-nums">{k + 1}</span>
                 {edit && <div className="flex flex-col">
-                  <Button variant="ghost" size="icon" className="h-5.5 w-11 md:w-8" aria-label={`Subir ${it.label}`} disabled={down || k === 0}
+                  <Button variant="ghost" size="icon" className="h-5.5 w-11 md:w-8" aria-label={`Subir ${it.label}`} title={searching ? "Limpe a busca para reordenar" : undefined} disabled={down || searching || k === 0}
                     onClick={() => save({ items: moveItem(list.items, k, -1) })}><ChevronUpIcon /></Button>
-                  <Button variant="ghost" size="icon" className="h-5.5 w-11 md:w-8" aria-label={`Descer ${it.label}`} disabled={down || k === list.items.length - 1}
+                  <Button variant="ghost" size="icon" className="h-5.5 w-11 md:w-8" aria-label={`Descer ${it.label}`} title={searching ? "Limpe a busca para reordenar" : undefined} disabled={down || searching || k === list.items.length - 1}
                     onClick={() => save({ items: moveItem(list.items, k, 1) })}><ChevronDownIcon /></Button>
                 </div>}
               </div>
             )
             return (
-              <ItemRow key={it.id} focus={focusId === it.id} muted={!it.active} media={media}
+              <ItemRow key={it.id} muted={!it.active} media={media}
                 name={edit ? <SavedName value={it.label} label={`Item ${k + 1}`} readOnly={down} problem={(v) => problem(v, it.id)}
                   onSave={(label) => save({ items: list.items.map((x) => (x.id === it.id ? { ...x, label } : x)) })} /> : <span className="type-body">{it.label}</span>}
                 actions={<ActiveSwitch active={it.active} name={it.label} disabled={down}
@@ -89,7 +94,11 @@ export function ListCatalogPanel({ list, focusId, onBack, onRemoved }: { list: O
         </ol>
       )}
       {edit && <AddRow placeholder="Novo item…" problem={(v) => problem(v)} disabled={down}
-        onAdd={async (v) => save({ items: [...list.items, { id: newId(), label: v, active: true }] })} />}
+        onAdd={async (v) => {
+          if (!await save({ items: [...list.items, { id: newId(), label: v, active: true }] })) return false
+          if (searching && !filterItems([{ active: true, label: v }], filter, q, (i) => i.label).length) toast("Item adicionado: limpe a busca para vê-lo", { description: v })
+          return true
+        }} />}
 
       {renaming && <ListNameDialog list={list} onClose={() => setRenaming(false)}
         onSave={async (name) => { if (!await save({ name })) return; toast.success("Lista renomeada", { description: name }); setRenaming(false) }} />}

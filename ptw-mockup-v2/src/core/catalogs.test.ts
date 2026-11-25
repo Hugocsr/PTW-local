@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { sgiSeed } from "@/demo/sgi/registry"
-import { byActive, catalogOf, listCatalogId, listIdOf, listUses, moveItem, searchCatalogs, typeActions, typeInUse, typeUsage } from "./catalogs"
+import { byActive, catalogOf, filterCatalogs, filterItems, listCatalogId, listIdOf, listUses, moveItem, TYPE_CATALOGS, typeActions, typeInUse, typeUsage } from "./catalogs"
 
 const s = sgiSeed
 const epi = s.optionLists.find((l) => l.name === "EPI")!
@@ -36,11 +36,16 @@ describe("Catálogos (SPEC 005)", () => {
     expect(byActive([{ active: true }, { active: false }], "inativos")).toEqual([{ active: false }])
   })
 
-  it("busca em todos os catálogos, sem acento", () => {
-    const hits = searchCatalogs(s, "luva")
-    expect(hits[0]).toMatchObject({ catalog: listCatalogId(epi.id), catalogTitle: "EPI", label: "Luvas" })
-    expect(searchCatalogs(s, "area").some((h) => h.catalog === "tipos-local" && h.label === "Área")).toBe(true)
-    expect(searchCatalogs(s, "cargos")[0]).toMatchObject({ catalog: "cargos", itemId: null })
-    expect(searchCatalogs(s, "  ")).toEqual([])
+  it("SPEC 006: busca de catálogos só pelo nome; busca de itens dentro do catálogo, com o filtro de ativos", () => {
+    const lists = s.optionLists.map((l) => ({ ...l, title: l.name }))
+    expect(filterCatalogs(lists, "epi").map((l) => l.title)).toEqual(["EPI"])
+    expect(filterCatalogs(TYPE_CATALOGS, "tipos").map((c) => c.id)).toEqual(["tipos-local", "tipos-ativo"])
+    expect(filterCatalogs(TYPE_CATALOGS, "relaco").map((c) => c.id)).toEqual(["relacoes"])
+    expect(filterCatalogs(lists, "luva")).toEqual([])
+    expect(filterCatalogs(lists, "  ").length).toBe(lists.length)
+    expect(filterItems(epi.items, "todos", "LUV", (i) => i.label).map((i) => i.label)).toEqual(["Luvas"])
+    expect(filterItems(epi.items, "inativos", "luv", (i) => i.label)).toEqual([])
+    const area = s.locationTypes.filter((t) => t.label === "Área")
+    expect(filterItems(s.locationTypes, "ativos", "area", (t) => t.label)).toEqual(area)
   })
 })

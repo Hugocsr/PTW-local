@@ -3,7 +3,7 @@ import { withCtx } from "../db.js"
 import { pta } from "../errors/apiError.js"
 import { requireIfMatch, setEtag } from "../http/ifMatch.js"
 import { idempotent } from "../http/idempotency.js"
-import { listGroups, listProfiles, personAccess, saveGroup, saveProfile } from "../repo/groups.js"
+import { listGroups, listProfiles, personAccess, saveAccessAssignments, saveGroup, saveProfile } from "../repo/groups.js"
 import { groupProblems, profileProblems } from "../shared/core/governance.js"
 
 export default defineRoutes((api) => {
@@ -37,6 +37,13 @@ export default defineRoutes((api) => {
     setEtag(reply, x.revision)
     return x
   }, { deniedAction: "cadastro.perfil.alterado" })
+  // SPEC 007: grupos e cargos da pessoa numa só transação.
+  api.op("putPersonAccessAssignments", async (req, reply) => {
+    const rev = requireIfMatch(req)
+    const out = await withCtx(req, (tx) => saveAccessAssignments(tx, req.params.id, rev, req.body.groups, req.body.roles, req.ptw.session))
+    setEtag(reply, out.person.revision)
+    return out
+  }, { deniedAction: "cadastro.pessoa.alterada" })
   api.op("getPersonAccess", (req) => {
     const s = req.ptw.session!
     if (s.personId !== req.params.id && !s.grants.includes("cadastro")) throw pta.forbidden()

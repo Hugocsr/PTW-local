@@ -217,6 +217,22 @@ paths:
         "200":
           description: Origens.
           content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/GrantSource" } } } }
+  /people/{id}/access-assignments:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    put:
+      tags: [governanca]
+      operationId: putPersonAccessAssignments
+      summary: "SPEC 007: entra e sai de grupos e troca os cargos da pessoa numa só transação. Só os grupos listados mudam; cada um com a revisão lida. If-Match = revisão da pessoa."
+      x-ptw-audit: cadastro.grupo.membro.incluido/removido por grupo e cadastro.pessoa.alterada pelos cargos, na mesma transação. Só concede o que quem age tem (42501).
+      parameters: [{ $ref: "#/components/parameters/IfMatch" }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AccessAssignmentInput" } } } }
+      responses:
+        "200": { description: Acesso gravado., content: { application/json: { schema: { $ref: "#/components/schemas/AccessAssignmentResult" } } } }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/Rule" }
+        "428": { $ref: "#/components/responses/PreconditionRequired" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "4XX": { $ref: "#/components/responses/Error" }
   /appearance/public:
     get:
       tags: [sistema]
@@ -1854,6 +1870,31 @@ components:
         profileIds: { type: array, uniqueItems: true, maxItems: 10, items: { type: string, format: uuid } }
         plantIds: { type: array, uniqueItems: true, maxItems: 200, items: { type: string, format: uuid } }
         revision: { type: integer, minimum: 1 }
+    AccessAssignmentInput:
+      type: object
+      additionalProperties: false
+      required: [groups]
+      properties:
+        groups:
+          type: array
+          maxItems: 200
+          description: "Grupos a conferir: `member` diz se a pessoa fica nele. Grupo ausente não muda."
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, revision, member]
+            properties:
+              id: { type: string, format: uuid }
+              revision: { type: integer, minimum: 1 }
+              member: { type: boolean }
+        roles: { type: array, maxItems: 200, items: { $ref: "#/components/schemas/RoleAssignment" }, description: "Ausente = cargos não mudam." }
+    AccessAssignmentResult:
+      type: object
+      additionalProperties: false
+      required: [person, groups]
+      properties:
+        person: { $ref: "#/components/schemas/Person" }
+        groups: { type: array, maxItems: 5000, items: { $ref: "#/components/schemas/PersonGroup" } }
     Grant: { type: string, enum: [cadastro, modelos, auditoria, exportacao] }
     AccessProfileInput:
       type: object
