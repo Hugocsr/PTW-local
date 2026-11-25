@@ -18,6 +18,10 @@ const rec = (id: string, status: "ativo" | "inativo" = "ativo") => ({ id, unitId
 export const SGI_TYPE = {
   planta: seedUuid(0x0002, 0x101),
   area: seedUuid(0x0002, 0x102),
+  // SPEC 004: area types the person can pick (Nova área › Tipo).
+  sala: seedUuid(0x0002, 0x103),
+  linha: seedUuid(0x0002, 0x104),
+  ponto: seedUuid(0x0002, 0x105),
 } as const
 
 /** Tipos de equipamento (SGI `tipo`). Os ids antigos que os modelos usam continuam válidos. */
@@ -30,6 +34,9 @@ const EQ = {
 const locationTypes: TypeDef[] = [
   { id: SGI_TYPE.planta, label: "Planta", icon: "fabrica", systemKey: "planta", active: true },
   { id: SGI_TYPE.area, label: "Área", icon: "area", systemKey: "area", active: true },
+  { id: SGI_TYPE.sala, label: "Sala", icon: "sala", active: true },
+  { id: SGI_TYPE.linha, label: "Linha", icon: "linha", active: true },
+  { id: SGI_TYPE.ponto, label: "Ponto de trabalho", icon: "ponto", active: true },
 ]
 
 const assetTypes: TypeDef[] = [

@@ -69,6 +69,7 @@ export function SelectField({
   description,
   placeholder = "Selecione",
   error,
+  disabled,
 }: {
   label: string
   value: string
@@ -77,12 +78,14 @@ export function SelectField({
   description?: string
   placeholder?: string
   error?: string
+  /** Read-only (e.g. inherited from the parent): shown, not changeable. */
+  disabled?: boolean
 }) {
   const id = useId()
   return (
     <Field>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger id={id} className="min-h-11 w-full md:min-h-9" aria-invalid={!!error || undefined} aria-describedby={error ? `${id}-err` : undefined}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

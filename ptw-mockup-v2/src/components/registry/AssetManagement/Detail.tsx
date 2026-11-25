@@ -96,6 +96,7 @@ function LocationDetail({ loc, actions }: { loc: Location; actions: DetailAction
       <div className="flex flex-col gap-5 p-5">
         <DataGrid>
           {kind === "area" && <Datum label="Planta">{parent?.name}</Datum>}
+          {kind === "area" && <Datum label="Tipo">{label(state.locationTypes, loc.typeId)}</Datum>}
           <Datum label="Código" mono>{loc.code}</Datum>
           {kind === "planta" && <Datum label="Áreas">{String(kids.length)}</Datum>}
           {kind === "area" && kids.length > 0 && <Datum label="Sublocais">{kids.map((k) => k.name).join(", ")}</Datum>}

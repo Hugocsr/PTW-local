@@ -4,7 +4,7 @@ import { AREA_FIELDS, EQUIPMENT_FIELDS, formValues, PLANT_FIELDS, PROTECTION_FIE
 import { levelType, locationKind, partOfKindIds, plantsOf } from "@/core/assetTree"
 import { byId } from "@/core/indexes"
 import { useData, useLocationAssets } from "@/data/hooks"
-import { newId, useRegistry } from "@/registry/store"
+import { locationPath, newId, useRegistry } from "@/registry/store"
 import type { Asset, Location, RecordAttrs } from "@/registry/types"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { Switch } from "@/components/ui/switch"
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { FormDialog, SelectField, TextField } from "../forms"
 import { PickList } from "../PickList"
 import { DateInput } from "../DateInput"
+import { AssetIcon } from "@/components/shell/TypeIcon"
 
 /** What the dialog creates or edits (SGI · Nova planta / Nova área / Novo equipamento / Equip. aninhado). */
 export type NodeDialogMode =
@@ -28,6 +29,10 @@ const META = {
 const NO_PROTECTION: Protection = { tipo: "", principio: "", bypass: "", sistema: "", classeRisco: "", protegidos: [] }
 const grid = "grid gap-x-4 gap-y-4 sm:grid-cols-2"
 
+/** The plant type is the one whose systemKey (or name) says "planta"; every other location type can be an area's. */
+const locationKindOfType = (t: { systemKey?: string | null; label: string }) =>
+  t.systemKey === "planta" || /^planta$/i.test(t.label.trim()) ? "planta" : "area"
+
 export function NodeDialog({ mode, onClose, onSaved }: { mode: NodeDialogMode; onClose: () => void; onSaved: (id: string) => void }) {
   const { state, upsert, update, addType, now } = useRegistry()
   const port = useData()
@@ -35,14 +40,19 @@ export function NodeDialog({ mode, onClose, onSaved }: { mode: NodeDialogMode; o
   const fields: readonly AttrField[] = mode.level === "planta" ? PLANT_FIELDS : mode.level === "area" ? AREA_FIELDS : EQUIPMENT_FIELDS
   const nestedIn = mode.level === "equip" && mode.parentAssetId ? byId(state.assets, mode.parentAssetId) : undefined
   const startArea = mode.level === "equip" ? (existing as Asset | undefined)?.locationIds[0] ?? (nestedIn?.locationIds[0] ?? mode.areaId ?? "") : ""
-  const startPlant = mode.level === "area" ? ((existing as Location | undefined)?.parentId ?? mode.plantId ?? "") : startArea ? byId(state.locations, startArea)?.parentId ?? "" : ""
+  // SPEC 004: the plant is the root of the area's chain (never an intermediate area), whatever opened the dialog.
+  const rootOf = (locId: string) => locId ? locationPath(state.locations, locId)[0]?.id ?? "" : ""
+  const startPlant = mode.level === "area" ? ((existing as Location | undefined)?.parentId ?? mode.plantId ?? "") : rootOf(startArea)
 
   const [name, setName] = useState(existing?.name ?? "")
   const [code, setCode] = useState(existing?.code ?? "")
   const [active, setActive] = useState(existing ? existing.status !== "inativo" : true)
   const [plantId, setPlantId] = useState(startPlant)
   const [areaId, setAreaId] = useState(startArea)
-  const [typeId, setTypeId] = useState(mode.level === "equip" ? (existing as Asset | undefined)?.typeId ?? "" : "")
+  const areaTypes = state.locationTypes.filter((t) => locationKindOfType(t) !== "planta")
+  const defaultAreaType = levelType(state.locationTypes, "area")?.id ?? ""
+  const [typeId, setTypeId] = useState(mode.level === "equip" ? (existing as Asset | undefined)?.typeId ?? ""
+    : mode.level === "area" ? (existing as Location | undefined)?.typeId ?? defaultAreaType : "")
   const [values, setValues] = useState<Record<string, string>>(() => formValues(existing?.attrs, fields))
   const before = protectionOf(existing?.attrs)
   const [guard, setGuard] = useState(!!before)
@@ -64,9 +74,17 @@ export function NodeDialog({ mode, onClose, onSaved }: { mode: NodeDialogMode; o
   const missing = [
     !name.trim() && "Nome", !code.trim() && (mode.level === "equip" ? "Código/TAG" : "Código"),
     mode.level !== "planta" && !plantId && "Planta", mode.level === "equip" && !areaId && "Área", mode.level === "equip" && !typeId && "Tipo",
+    mode.level === "area" && !typeId && !!areaTypes.length && "Tipo",
   ].filter((x): x is string => !!x)
   const valid = missing.length === 0 && !taken && [...name.trim()].length <= 200 && [...code.trim()].length <= 64 && !Object.keys(problems).length && !Object.keys(protProblems).length
   const m = META[mode.level]
+  // SPEC 004: an area only receives PTs of models whose scope accepts its type; say how many do.
+  const acceptingModels = mode.level === "area" && typeId
+    ? state.templates.filter((t) => t.versions.some((v) => v.status === "ativa" && v.locationTypeIds.includes(typeId))).length : 0
+  const typeName = state.locationTypes.find((t) => t.id === typeId)?.label ?? ""
+  const modelsHint = !typeId ? undefined : acceptingModels
+    ? `${acceptingModels} ${acceptingModels === 1 ? "modelo de PT aceita" : "modelos de PT aceitam"} ${typeName}`
+    : "Nenhum modelo de PT aceita este tipo ainda: inclua-o no Escopo do modelo para abrir PTs aqui"
 
   /** The location type of a level; created (with its icon) the first time the plant uses it. */
   const levelTypeId = async (kind: "planta" | "area"): Promise<string | null> => {
@@ -82,13 +100,13 @@ export function NodeDialog({ mode, onClose, onSaved }: { mode: NodeDialogMode; o
     if (mode.level !== "equip") {
       const kind = mode.level
       if (existing) {
-        const ok = await update<Location>("locations", existing.id, (l) => ({ ...l, name: name.trim(), code: code.trim(), status, attrs, parentId: kind === "area" ? plantId : l.parentId }))
+        const ok = await update<Location>("locations", existing.id, (l) => ({ ...l, name: name.trim(), code: code.trim(), status, attrs, parentId: kind === "area" ? plantId : l.parentId, typeId: kind === "area" && typeId ? typeId : l.typeId }))
         if (ok) { toast.success(`${kind === "planta" ? "Planta" : "Área"} atualizada`, { description: name.trim() }); onSaved(existing.id) }
         return
       }
-      const typeId = await levelTypeId(kind)
-      if (!typeId) return
-      const item: Location = { id: newId(), unitId: state.units[0].id, revision: 1, updatedAt: now(), origin: "manual", status, parentId: kind === "area" ? plantId : null, typeId, code: code.trim(), name: name.trim(), aliases: [], attrs }
+      const levelId = kind === "area" && typeId ? typeId : await levelTypeId(kind)
+      if (!levelId) return
+      const item: Location = { id: newId(), unitId: state.units[0].id, revision: 1, updatedAt: now(), origin: "manual", status, parentId: kind === "area" ? plantId : null, typeId: levelId, code: code.trim(), name: name.trim(), aliases: [], attrs }
       if (await upsert("locations", item)) { toast.success(`${kind === "planta" ? "Planta criada" : "Área criada"}`, { description: item.name }); onSaved(item.id) }
       return
     }
@@ -115,19 +133,33 @@ export function NodeDialog({ mode, onClose, onSaved }: { mode: NodeDialogMode; o
       description={m.sub} meta={nestedIn ? `Aninhado em ${nestedIn.name} (${nestedIn.code}): herda a planta e a área do nó pai.` : m.sub}
       valid={valid} missing={missing} submitLabel={existing ? "Salvar alterações" : m.save} onSubmit={save}>
       <div className={grid}>
+        {nestedIn && (
+          <Field className="sm:col-span-2">
+            <FieldLabel>Equipamento pai</FieldLabel>
+            <p className="flex min-h-11 items-center gap-2 rounded-md border bg-muted/50 px-3 type-body md:min-h-9" aria-label={`Equipamento pai: ${nestedIn.code} · ${nestedIn.name}`}>
+              <AssetIcon id={nestedIn.id} className="size-4 text-muted-foreground" />
+              <span className="font-mono text-sm">{nestedIn.code}</span><span className="text-muted-foreground">·</span><span className="min-w-0 truncate">{nestedIn.name}</span>
+            </p>
+            <FieldDescription>O novo equipamento fica dentro dele (é parte de).</FieldDescription>
+          </Field>
+        )}
         {mode.level !== "planta" && (
-          <SelectField label="Planta" value={plantId} onChange={(v) => { setPlantId(v); setAreaId("") }} placeholder="Selecione…"
-            options={plants.map((p) => ({ value: p.id, label: p.name }))} description={nestedIn ? "Herdada do nó pai" : undefined} />
+          <SelectField label="Planta" value={plantId} onChange={(v) => { setPlantId(v); setAreaId("") }} placeholder="Selecione…" disabled={!!nestedIn}
+            options={plants.map((p) => ({ value: p.id, label: p.name }))} description={nestedIn ? "Herdada do equipamento pai" : undefined} />
         )}
         {mode.level === "equip" && (
-          <SelectField label="Área" value={areaId} onChange={setAreaId} placeholder={plantId ? "Selecione…" : "Escolha a planta primeiro"}
-            options={areas.map((a) => ({ value: a.id, label: a.name }))} />
+          <SelectField label="Área" value={areaId} onChange={setAreaId} placeholder={plantId ? "Selecione…" : "Escolha a planta primeiro"} disabled={!!nestedIn}
+            options={areas.map((a) => ({ value: a.id, label: a.name }))} description={nestedIn ? "Herdada do equipamento pai" : undefined} />
         )}
         <TextField label={mode.level === "equip" ? "Nome" : mode.level === "planta" ? "Nome da planta" : "Nome da área"} value={name} onChange={setName}
           placeholder={mode.level === "planta" ? "Ex.: Planta Oeste" : mode.level === "area" ? "Ex.: Evaporação" : "Bomba de Polpa 205"} />
         <TextField label={mode.level === "equip" ? "Código/TAG" : "Código"} value={code} onChange={setCode} placeholder={mode.level === "planta" ? "POE" : mode.level === "area" ? "EVA" : "BP-205"}
           error={taken ? "Este código já existe." : [...code.trim()].length > 64 ? "No máximo 64 caracteres." : undefined}
           description={mode.level === "equip" ? "Único no cadastro · editável" : undefined} />
+        {mode.level === "area" && areaTypes.length > 0 && (
+          <SelectField label="Tipo" value={typeId} onChange={setTypeId} placeholder="Selecione…" description={modelsHint}
+            options={areaTypes.filter((t) => t.active || t.id === typeId).map((t) => ({ value: t.id, label: t.label }))} />
+        )}
         {mode.level === "equip" && (
           <SelectField label="Tipo" value={typeId} onChange={setTypeId} placeholder={state.assetTypes.some((t) => t.active) ? "Selecione…" : "Cadastre tipos em Configuração › Tipos"}
             options={state.assetTypes.filter((t) => t.active || t.id === typeId).map((t) => ({ value: t.id, label: t.label }))} />

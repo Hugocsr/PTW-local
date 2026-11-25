@@ -21,6 +21,24 @@
       "icon": "area",
       "systemKey": "area",
       "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000103",
+      "label": "Sala",
+      "icon": "sala",
+      "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000104",
+      "label": "Linha",
+      "icon": "linha",
+      "active": true
+    },
+    {
+      "id": "019a0002-0000-7000-8000-000000000105",
+      "label": "Ponto de trabalho",
+      "icon": "ponto",
+      "active": true
     }
   ],
   "roleTypes": [

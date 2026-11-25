@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { Asset, AssetRelation, Location, TypeDef } from "@/registry/types"
 import { selectionPath, childLocations, equipmentChain, equipmentForest, forestIds, levelType, locationChain, locationKind, nextLevel, partOfKindIds, partParents, plantsOf, visibleLocations } from "./assetTree"
-import { attrText, formValues, PLANT_FIELDS, protectionOf, sheetFrom, sheetProblems, EQUIPMENT_FIELDS } from "./assetAttrs"
+import { AREA_FIELDS, attrText, formValues, PLANT_FIELDS, protectionOf, SAP_HIDDEN, sheetFrom, sheetProblems, EQUIPMENT_FIELDS } from "./assetAttrs"
 
 const T = "2026-11-24T09:00:00-03:00"
 const rec = { unitId: "u", revision: 1, updatedAt: T, origin: "manual" as const, status: "ativo" as const }
@@ -75,18 +75,31 @@ describe("árvore de ativos (SGI: Planta → Área → Equipamento → aninhado)
 describe("ficha (attrs)", () => {
   it("guarda só o preenchido, mantém chaves desconhecidas e o bloco de proteção", () => {
     const before = { importado: "sim", werks: "XX01" }
-    const sheet = sheetFrom(before, PLANT_FIELDS, { fuso: "America/Sao_Paulo", werks: " BR01 ", regio: "" })
-    expect(sheet).toEqual({ importado: "sim", fuso: "America/Sao_Paulo", werks: "BR01" })
-    const eq = sheetFrom(undefined, EQUIPMENT_FIELDS, { equnr: "10001234" }, { tipo: "sensor_de_processo", principio: "", bypass: " jumper ", sistema: "", classeRisco: "", protegidos: ["a", "a", "b"] })
-    expect(eq).toEqual({ equnr: "10001234", protecao: { tipo: "sensor_de_processo", bypass: "jumper", protegidos: ["a", "b"] } })
+    const sheet = sheetFrom(before, PLANT_FIELDS, { fuso: "America/Sao_Paulo", localizacao: " Barcarena/PA ", werks: "ignorado" })
+    expect(sheet).toEqual({ importado: "sim", werks: "XX01", fuso: "America/Sao_Paulo", localizacao: "Barcarena/PA" })
+    const eq = sheetFrom({ equnr: "10001234" }, EQUIPMENT_FIELDS, { fabricante: "KSB" }, { tipo: "sensor_de_processo", principio: "", bypass: " jumper ", sistema: "", classeRisco: "", protegidos: ["a", "a", "b"] })
+    expect(eq).toEqual({ equnr: "10001234", fabricante: "KSB", protecao: { tipo: "sensor_de_processo", bypass: "jumper", protegidos: ["a", "b"] } })
     expect(protectionOf(eq)).toEqual({ tipo: "sensor_de_processo", principio: "", bypass: "jumper", sistema: "", classeRisco: "", protegidos: ["a", "b"] })
     expect(protectionOf(sheetFrom(eq, EQUIPMENT_FIELDS, formValues(eq, EQUIPMENT_FIELDS), null))).toBeNull()
     expect(attrText(eq, "protecao")).toBe("")
     expect(attrText(eq, "equnr")).toBe("10001234")
   })
 
+  it("SPEC 004: campos SAP escondidos não aparecem e continuam guardados ao salvar o formulário", () => {
+    const shown = (f: readonly { key: string }[]) => new Set(f.map((x) => x.key))
+    for (const [fields, hidden] of [[PLANT_FIELDS, SAP_HIDDEN.planta], [AREA_FIELDS, SAP_HIDDEN.area], [EQUIPMENT_FIELDS, SAP_HIDDEN.equip]] as const)
+      for (const k of hidden) expect(shown(fields).has(k)).toBe(false)
+    const sap = Object.fromEntries(SAP_HIDDEN.equip.map((k) => [k, k === "dataAquis" ? "2024-02-29" : "X1"]))
+    const saved = sheetFrom(sap, EQUIPMENT_FIELDS, { ...formValues(sap, EQUIPMENT_FIELDS), modelo: "CM4" })
+    for (const k of SAP_HIDDEN.equip) expect(saved[k]).toBe(sap[k])
+    const area = sheetFrom({ tplnr: "BR-PNO-CAL", beber: "01", kostl: "CC-1" }, AREA_FIELDS, {})
+    expect(area).toEqual({ tplnr: "BR-PNO-CAL", beber: "01", kostl: "CC-1" })
+  })
+
   it("confere tamanho e data", () => {
-    expect(sheetProblems(EQUIPMENT_FIELDS, { catSap: "MM", dataAquis: "2024-02-30" })).toEqual({ catSap: "No máximo 1 caractere.", dataAquis: "Use uma data válida (AAAA-MM-DD)." })
-    expect(sheetProblems(EQUIPMENT_FIELDS, { dataAquis: "2024-02-29" })).toEqual({})
+    expect(sheetProblems(EQUIPMENT_FIELDS, { nserie: "x".repeat(61) })).toEqual({ nserie: "No máximo 60 caracteres." })
+    const dated = [{ key: "d", label: "Data", kind: "date" as const }]
+    expect(sheetProblems(dated, { d: "2024-02-30" })).toEqual({ d: "Use uma data válida (AAAA-MM-DD)." })
+    expect(sheetProblems(dated, { d: "2024-02-29" })).toEqual({})
   })
 })

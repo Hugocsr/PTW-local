@@ -66,36 +66,32 @@ export const RISK_CLASSES = [
   { value: "Classe 2", label: "Classe 2" },
 ] as const
 
+/**
+ * SPEC 004: the forms and the detail show only what the operation uses today. The SAP keys below are kept
+ * as data (`SAP_HIDDEN`): a record that has them keeps them when edited here (`sheetFrom` keeps keys the
+ * form does not show), the search still finds them, and an import can still fill them. Showing one again
+ * is moving it back to its list.
+ */
 export const PLANT_FIELDS: readonly AttrField[] = [
   { key: "fuso", label: "Fuso horário", kind: "select", options: TIMEZONES },
   { key: "localizacao", label: "Localização", placeholder: "Barcarena/PA", maxLength: 120 },
-  { key: "werks", label: "WERKS — Cód. SAP Planta", help: "[SAP] Chave de integração R1 · 4 caracteres", placeholder: "BR01", mono: true, maxLength: 4 },
-  { key: "iwerk", label: "IWERK — Planta Planejadora", help: "[SAP] Se vazio, assume o WERKS", placeholder: "BR01", mono: true, maxLength: 4 },
-  { key: "bukrs", label: "BUKRS — Empresa SAP", help: "[SAP] Código da empresa FI/CO", placeholder: "BR00", mono: true, maxLength: 4 },
-  { key: "regio", label: "REGIO — UF / Região", help: "[SAP] Estado / região", placeholder: "SP", mono: true, maxLength: 3 },
 ]
 
-export const AREA_FIELDS: readonly AttrField[] = [
-  { key: "tplnr", label: "TPLNR — Local Funcional SAP", help: "[SAP] Chave de integração R1 · única por planta", placeholder: "BR-PNO-CAL", mono: true, full: true, maxLength: 40 },
-  { key: "beber", label: "BEBER — Seção da Planta", help: "[SAP] Subdivisão / seção produtiva", placeholder: "01", mono: true, maxLength: 3 },
-  { key: "kostl", label: "KOSTL — Centro de Custo", help: "[SAP] Rateio de custos de manutenção", placeholder: "CC-1001", mono: true, maxLength: 10 },
-]
+export const AREA_FIELDS: readonly AttrField[] = []
 
 export const EQUIPMENT_FIELDS: readonly AttrField[] = [
-  { key: "equnr", label: "EQUNR — Nº SAP", help: "[SAP] Identificador de referência (EQUI.EQUNR) · único no tenant", placeholder: "10001234", mono: true, maxLength: 18 },
   { key: "fabricante", label: "Fabricante", placeholder: "KSB", maxLength: 120 },
   { key: "modelo", label: "Modelo", placeholder: "Referência do catálogo", maxLength: 120 },
   { key: "nserie", label: "Número de série", placeholder: "Único quando preenchido", mono: true, maxLength: 60 },
   { key: "statusOp", label: "Status operacional", kind: "select", options: OPERATING_STATUS },
-  { key: "tplnr", label: "TPLNR / FLOC — Local Funcional SAP", help: "[SAP] Posição hierárquica na planta (IFLOT.TPLNR)", placeholder: "BR-PNO-CAL-BP205", mono: true, full: true, maxLength: 40 },
-  { key: "catSap", label: "Categoria SAP (EQTYP)", help: "[SAP] M = Máquina, V = Veículo, E = Elétrico", placeholder: "M", mono: true, maxLength: 1 },
-  { key: "ninv", label: "Nº inventário (INVNR)", help: "[SAP] Nº de patrimônio físico", mono: true, maxLength: 25 },
-  { key: "kostl", label: "Centro de custo (KOSTL)", help: "[SAP] Manutenção", placeholder: "CC-1001", mono: true, maxLength: 10 },
-  { key: "iwerk", label: "Planta planejadora SAP (IWERK)", help: "[SAP] Pode diferir da planta", placeholder: "BR01", mono: true, maxLength: 4 },
-  { key: "ingrp", label: "Grupo planejador SAP (INGRP)", help: "[SAP] Grupo responsável pela manutenção", mono: true, maxLength: 3 },
-  { key: "dataAquis", label: "Data de aquisição (ANSDT)", help: "[SAP] Entrada em operação", kind: "date", mono: true },
-  { key: "matnr", label: "Nº material SAP (MATNR)", help: "[SAP] Material vinculado no SAP MM", mono: true, maxLength: 40 },
 ]
+
+/** SAP keys kept in `attrs` but not shown (SPEC 004), by level: plant WERKS/IWERK/BUKRS/REGIO, area TPLNR/BEBER/KOSTL, equipment EQUNR…MATNR. */
+export const SAP_HIDDEN = {
+  planta: ["werks", "iwerk", "bukrs", "regio"],
+  area: ["tplnr", "beber", "kostl"],
+  equip: ["equnr", "tplnr", "catSap", "ninv", "kostl", "iwerk", "ingrp", "dataAquis", "matnr"],
+} as const
 
 /** The "É dispositivo de proteção" block (`attrs.protecao`); `protegidos` is a list of asset ids. */
 export const PROTECTION_FIELDS: readonly AttrField[] = [

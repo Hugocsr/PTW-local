@@ -577,6 +577,20 @@ Locais e ativos são cadastrados numa tela só (`#ativos`, componente `registry/
 
 **Formulários.** Diálogo largo (`FormDialog wide`), duas colunas, rótulo acima e ajuda `[SAP] …` abaixo; data com máscara própria dd/mm/aaaa e calendário (`DateInput`, nunca o campo nativo, P19). Equipamento: planta e área obrigatórias (no aninhado vêm do nó pai, travadas), código/TAG, nome, tipo, ficha SAP, chave "É dispositivo de proteção?" que abre o bloco de proteção, e "Equipamento ativo".
 
+**Ajustes da SPEC 004 (25/11/2026).**
+- **Campos SAP fora da tela:** os campos SAP não aparecem nos formulários nem no detalhe.
+  - Planta: WERKS, IWERK, BUKRS, REGIO.
+  - Área: TPLNR, BEBER, KOSTL.
+  - Equipamento: EQUNR, TPLNR/FLOC, EQTYP, INVNR, KOSTL, IWERK, INGRP, ANSDT, MATNR.
+  - Os valores ficam guardados em `attrs` (`SAP_HIDDEN` em `core/assetAttrs.ts`), são preservados ao editar e continuam valendo na busca e na importação.
+- **O que cada formulário mostra:**
+  - Planta: Nome, Código, Fuso horário, Localização, Ativa.
+  - Área: Planta, Nome, Código, **Tipo** e Ativa. O Tipo usa os tipos de local menos o de planta, com padrão "Área". Abaixo dele, a linha "N modelos de PT aceitam <tipo>" ou o aviso de que nenhum aceita, porque o escopo do modelo é por tipo de local.
+  - Equipamento: Planta, Área, Nome, Código/TAG, Tipo, Fabricante, Modelo, Nº de série, Status operacional, proteção, Ativo.
+- **Planta preenchida:** a Planta do Novo equipamento é sempre a raiz da área selecionada.
+- **Equip. aninhado:** abre com "Equipamento pai" (ícone do tipo, código · nome, só leitura) na primeira linha, e Planta e Área bloqueadas ("Herdada do equipamento pai").
+- **Detalhe da área:** mostra o Tipo.
+
 
 ## Delegações (SGI Forces · Aprovação › Delegações, 24/11/2026)
 
@@ -584,7 +598,7 @@ Locais e ativos são cadastrados numa tela só (`#ativos`, componente `registry/
 - Cartão com barra de filtros (Todos os status / Ativa / Agendada / Expirada / Revogada, "Período de … até …" em dd/mm/aaaa, Limpar, contador "n de m") e tabela: Delegante (avatar índigo) → Delegado (avatar navy), Período "10 jan 2024 — 20 jan 2024", Escopo (planta; segunda linha "Todas as aprovações" ou "Só: <aprovação>"), Motivo, Status em pílula (ativa verde, agendada índigo, expirada cinza, revogada vermelha) e Ações (ícone vermelho de revogar). No celular a tabela vira lista de cartões.
 - Modal Nova delegação em duas colunas: Delegante, Delegado, Início, Fim, Escopo (planta), Aprovação (só quando o delegante tem mais de uma) e Observação. Datas em dias: início hoje = agora; fim inclusivo; até 7 dias corridos.
 - Diferenças do SGI, para manter as regras do PTW: o delegado precisa ter o cargo da aprovação no escopo (o SGI aceita qualquer usuário); só aparecem como delegantes os aprovadores nominais de aprovação delegável; a delegação não é apagada, é revogada com motivo e preserva as assinaturas já feitas.
-- **SPEC 003 (26/11/2026):** a delegação **agendada** tem "Editar" (lápis, contorno) ao lado de Revogar, no modal "Editar delegação" (o mesmo da criação, preenchido; delegante só leitura; subtítulo "Agendada · começa em dd/mm/aaaa"; "Salvar alterações"). Ativa só revoga. A coluna **Ações** só aparece quando alguma linha mostrada (depois dos filtros) tem ação; sem o papel de cadastro, nunca. No calendário do Início, dias passados bloqueados; no Fim, só do início até início + 6 dias, com o intervalo em índigo suave.
+- **SPEC 003 (26/11/2026):** a delegação **agendada** tem "Editar" (lápis, contorno) ao lado de Revogar, no modal "Editar delegação" (o mesmo da criação, preenchido e todo editável, inclusive o delegante; subtítulo "Agendada · começa em dd/mm/aaaa"; "Salvar alterações"). Ativa só revoga. A coluna **Ações** só aparece quando alguma linha mostrada (depois dos filtros) tem ação; sem o papel de cadastro, nunca. No calendário do Início, dias passados bloqueados; no Fim, só do início até início + 6 dias, com o intervalo em índigo suave.
 
 
 ## Dashboard (SPEC 001, 24/11/2026)
