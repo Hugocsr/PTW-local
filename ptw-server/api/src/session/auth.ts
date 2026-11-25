@@ -8,6 +8,8 @@ import { pta } from "../errors/apiError.js"
 import { accountProblem, accountState } from "./person.js"
 import { csrfOf, hashToken, readSessionCookie } from "./cookie.js"
 import type { SessionRecord } from "./store.js"
+import { groupSources, grantView } from "./access.js"
+import type { GrantSource } from "../shared/core/governance.js"
 
 /** De quanto em quanto tempo a última atividade da sessão é regravada. */
 
@@ -29,7 +31,7 @@ export async function authenticate(req: FastifyRequest, required: boolean): Prom
   const now = app.now()
   const hash = hashToken(token)
   const unitId = req.ptw.unitId as string
-  const found = await app.db.withContext<{ rec: SessionRecord | null; problem: string | null }>(
+  const found = await app.db.withContext<{ rec: SessionRecord | null; problem: string | null; groups?: GrantSource[] }>(
     { unitId, personId: null, auth: "sessao", client: req.ptw.client, requestId: req.ptw.requestId },
     async (tx) => {
       const rec = await app.sessions.get(tx, hash)
@@ -47,7 +49,7 @@ export async function authenticate(req: FastifyRequest, required: boolean): Prom
         if (await app.sessions.end(tx, hash, now)) await tx`select ptw.audit_log('sessao.expirada',true,'Sessão encerrada: conta indisponível','{}'::jsonb,${rec.personId}::uuid)`
         return { rec: null, problem: `${problem}: sessão encerrada` }
       }
-      return { rec, problem: null }
+      return { rec, problem: null, groups: await groupSources(tx, unitId, rec.personId) }
     },
   )
   if (found.rec === null) {
@@ -61,7 +63,8 @@ export async function authenticate(req: FastifyRequest, required: boolean): Prom
     unitId: rec.unitId,
     personId: rec.personId,
     auth: rec.auth,
-    grants: rec.grants,
+    ...grantView(rec.grants, found.groups ?? []),
+    directoryGrants: rec.grants,
     createdAt: rec.createdAt,
     expiresAt: rec.expiresAt,
   }

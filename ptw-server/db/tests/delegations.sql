@@ -72,7 +72,8 @@ select set_config('ptw.unit_id',t.id('de01')::text,false), set_config('ptw.perso
 select t.expect('PTW09','Delegação: representado não contorna separação',$$select ptw.permit_sign(t.id('de01'),t.id('de70'),t.id('de42'),1)$$);
 update ptw.delegation set revoked_at=now(),revoked_reason='Encerramento da substituição' where id=t.id('de61');
 select t.check((select count(*)=1 from ptw.signature where permit_id=t.id('de70') and delegation_id=t.id('de61') and voided_at is null),'Delegação: revogação preserva assinatura anterior');
-select t.expect('42501','Delegação: API não altera identidade do mandato',$$update ptw.delegation set delegate_id=t.id('de13') where id=t.id('de61')$$);
+select t.expect('23514','Delegação: revogada não é alterada',$$update ptw.delegation set delegate_id=t.id('de13') where id=t.id('de61')$$);
+select t.expect('23514','Delegação: revogada não troca o delegante',$$update ptw.delegation set delegator_id=t.id('de13') where id=t.id('de61')$$);
 select t.expect('42501','Delegação: API não apaga mandatos',$$delete from ptw.delegation$$);
 -- Mandato geral (tela de Delegações do SGI): sem aprovação escolhida, vale para todas as do delegante.
 select set_config('ptw.unit_id',t.id('de01')::text,false), set_config('ptw.person_id',t.id('de11')::text,false), set_config('ptw.auth','sessao',false);
@@ -95,6 +96,22 @@ insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at
 select t.check(ptw.delegation_for(t.id('de01'),t.id('de41'),t.id('de13'),(select path from ptw.location where id=t.id('de02'))) is null,'Delegação geral: agendada ainda não vale');
 select t.check((select slot_id is null and scope_location_id is null from ptw.delegation where id=t.id('de63')),'Delegação geral: todas as plantas sem aprovação fixa');
 select t.check((select count(*)=1 from ptw.audit_event where action='delegacao.criada' and entity_id=t.id('de63')),'Delegação geral: criação auditada');
+-- Edição de agendada (SPEC 003): só antes do início, sem trocar o delegante, com todas as regras de novo.
+update ptw.delegation set ends_at=now()+interval '2 day',reason='Viagem técnica (ajuste)' where id=t.id('de63');
+select t.check((select revision=2 and created_by=t.id('de11') and reason='Viagem técnica (ajuste)' and revoked_at is null from ptw.delegation where id=t.id('de63')),'Delegação: agendada editada, revisão e autoria preservadas');
+select t.check((select count(*)=1 from ptw.audit_event where action='delegacao.alterada' and entity_id=t.id('de63')),'Delegação: edição auditada');
+select t.expect('23514','Delegação: edição acima de sete dias recusada',$$update ptw.delegation set ends_at=starts_at+interval '8 day' where id=t.id('de63')$$);
+select t.expect('23514','Delegação: edição com início no passado recusada',$$update ptw.delegation set starts_at=now()-interval '1 hour' where id=t.id('de63')$$);
+select t.expect('23514','Delegação: edição com delegado sem cargo recusada',$$update ptw.delegation set delegate_id=t.id('de14') where id=t.id('de63')$$);
+select t.expect('23514','Delegação: novo delegante sem aprovação nominal recusado',$$update ptw.delegation set delegator_id=t.id('de12') where id=t.id('de63')$$);
+select t.expect('23514','Delegação: novo delegante igual ao delegado recusado',$$update ptw.delegation set delegator_id=t.id('de13') where id=t.id('de63')$$);
+select t.expect('42501','Delegação: autoria não muda',$$update ptw.delegation set created_by=t.id('de12') where id=t.id('de63')$$);
+insert into ptw.delegation(unit_id,id,slot_id,delegator_id,delegate_id,starts_at,ends_at,reason,created_by)
+ values(t.id('de01'),t.id('de64'),null,t.id('de11'),t.id('de12'),now(),now()+interval '1 hour','Reunião',t.id('de11'));
+select t.expect('23514','Delegação: ativa não é editável',$$update ptw.delegation set reason='Outra' where id=t.id('de64')$$);
+select t.expect('23505','Delegação: edição sobreposta recusada',$$update ptw.delegation set starts_at=now()+interval '30 minute' where id=t.id('de63')$$);
+update ptw.delegation set revoked_at=now(),revoked_reason='Teste' where id=t.id('de64');
+select t.check((select revision=2 from ptw.delegation where id=t.id('de64')),'Delegação: revogação continua funcionando');
 select t.check((select count(*)=1 from ptw.audit_event where action='pt.assinatura' and data->>'delegacao'=t.id('de61')::text and data->>'representado'=t.id('de11')::text),'Delegação: representação auditada');
 select set_config('ptw.unit_id',t.id('1')::text,false), set_config('ptw.person_id',t.id('d2')::text,false), set_config('ptw.auth','sessao',false);
 select t.check((select count(*)=0 from ptw.delegation),'Delegação: outra unidade não lê mandatos');

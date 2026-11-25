@@ -4,7 +4,7 @@ import { canReadView, navigationGroup, navigationSections, visibleViews, type Na
 const operator: NavigationAccess = { canEditRegistry: false, canEditModels: false, canAudit: false, canExport: false }
 const operation = ["dashboard", "quadro"]
 const registry = ["ativos", "pessoas"]
-const references = [...registry, "modelos", "tipos", "listas"]
+const references = [...registry, "perfis", "modelos", "tipos", "listas"]
 
 describe("menu único por permissões", () => {
   it("mantém operações e consultas do operador sem destinos de gestão/auditoria", () => {
@@ -18,16 +18,16 @@ describe("menu único por permissões", () => {
   it("exibe todos os destinos do administrador ao mesmo tempo, sem duplicar consultas", () => {
     expect(navigationSections({ canEditRegistry: true, canEditModels: true, canAudit: true, canExport: true })).toEqual([
       { group: "operation", views: operation },
-      { group: "registry", views: registry },
+      { group: "registry", views: registry }, { group: "access", views: ["grupos", "perfis"] },
       { group: "configuration", views: ["modelos", "tipos", "listas", "identidade"] },
-      { group: "governance", views: ["grupos", "delegacoes", "auditoria"] },
+      { group: "governance", views: ["delegacoes", "auditoria"] },
     ])
   })
 
   it("cadastro permite gerir Tipos/Listas sem promover a gestão de Modelos", () => {
     expect(navigationSections({ ...operator, canEditRegistry: true })).toEqual([
-      { group: "operation", views: operation }, { group: "registry", views: registry },
-      { group: "configuration", views: ["tipos", "listas"] }, { group: "governance", views: ["grupos", "delegacoes"] }, { group: "reference", views: ["modelos"] },
+      { group: "operation", views: operation }, { group: "registry", views: registry }, { group: "access", views: ["grupos", "perfis"] },
+      { group: "configuration", views: ["tipos", "listas"] }, { group: "governance", views: ["delegacoes"] }, { group: "reference", views: ["modelos"] },
     ])
   })
 
@@ -36,7 +36,7 @@ describe("menu único por permissões", () => {
     expect(navigationSections(access)).toEqual([
       { group: "operation", views: operation }, { group: "configuration", views: ["modelos", "identidade"] },
       { group: "governance", views: ["delegacoes"] },
-      { group: "reference", views: [...registry, "tipos", "listas"] },
+      { group: "reference", views: [...registry, "perfis", "tipos", "listas"] },
     ])
     expect(canReadView("auditoria", access)).toBe(false)
   })

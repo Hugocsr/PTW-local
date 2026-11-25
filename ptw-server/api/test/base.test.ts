@@ -156,7 +156,7 @@ describe("erros: o mapa do contrato", () => {
   it("cada PTAnn da API tem o status do mapa", () => {
     const mine = [
       pta.unavailable(), pta.unauthorized(), pta.forbidden(), pta.notFound(), pta.badRequest("x"), pta.staleRevision(1), pta.ifMatchRequired(),
-      pta.idempotencyMismatch(), pta.blobMismatch(), pta.importStale(), pta.tooLarge(), pta.tooMany(), pta.notImplemented(), pta.unexpected(),
+      pta.idempotencyMismatch(), pta.blobMismatch(), pta.importStale(), pta.tooLarge(), pta.tooMany(), pta.notImplemented(), pta.unexpected(), pta.lastAdmin(),
     ]
     const inMap = new Map<string, number>()
     for (const [status, codes] of map) for (const c of codes) if (c.startsWith("PTA")) inMap.set(c, status)

@@ -46,6 +46,7 @@ export const pta = {
   importStale: (detail?: string) => new ApiError(422, "PTA10", "A prévia da importação venceu ou o pacote mudou: refaça a prévia", { detail }),
   tooLarge: () => new ApiError(413, "PTA11", "Conteúdo maior que o permitido"),
   tooMany: (retryAfter = 60) => new ApiError(429, "PTA12", "Tentativas demais: aguarde", { headers: { "retry-after": String(retryAfter) } }),
+  lastAdmin: () => new ApiError(422, "PTA14", "Ninguém mais teria Gestão de cadastros: mantenha ao menos uma pessoa com essa permissão"),
   notImplemented: (message = "Ainda não disponível nesta fase") => new ApiError(501, "PTA13", message),
   unexpected: (cause?: unknown, detail?: string) => new ApiError(500, "PTA99", "Erro não previsto", { cause, detail }),
 }

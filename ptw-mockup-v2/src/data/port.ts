@@ -108,6 +108,8 @@ export interface SessionPort extends Cell<SessionState> {
   activity?(): Promise<RuleError | null>
   entryPeople?(): Promise<EntryPerson[] | RuleError>
   retry?(): Promise<RuleError | null>
+  /** Re-reads the effective permissions (`GET /session`; SPEC 002: groups grant them, and they change between calls). Absent in memory. */
+  refreshGrants?(): Promise<void>
   /** `POST /session/logout`. Absent in memory. */
   logout?(): Promise<RuleError | null>
   /** Simulation only ("Avançar o relógio", "Servidor fora do ar", "Restaurar exemplo"): absent in `api` (A19). */
@@ -339,10 +341,17 @@ export interface AppearancePort {
 export interface GroupPort {
   read(): Promise<import("@/core/governance").PersonGroup[] | RuleError>
   save(group: import("@/core/governance").GroupInput, revision: number | null): Promise<import("@/core/governance").PersonGroup | RuleError>
+  /** Access profiles (SPEC 002): `GET/POST/PUT /access-profiles`. */
+  profiles(): Promise<import("@/core/governance").AccessProfile[] | RuleError>
+  saveProfile(profile: import("@/core/governance").AccessProfileInput, revision: number | null): Promise<import("@/core/governance").AccessProfile | RuleError>
+  /** Permissions a person gets from groups (`GET /people/{id}/access`). */
+  personAccess(personId: string): Promise<import("@/core/governance").GrantSource[] | RuleError>
 }
 
 export interface DelegationPort {
   read(): Promise<import("@/core/delegation").Delegation[] | RuleError>
   create(input: import("@/core/delegation").DelegationInput): Promise<import("@/core/delegation").Delegation | RuleError>
   revoke(input: import("@/core/delegation").Delegation, reason: string, key: string): Promise<import("@/core/delegation").Delegation | RuleError>
+  /** SPEC 003: edits an agendada delegation (`PUT /delegations/{id}`, If-Match = its revision). */
+  update(current: import("@/core/delegation").Delegation, changes: import("@/core/delegation").DelegationUpdate, key: string): Promise<import("@/core/delegation").Delegation | RuleError>
 }

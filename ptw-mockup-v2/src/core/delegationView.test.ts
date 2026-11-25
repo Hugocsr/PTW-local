@@ -3,7 +3,8 @@ import { sgiSeed, SGI_APPROVAL, SGI_LOC } from "@/demo/sgi/registry"
 import { ID } from "@/registry/seedIds"
 import { pathIds } from "./permitView"
 import type { Delegation } from "./delegation"
-import { approvalsOf, canRevoke, dayLabel, delegateCandidates, delegators, filterDelegations, initials, lastDay, periodLabel, plantScopes, windowOf } from "./delegationView"
+import { approvalsOf, canRevoke, dayLabel, delegateCandidates, delegators, filterDelegations, initials, lastDay, periodLabel, plantScopes, rowActions, showActions, windowOf } from "./delegationView"
+import { canEditDelegation } from "./delegation"
 
 const TZ = "America/Sao_Paulo"
 const NOW = "2026-11-24T10:30:00-03:00"
@@ -76,5 +77,22 @@ describe("Delegações (SGI · Aprovação › Delegações)", () => {
     expect(ids({ status: "", from: "2026-11-29", to: "" })).toEqual(["b"])
     expect(ids({ status: "", from: "", to: "2026-11-11" })).toEqual(["c"])
     expect([ativa, agendada, expirada, revogada].map((d) => canRevoke(d, NOW))).toEqual([true, true, false, false])
+  })
+
+  it("SPEC 003: Editar só na agendada; a coluna Ações aparece só se alguma linha mostrada tem ação", () => {
+    const agendada = mk("a", "2026-11-26T00:00:00-03:00", "2026-11-28T00:00:00-03:00")
+    const ativa = mk("b", "2026-11-24T08:00:00-03:00", "2026-11-25T00:00:00-03:00")
+    const expirada = mk("c", "2026-11-20T00:00:00-03:00", "2026-11-21T00:00:00-03:00")
+    const revogada = mk("d", "2026-11-26T00:00:00-03:00", "2026-11-27T00:00:00-03:00", { revokedAt: "2026-11-24T09:00:00-03:00", revokedBy: ID.person.marina, revokedReason: "x" })
+    expect(canEditDelegation(agendada, NOW)).toBe(true)
+    expect([ativa, expirada, revogada].map((d) => canEditDelegation(d, NOW))).toEqual([false, false, false])
+    expect(rowActions(agendada, NOW, true)).toEqual({ edit: true, revoke: true })
+    expect(rowActions(ativa, NOW, true)).toEqual({ edit: false, revoke: true })
+    expect(rowActions(expirada, NOW, true)).toEqual({ edit: false, revoke: false })
+    expect(rowActions(agendada, NOW, false)).toEqual({ edit: false, revoke: false })
+    expect(showActions([expirada, revogada], NOW, true)).toBe(false)
+    expect(showActions([expirada, ativa], NOW, true)).toBe(true)
+    expect(showActions([agendada, ativa], NOW, false)).toBe(false)
+    expect(showActions([], NOW, true)).toBe(false)
   })
 })

@@ -65,7 +65,7 @@ describe.skipIf(!HAS_DB)("com banco: Delegações do SGI (mandato geral, escopo 
     sessions.set(who, h)
     return h
   }
-  async function call(who: Who, method: "GET" | "POST", url: string, payload?: unknown, extra: Record<string, string> = {}) {
+  async function call(who: Who, method: "GET" | "POST" | "PUT", url: string, payload?: unknown, extra: Record<string, string> = {}) {
     const res = await app.inject({ method, url: `/api/v1${url}`, headers: { ...(await as(who)), ...extra }, ...(payload === undefined ? {} : { payload: payload as object }) })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return { status: res.statusCode, body: res.body, json: () => res.json() as any }
@@ -205,6 +205,42 @@ describe.skipIf(!HAS_DB)("com banco: Delegações do SGI (mandato geral, escopo 
     expect((await db.owner`select count(*)::int as n from ptw.audit_event where action = 'delegacao.revogada' and ok`)[0].n).toBe(2)
   })
 
+  const edit = (d: { id: string; revision: number }, body: Record<string, unknown>, who: Who = "ana") =>
+    call(who, "PUT", `/delegations/${d.id}`, body, { "if-match": `"${d.revision}"`, "idempotency-key": crypto.randomUUID() })
+  const fields = (d: Record<string, unknown>) => ({ slotId: d.slotId, delegateId: d.delegateId, scopeLocationId: d.scopeLocationId, startsAt: d.startsAt, endsAt: d.endsAt, reason: d.reason })
+
+  it("CT-07 SPEC 003: agendada é editada (delegado, período, observação) e a edição é auditada", async () => {
+    const r = await create(mandate({ delegateId: P.marina, startsAt: at(200), endsAt: at(230), reason: "Recesso" }))
+    expect(r.status, r.body).toBe(201)
+    const e = await edit(r.json(), { ...fields(r.json()), delegateId: P.rafael, scopeLocationId: L.norte, endsAt: at(220), reason: "Recesso (ajuste)" })
+    expect(e.status, e.body).toBe(200)
+    expect(e.json()).toMatchObject({ id: r.json().id, delegatorId: P.joana, delegateId: P.rafael, scopeLocationId: L.norte, reason: "Recesso (ajuste)", createdBy: T_ANA, revision: 2 })
+    const audit = await db.owner`select data from ptw.audit_event where action = 'delegacao.alterada' and entity_id = ${r.json().id}::uuid`
+    expect(audit).toHaveLength(1)
+    // Regras de novo: Rafael sem escopo (todas as plantas) é recusado; mais de 7 dias também.
+    expect((await edit(e.json(), { ...fields(e.json()), scopeLocationId: null })).status).toBe(422)
+    expect((await edit(e.json(), { ...fields(e.json()), endsAt: at(200 + 24 * 7 + 1) })).status).toBe(422)
+    expect((await revoke(e.json())).status).toBe(200)
+  })
+
+  it("CT-08 SPEC 003: ativa não é editável (422) e continua só revogável", async () => {
+    const r = await create(mandate({ delegateId: P.marina, startsAt: at(0), endsAt: at(2), reason: "Reunião" }))
+    expect(r.status, r.body).toBe(201)
+    const e = await edit(r.json(), { ...fields(r.json()), reason: "Outra" })
+    expect(e.status, e.body).toBe(422)
+    expect(e.json().message).toMatch(/já entrou em vigor/)
+    expect((await revoke(r.json())).status).toBe(200)
+  })
+
+  it("CT-09 SPEC 003: revisão velha na edição dá 409 sem mudar nada", async () => {
+    const r = await create(mandate({ delegateId: P.marina, startsAt: at(300), endsAt: at(310), reason: "Treinamento" }))
+    const first = await edit(r.json(), { ...fields(r.json()), reason: "Treinamento NR-10" })
+    expect(first.status, first.body).toBe(200)
+    const stale = await edit(r.json(), { ...fields(r.json()), reason: "Outra coisa" })
+    expect(stale.status).toBe(409)
+    expect((await db.owner`select reason from ptw.delegation where id = ${r.json().id}::uuid`)[0].reason).toBe("Treinamento NR-10")
+  })
+
   it("CT-06 visibilidade: quem não é cadastro vê só os mandatos em que é parte", async () => {
     await as("paulo"); await as("marina")
     // Sessões sem o papel de cadastro (no LDAP real: fora do grupo). A sessão é imutável para a API; aqui o dono ajusta.
@@ -217,5 +253,14 @@ describe.skipIf(!HAS_DB)("com banco: Delegações do SGI (mandato geral, escopo 
     expect(marina.length).toBeGreaterThan(0)
     expect(marina.every((d: { delegateId: string; delegatorId: string }) => d.delegateId === P.marina || d.delegatorId === P.marina)).toBe(true)
     expect((await create(mandate({ startsAt: at(100), endsAt: at(110) }), "marina")).status).toBe(403)
+  })
+
+  it("CT-10 SPEC 003: editar sem o papel de cadastro dá 403 e fica registrado como negado", async () => {
+    const [d] = (await call("ana", "GET", "/delegations")).json().filter((x: { reason: string }) => x.reason === "Treinamento NR-10")
+    const denied = async () => (await db.owner`select count(*)::int as n from ptw.audit_event where action = 'delegacao.alterada' and not ok`)[0].n as number
+    const before = await denied()
+    const r = await edit(d, { ...fields(d), reason: "Sem permissão" }, "marina")
+    expect(r.status).toBe(403)
+    expect(await denied()).toBe(before + 1)
   })
 })

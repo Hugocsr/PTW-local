@@ -439,7 +439,7 @@ begin
     'option_list', 'option_item', 'template', 'template_version', 'version_location_type', 'version_asset_type',
     'stage', 'sign_slot', 'separation', 'form_snapshot', 'permit_counter', 'permit', 'permit_asset', 'permit_team',
     'permit_answer', 'blob', 'attachment', 'permit_revision', 'permit_extension', 'permit_revalidation', 'signature',
-    'appearance', 'appearance_asset', 'person_group', 'person_group_member', 'delegation', 'api_session', 'api_idempotency', 'login_attempt',
+    'appearance', 'appearance_asset', 'person_group', 'person_group_member', 'access_profile', 'person_group_profile', 'person_group_scope', 'delegation', 'api_session', 'api_idempotency', 'login_attempt',
     'audit_event', 'audit_head', 'audit_anchor', 'audit_export', 'audit_archive']
   loop
     execute format('alter table ptw.%I enable row level security', t);
@@ -487,9 +487,11 @@ grant insert, update, delete on
 grant insert, update on ptw.appearance to ptw_app;
 grant insert on ptw.appearance_asset to ptw_app;
 grant insert, update on ptw.person_group to ptw_app;
+grant insert, update on ptw.access_profile to ptw_app;
+grant insert, delete on ptw.person_group_profile, ptw.person_group_scope to ptw_app;
 grant insert, delete on ptw.person_group_member to ptw_app;
 grant insert on ptw.delegation to ptw_app;
-grant update (revoked_at, revoked_by, revoked_reason) on ptw.delegation to ptw_app;
+grant update (revoked_at, revoked_by, revoked_reason, slot_id, delegator_id, delegate_id, scope_location_id, starts_at, ends_at, reason) on ptw.delegation to ptw_app;
 -- PT: nunca apagada pela API (rascunho abandonado vira cancelada).
 grant insert, update on ptw.permit, ptw.permit_counter to ptw_app;
 grant insert, update, delete on ptw.permit_asset, ptw.permit_team, ptw.permit_answer to ptw_app;

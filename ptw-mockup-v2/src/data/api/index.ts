@@ -196,6 +196,15 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
       const login = s.registry.get().people.find((p) => p.id === personId)?.login
       if (login) void sessionPort.devLogin(login)
     },
+    async refreshGrants() {
+      const current = session.get()
+      if (current.status !== "aberta") return
+      const epoch = sessionEpoch
+      const r = await http.request<Session>({ method: "GET", path: "/session" })
+      if (!r.ok || epoch !== sessionEpoch || r.data.person.id !== session.get().personId) return
+      const before = session.get().grants
+      if (before.length !== r.data.grants.length || before.some((g, i) => g !== r.data.grants[i])) patch({ grants: r.data.grants })
+    },
     async logout() {
       const epoch = ++sessionEpoch
       const r = await http.request<void>({ method: "POST", path: "/session/logout" })

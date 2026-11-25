@@ -12,6 +12,7 @@ import type { AppState } from "../http/state.js"
 import { clearedCookie, csrfOf, hashToken, newToken, sessionCookie } from "../session/cookie.js"
 import { accountProblem, loadPerson, loadUnit } from "../session/person.js"
 import { directoryLogin, type Grant } from "../session/ldap.js"
+import { groupSources, grantView } from "../session/access.js"
 
 type SessionBody = Schemas["Session"]
 
@@ -22,12 +23,15 @@ async function sessionBody(tx: Tx, state: AppState, s: { personId: string; auth:
   const person = await loadPerson(tx, { id: s.personId })
   const unit = await loadUnit(tx)
   if (!person || !unit) throw pta.unauthorized("Pessoa ou unidade da sessão não existe mais")
+  // SPEC 002: as do diretório (s.grants) mais as dos perfis dos grupos da pessoa.
+  const view = grantView(s.grants, await groupSources(tx, unit.id, s.personId))
   const clock = await tx<{ now: Date }[]>`select clock_timestamp() as now`
   return {
     person,
     unit,
     auth: s.auth,
-    grants: s.grants,
+    grants: view.grants,
+    grantSources: view.grantSources,
     expiresAt: s.expiresAt.toISOString(),
     now: (clock[0]?.now ?? state.now()).toISOString(),
     csrfToken: s.csrfToken,
@@ -50,7 +54,7 @@ export default defineRoutes((api) => {
 
   api.op("getSession", (req) => {
     const s = req.ptw.session!
-    return withCtx(req, (tx) => sessionBody(tx, state, s))
+    return withCtx(req, (tx) => sessionBody(tx, state, { ...s, grants: s.directoryGrants }))
   })
 
   api.op("sessionActivity", async (req, reply) => {
@@ -97,7 +101,8 @@ export default defineRoutes((api) => {
       const prev = req.ptw.session
       if (prev && await state.sessions.end(tx,prev.hash,now)) await tx`select ptw.audit_log('sessao.saida',true,'Saiu (nova entrada)', '{}'::jsonb, ${prev.personId}::uuid)`
       await tx`select ptw.login_succeeded(${bucket}::text)`
-      await tx`select ptw.audit_log('sessao.entrada',true,'Entrou (LDAP)',${JSON.stringify({metodo:"ldap",permissoes:identity.grants})}::jsonb,${person.id}::uuid)`
+      const access = grantView(identity.grants, await groupSources(tx, req.ptw.unitId!, person.id))
+      await tx`select ptw.audit_log('sessao.entrada',true,'Entrou (LDAP)',${JSON.stringify({metodo:"ldap",permissoes:access.grants,diretorio:identity.grants,grupos:access.grantSources.filter((g) => g.from === "grupo")})}::jsonb,${person.id}::uuid)`
       await state.sessions.create(tx,{hash:hashToken(token),unitId:req.ptw.unitId!,personId:person.id,auth:"ldap",grants:identity.grants,client:req.ptw.client,createdAt:now,expiresAt})
       return sessionBody(tx,state,{personId:person.id,auth:"ldap",grants:identity.grants,expiresAt,csrfToken:csrfOf(token)})
     })

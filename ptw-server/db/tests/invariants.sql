@@ -1843,5 +1843,6 @@ reset role;
 select t.check(ptw.audit_verify(t.id('1')) is null,'Grupos: cadeia íntegra');
 
 \ir delegations.sql
+\ir access_profiles.sql
 \set QUIET off
 select 'OK: ' || count(*) || ' verificações' as resultado from t.ok;

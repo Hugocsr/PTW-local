@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/delegations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edita uma delegação agendada (SPEC 003); o delegante não muda. */
+        put: operations["updateDelegation"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/delegations/{id}/revoke": {
         parameters: {
             query?: never;
@@ -63,6 +80,59 @@ export interface paths {
         };
         get?: never;
         put: operations["updatePersonGroup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/access-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Perfis de acesso da unidade (leitura para quem está na sessão). */
+        get: operations["listAccessProfiles"];
+        put?: never;
+        post: operations["createAccessProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/access-profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateAccessProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/people/{id}/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description uuid do registro. */
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** Permissões concedidas à pessoa pelos grupos (origem: grupo e perfil). Para quem tem cadastro, ou a própria pessoa. */
+        get: operations["getPersonAccess"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1393,6 +1463,20 @@ export interface components {
             endsAt: string;
             reason: string;
         };
+        /** @description Campos editáveis de uma delegação agendada (o delegante e o id não mudam). */
+        DelegationUpdate: {
+            /** Format: uuid */
+            slotId: string | null;
+            /** Format: uuid */
+            delegateId: string;
+            /** Format: uuid */
+            scopeLocationId: string | null;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            reason: string;
+        };
         Delegation: {
             /** Format: uuid */
             id: string;
@@ -1427,6 +1511,10 @@ export interface components {
             description: string;
             active: boolean;
             memberIds: string[];
+            /** @description Perfis de acesso concedidos aos membros (SPEC 002). Ausente = sem perfis. */
+            profileIds?: string[];
+            /** @description Plantas de atuação (locais raiz); registradas e exibidas. */
+            plantIds?: string[];
         };
         PersonGroup: {
             /** Format: uuid */
@@ -1435,7 +1523,45 @@ export interface components {
             description: string;
             active: boolean;
             memberIds: string[];
+            profileIds: string[];
+            plantIds: string[];
             revision: number;
+        };
+        /** @enum {string} */
+        Grant: "cadastro" | "modelos" | "auditoria" | "exportacao";
+        AccessProfileInput: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string;
+            permissions: components["schemas"]["Grant"][];
+            active: boolean;
+        };
+        AccessProfile: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string;
+            permissions: components["schemas"]["Grant"][];
+            active: boolean;
+            revision: number;
+            /** @description Grupos que usam o perfil. */
+            groupIds: string[];
+            /** @description Pessoas que recebem o perfil (membros únicos de grupos ativos). */
+            peopleCount: number;
+        };
+        GrantSource: {
+            grant: components["schemas"]["Grant"];
+            /** @enum {string} */
+            from: "diretorio" | "grupo";
+            /** Format: uuid */
+            groupId?: string;
+            /** Format: uuid */
+            profileId?: string;
+            /** @description Nome do grupo (só em /people/{id}/access). */
+            groupName?: string;
+            /** @description Nome do perfil (só em /people/{id}/access). */
+            profileName?: string;
         };
         Brand: {
             name: string;
@@ -1517,8 +1643,10 @@ export interface components {
             person: components["schemas"]["Person"];
             unit: components["schemas"]["Unit"];
             auth: components["schemas"]["AuthMethod"];
-            /** @description Permissões administrativas conferidas nos grupos LDAP ao entrar e imutáveis nesta sessão. Atos de PT são decididos por cargo no banco. */
+            /** @description Permissões efetivas: as do diretório (LDAP, ao entrar) mais as dos perfis dos grupos da pessoa, recalculadas em cada chamada (SPEC 002). Atos de PT são decididos por cargo no banco. */
             grants: ("cadastro" | "modelos" | "auditoria" | "exportacao")[];
+            /** @description De onde vem cada permissão. */
+            grantSources?: components["schemas"]["GrantSource"][];
             expiresAt: components["schemas"]["Instant"];
             now: components["schemas"]["Instant"];
             csrfToken: string;
@@ -2545,6 +2673,37 @@ export interface operations {
             };
         };
     };
+    updateDelegation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Revisão que o cliente leu, entre aspas: `"7"`. */
+                "If-Match": components["parameters"]["IfMatch"];
+                /** @description uuid gerado pelo cliente para esta criação; repetir a chamada não cria de novo (guardada por 24 h). */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DelegationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Delegação alterada. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Delegation"];
+                };
+            };
+        };
+    };
     revokeDelegation: {
         parameters: {
             query?: never;
@@ -2650,6 +2809,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PersonGroup"];
+                };
+            };
+        };
+    };
+    listAccessProfiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Perfis. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessProfile"][];
+                };
+            };
+        };
+    };
+    createAccessProfile: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description uuid gerado pelo cliente para esta criação; repetir a chamada não cria de novo (guardada por 24 h). */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccessProfileInput"];
+            };
+        };
+        responses: {
+            /** @description Perfil criado. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessProfile"];
+                };
+            };
+        };
+    };
+    updateAccessProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Revisão que o cliente leu, entre aspas: `"7"`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccessProfileInput"];
+            };
+        };
+        responses: {
+            /** @description Perfil alterado. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccessProfile"];
+                };
+            };
+        };
+    };
+    getPersonAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description uuid do registro. */
+                id: components["parameters"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Origens. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrantSource"][];
                 };
             };
         };

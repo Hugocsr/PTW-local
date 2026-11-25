@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react"
-import { ArrowRightIcon, PlusIcon, RefreshCwIcon, UserXIcon } from "lucide-react"
+import { ArrowRightIcon, PencilIcon, PlusIcon, RefreshCwIcon, UserXIcon } from "lucide-react"
 import { toast } from "sonner"
 import { delegationStatus, type Delegation, type DelegationStatus } from "@/core/delegation"
-import { canRevoke, filterDelegations, initials, NO_FILTER, periodLabel, STATUS_LABEL, type DelegationFilter } from "@/core/delegationView"
+import { filterDelegations, initials, NO_FILTER, periodLabel, rowActions, showActions, STATUS_LABEL, type DelegationFilter } from "@/core/delegationView"
 import { DEFAULT_TZ, dmHms } from "@/core/time"
 import { uuidv7 } from "@/lib/id"
 import { cn } from "@/lib/utils"
@@ -41,6 +41,7 @@ export function DelegationsView() {
   const tz = state.units[0]?.timezone ?? DEFAULT_TZ
   const [adding, setAdding] = useState(false)
   const [revoking, setRevoking] = useState<Delegation | null>(null)
+  const [editing, setEditing] = useState<Delegation | null>(null)
   const [filter, setFilter] = useState<DelegationFilter>(NO_FILTER)
   const people = useMemo(() => new Map(state.people.map((p) => [p.id, p.name])), [state.people])
   const places = useMemo(() => new Map(state.locations.map((l) => [l.id, l.name])), [state.locations])
@@ -49,6 +50,7 @@ export function DelegationsView() {
   const rows = useMemo(() => filterDelegations(all, filter, sim.now, tz), [all, filter, sim.now, tz])
   const canEdit = sim.canEditRegistry
   const down = sim.serverDown || data.busy
+  const actionsCol = showActions(rows, sim.now, canEdit)
   const filtering = filter.status !== "" || !!filter.from || !!filter.to
   const name = (id: string) => people.get(id) ?? "Pessoa removida"
 
@@ -68,9 +70,9 @@ export function DelegationsView() {
           </select>
           <div className="flex flex-wrap items-center gap-2">
             <span className="type-meta font-medium">Período de</span>
-            <DateInput id="deleg-from" label="Período de" value={filter.from || undefined} onChange={(v) => setFilter({ ...filter, from: v ?? "" })} className="w-36" />
+            <DateInput id="deleg-from" label="Período de" value={filter.from || undefined} onChange={(v) => setFilter({ ...filter, from: v ?? "" })} />
             <span className="type-meta font-medium">até</span>
-            <DateInput id="deleg-to" label="Período até" value={filter.to || undefined} onChange={(v) => setFilter({ ...filter, to: v ?? "" })} className="w-36" />
+            <DateInput id="deleg-to" label="Período até" value={filter.to || undefined} onChange={(v) => setFilter({ ...filter, to: v ?? "" })} min={filter.from || undefined} />
           </div>
           <Button variant="outline" size="sm" className="min-h-11 md:min-h-8" disabled={!filtering} onClick={() => setFilter(NO_FILTER)}>Limpar</Button>
           <span role="status" className="ml-auto type-meta">{data.items ? `${rows.length} de ${all.length}` : ""}</span>
@@ -82,7 +84,7 @@ export function DelegationsView() {
         {!!rows.length && (
           <ul className="divide-y md:hidden" aria-label="Lista de delegações">
             {rows.map((d) => {
-              const st = delegationStatus(d, sim.now)
+              const st = delegationStatus(d, sim.now), act = rowActions(d, sim.now, canEdit)
               return (
                 <li key={d.id} className="flex flex-col gap-2 p-4" data-status={st}>
                   <div className="flex items-center gap-2">
@@ -92,10 +94,13 @@ export function DelegationsView() {
                   </div>
                   <p className="text-sm">{periodLabel(d, tz)} · {d.scopeLocationId ? places.get(d.scopeLocationId) ?? "Local removido" : "Todas as plantas"}</p>
                   <p className="type-meta">{d.slotId ? `Só: ${slots.get(d.slotId) ?? "aprovação preservada"}` : "Todas as aprovações"} · {d.reason}</p>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <StatusPill status={st} reason={d.revokedReason} />
-                    {canEdit && canRevoke(d, sim.now) && (
-                      <Button variant="outline" disabled={down} className="min-h-11 border-st-stop-solid/40 text-st-stop-fg" onClick={() => setRevoking(d)}><UserXIcon data-icon="inline-start" />Revogar</Button>
+                    {(act.edit || act.revoke) && (
+                      <div className="flex gap-2">
+                        {act.edit && <Button variant="outline" disabled={down} className="min-h-11" onClick={() => setEditing(d)}><PencilIcon data-icon="inline-start" />Editar</Button>}
+                        {act.revoke && <Button variant="outline" disabled={down} className="min-h-11 border-st-stop-solid/40 text-st-stop-fg" onClick={() => setRevoking(d)}><UserXIcon data-icon="inline-start" />Revogar</Button>}
+                      </div>
                     )}
                   </div>
                 </li>
@@ -108,11 +113,11 @@ export function DelegationsView() {
             <table className="w-full min-w-[60rem] border-collapse text-sm">
               <thead><tr className="border-b">
                 <th className={th}>Delegante</th><th className="w-10" aria-hidden /><th className={th}>Delegado</th><th className={th}>Período</th>
-                <th className={th}>Escopo</th><th className={th}>Motivo</th><th className={th}>Status</th><th className={cn(th, "border-l text-center")}>Ações</th>
+                <th className={th}>Escopo</th><th className={th}>Motivo</th><th className={th}>Status</th>{actionsCol && <th className={cn(th, "border-l text-center")}>Ações</th>}
               </tr></thead>
               <tbody>
                 {rows.map((d) => {
-                  const st = delegationStatus(d, sim.now)
+                  const st = delegationStatus(d, sim.now), act = rowActions(d, sim.now, canEdit)
                   return (
                     <tr key={d.id} className="border-b last:border-b-0 hover:bg-muted/40" data-status={st}>
                       <td className={td}><PersonCell name={name(d.delegatorId)} tone="primary" /></td>
@@ -127,16 +132,28 @@ export function DelegationsView() {
                       <td className={td}>
                         <StatusPill status={st} reason={d.revokedReason} />
                       </td>
-                      <td className={cn(td, "border-l text-center")}>
-                        {canEdit && canRevoke(d, sim.now) ? (
-                          <Tooltip><TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" aria-label={`Revogar delegação de ${name(d.delegatorId)} para ${name(d.delegateId)}`} disabled={down}
-                              className="size-11 border-st-stop-solid/40 text-st-stop-fg hover:bg-st-stop-surface md:size-8" onClick={() => setRevoking(d)}>
-                              <UserXIcon />
-                            </Button>
-                          </TooltipTrigger><TooltipContent>Revogar</TooltipContent></Tooltip>
-                        ) : <span className="type-meta" aria-label="Sem ações">—</span>}
-                      </td>
+                      {actionsCol && (
+                        <td className={cn(td, "border-l text-center")}>
+                          {act.edit || act.revoke ? (
+                            <div className="flex items-center justify-center gap-1.5">
+                              {act.edit && (
+                                <Tooltip><TooltipTrigger asChild>
+                                  <Button variant="outline" size="icon" aria-label={`Editar delegação de ${name(d.delegatorId)} para ${name(d.delegateId)}`} disabled={down}
+                                    className="size-11 md:size-8" onClick={() => setEditing(d)}><PencilIcon /></Button>
+                                </TooltipTrigger><TooltipContent>Editar</TooltipContent></Tooltip>
+                              )}
+                              {act.revoke && (
+                                <Tooltip><TooltipTrigger asChild>
+                                  <Button variant="outline" size="icon" aria-label={`Revogar delegação de ${name(d.delegatorId)} para ${name(d.delegateId)}`} disabled={down}
+                                    className="size-11 border-st-stop-solid/40 text-st-stop-fg hover:bg-st-stop-surface md:size-8" onClick={() => setRevoking(d)}>
+                                    <UserXIcon />
+                                  </Button>
+                                </TooltipTrigger><TooltipContent>Revogar</TooltipContent></Tooltip>
+                              )}
+                            </div>
+                          ) : <span className="type-meta" aria-label="Sem ações">—</span>}
+                        </td>
+                      )}
                     </tr>
                   )
                 })}
@@ -146,8 +163,13 @@ export function DelegationsView() {
         )}
       </section>
       <p className="mt-3 type-meta">Até 7 dias corridos. Só aprovações administrativas nominais são delegáveis; emissão, aceites e entrega continuam com quem tem o cargo. O delegante continua podendo aprovar.</p>
-      {adding && <NewDelegationDialog busy={down} error={data.error?.message} onClose={() => setAdding(false)}
+      {adding && <NewDelegationDialog busy={down} error={data.error?.message} onClose={() => { setAdding(false); data.clearError() }}
         onSave={async (input) => { if (await data.create(input)) { setAdding(false); toast.success("Delegação criada.") } }} />}
+      {editing && <NewDelegationDialog key={editing.id} existing={editing} busy={down} error={data.error?.message} onClose={() => { setEditing(null); data.clearError() }}
+        onSave={async (input) => {
+          const changes = { slotId: input.slotId, delegateId: input.delegateId, scopeLocationId: input.scopeLocationId, startsAt: input.startsAt, endsAt: input.endsAt, reason: input.reason }
+          if (await data.update(editing, changes, uuidv7())) { setEditing(null); toast.success("Delegação atualizada.") }
+        }} />}
       <Dialog open={!!revoking} onOpenChange={(v) => { if (!v && !data.busy) setRevoking(null) }}>
         <DialogContent>
           <DialogHeader>

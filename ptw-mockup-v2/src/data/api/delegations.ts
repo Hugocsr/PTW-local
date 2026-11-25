@@ -16,5 +16,9 @@ export function createDelegationPort(http: Http): DelegationPort {
       const r = await http.request<Delegation>({ method: "POST", path: `/delegations/${input.id}/revoke`, body: { reason }, key, ifMatch: input.revision })
       return r.ok ? r.data : r.error
     },
+    update: async (current, changes, key) => {
+      const r = await http.request<Delegation>({ method: "PUT", path: `/delegations/${current.id}`, body: changes, key, ifMatch: current.revision })
+      return r.ok ? r.data : r.error
+    },
   }
 }

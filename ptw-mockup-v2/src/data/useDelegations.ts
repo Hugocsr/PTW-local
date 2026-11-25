@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
-import type { Delegation, DelegationInput } from "@/core/delegation"
+import type { Delegation, DelegationInput, DelegationUpdate } from "@/core/delegation"
 import type { RuleError } from "@/core/ptwErrors"
 import { useCell, useData } from "./context"
 
-/** Mandates are immutable records; revocation changes future uses, never a past signature. */
+/** Mandates are kept: an agendada one can be edited (SPEC 003), then only revoked; revocation changes future uses, never a past signature. */
 export function useDelegations() {
   const { delegations, queries } = useData()
   const epoch = useCell(queries.changes?.delegations ?? queries.changed)
@@ -32,5 +32,7 @@ export function useDelegations() {
   }
   return { items, error, busy, reload,
     create: (input: DelegationInput) => act(() => delegations.create(input)),
-    revoke: (input: Delegation, reason: string, key: string) => act(() => delegations.revoke(input, reason, key)) }
+    revoke: (input: Delegation, reason: string, key: string) => act(() => delegations.revoke(input, reason, key)),
+    update: (current: Delegation, changes: DelegationUpdate, key: string) => act(() => delegations.update(current, changes, key)),
+    clearError: () => setError(null) }
 }

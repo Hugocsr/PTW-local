@@ -17,7 +17,12 @@ export interface SessionInfo {
   unitId: string
   personId: string
   auth: AuthMethod
+  /** Permissões efetivas (diretório + grupos), recalculadas em cada chamada (SPEC 002). */
   grants: import("../session/ldap.js").Grant[]
+  /** Só as do diretório, gravadas na sessão ao entrar. */
+  directoryGrants: import("../session/ldap.js").Grant[]
+  /** De onde vem cada permissão efetiva. */
+  grantSources: import("../shared/core/governance.js").GrantSource[]
   createdAt: Date
   expiresAt: Date
 }

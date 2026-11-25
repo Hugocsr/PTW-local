@@ -94,7 +94,8 @@ it("keeps context through HTTP authentication and refuses a revoked account", as
     const response = await app.inject({ url: "/api/v1/unit", headers: session.headers })
     expect(response.statusCode).toBe(200)
     const metric = records.find(r => r.requestId === response.headers["x-request-id"])
-    expect(metric).toMatchObject({ transactions: 2, queries: 4, queryFailures: 0 })
+    // SPEC 002: +1 na autenticação (permissões dos grupos) e +1 no contexto (ptw.grants).
+    expect(metric).toMatchObject({ transactions: 2, queries: 6, queryFailures: 0 })
     expect(Number(metric!.authMs)).toBeGreaterThan(0)
     people.get(ANA)!.enabled = false
     expect((await app.inject({ url: "/api/v1/unit", headers: session.headers })).statusCode).toBe(401)

@@ -18,12 +18,13 @@ import locationsRoutes from "../src/routes/registry/locations.js"
 import peopleRoutes from "../src/routes/registry/people.js"
 import typesRoutes from "../src/routes/registry/types.js"
 import unitRoutes from "../src/routes/registry/unit.js"
+import groupsRoutes from "../src/routes/groups.js"
 import { BASE_ROUTES, HOST, ORIGIN, UNIT, cookiePair, makeApp, testConfig, type TestApp } from "./helpers/app.js"
 import { FakeDriver } from "./helpers/fakeDb.js"
 import { HAS_DB, T_UNIT, createTestDb, type TestDb } from "./helpers/realDb.js"
 
 const V1 = "/api/v1"
-const REGISTRY: RouteModule[] = [unitRoutes, typesRoutes, locationsRoutes, assetsRoutes, peopleRoutes, listsRoutes]
+const REGISTRY: RouteModule[] = [unitRoutes, typesRoutes, locationsRoutes, assetsRoutes, peopleRoutes, listsRoutes, groupsRoutes]
 const contract = loadContract(defaultOpenapiPath())
 const CADASTRO = [...contract.operations.values()].filter((o) => o.tags.includes("cadastro")).map((o) => o.operationId)
 
@@ -81,10 +82,10 @@ const call = async (method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", url: st
 const sql = (d: FakeDriver, re: RegExp) => d.find(re).map((x) => x.statement)
 const denied = (d: FakeDriver) => sql(d, /select ptw\.audit_denied\(/)
 
-describe("contrato: as 28 operações do cadastro têm rota", () => {
+describe("contrato: as 32 operações do cadastro têm rota (28 + perfis de acesso, SPEC 002)", () => {
   it("lista as operações e confere a cobertura", async () => {
     t = await start()
-    expect(CADASTRO).toHaveLength(28)
+    expect(CADASTRO).toHaveLength(32)
     const { withoutRoute } = coverage(t.app)
     expect(CADASTRO.filter((o) => withoutRoute.includes(o))).toEqual([])
   })

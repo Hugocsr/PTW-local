@@ -17,6 +17,8 @@ interface Sim {
   canEditModels: boolean
   canAudit: boolean
   canExport: boolean
+  /** Effective session permissions (directory + groups, SPEC 002). */
+  grants: readonly string[]
   setPerson: (id: string) => void
   /** Simulation only; they do nothing where the data layer has no simulation (`api`). */
   advance: (minutes: number) => void
@@ -33,7 +35,7 @@ export function SimProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Sim>(() => ({
     personId: s.personId, now: s.now, today: s.today, tz: s.tz, serverDown: s.serverDown, isAuditor: s.isAuditor,
     canEditRegistry: s.grants.includes("cadastro"), canEditModels: s.grants.includes("modelos"),
-    canAudit: s.grants.includes("auditoria"), canExport: s.grants.includes("exportacao"),
+    canAudit: s.grants.includes("auditoria"), canExport: s.grants.includes("exportacao"), grants: s.grants,
     setPerson: (id) => session.setPerson(id),
     advance: (m) => session.advance?.(m),
     setServerDown: (v) => session.setServerDown?.(v),

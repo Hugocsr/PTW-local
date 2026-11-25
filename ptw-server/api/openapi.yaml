@@ -69,6 +69,7 @@ x-ptw-error-map:
     - "PTA08 (Idempotency-Key reutilizada com outro corpo)"
     - "PTA09 (arquivo: SHA-256 ou tamanho não confere com o enviado)"
     - "PTA10 (prévia da importação vencida, ou pacote diferente do da prévia)"
+    - "PTA14 (a mudança deixaria a unidade sem ninguém com Gestão de cadastros)"
   "409":
     - "PTW10 (equipamento ocupado; `detail` = id da PT que prende)"
     - "23505 (já existe um registro igual)"
@@ -108,6 +109,21 @@ paths:
         content: { application/json: { schema: { $ref: "#/components/schemas/DelegationInput" } } }
       responses:
         "201": { description: Delegação registrada., content: { application/json: { schema: { $ref: "#/components/schemas/Delegation" } } } }
+  /delegations/{id}:
+    put:
+      tags: [governanca]
+      operationId: updateDelegation
+      summary: Edita uma delegação agendada (SPEC 003), inclusive o delegante; depois do início, só revogar.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: "#/components/parameters/IfMatch" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      x-ptw-audit: delegacao.alterada, com os campos de antes e de depois.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/DelegationUpdate" } } }
+      responses:
+        "200": { description: Delegação alterada., content: { application/json: { schema: { $ref: "#/components/schemas/Delegation" } } } }
   /delegations/{id}/revoke:
     post:
       tags: [governanca]
@@ -163,6 +179,44 @@ paths:
         content: { application/json: { schema: { $ref: "#/components/schemas/GroupInput" } } }
       responses:
         "200": { description: Grupo alterado., content: { application/json: { schema: { $ref: "#/components/schemas/PersonGroup" } } } }
+  /access-profiles:
+    get:
+      tags: [cadastro]
+      operationId: listAccessProfiles
+      summary: Perfis de acesso da unidade (leitura para quem está na sessão).
+      responses:
+        "200":
+          description: Perfis.
+          content: { application/json: { schema: { type: array, maxItems: 1000, items: { $ref: "#/components/schemas/AccessProfile" } } } }
+    post:
+      tags: [cadastro]
+      operationId: createAccessProfile
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      x-ptw-audit: cadastro.perfil.criado. Só concede permissões que quem age tem (42501).
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AccessProfileInput" } } } }
+      responses:
+        "201": { description: Perfil criado., content: { application/json: { schema: { $ref: "#/components/schemas/AccessProfile" } } } }
+  /access-profiles/{id}:
+    put:
+      tags: [cadastro]
+      operationId: updateAccessProfile
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: "#/components/parameters/IfMatch" }
+      x-ptw-audit: cadastro.perfil.alterado (desativar = active false). Nunca apagado.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/AccessProfileInput" } } } }
+      responses:
+        "200": { description: Perfil alterado., content: { application/json: { schema: { $ref: "#/components/schemas/AccessProfile" } } } }
+  /people/{id}/access:
+    parameters: [{ $ref: "#/components/parameters/Id" }]
+    get:
+      tags: [cadastro]
+      operationId: getPersonAccess
+      summary: "Permissões concedidas à pessoa pelos grupos (origem: grupo e perfil). Para quem tem cadastro, ou a própria pessoa."
+      responses:
+        "200":
+          description: Origens.
+          content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/GrantSource" } } } }
   /appearance/public:
     get:
       tags: [sistema]
@@ -1743,6 +1797,19 @@ components:
         startsAt: { type: string, format: date-time }
         endsAt: { type: string, format: date-time }
         reason: { type: string, minLength: 1, maxLength: 500 }
+    DelegationUpdate:
+      type: object
+      additionalProperties: false
+      description: Campos editáveis de uma delegação agendada (o id e a autoria não mudam).
+      required: [slotId, delegatorId, delegateId, scopeLocationId, startsAt, endsAt, reason]
+      properties:
+        slotId: { type: [string, "null"], format: uuid }
+        delegatorId: { type: string, format: uuid }
+        delegateId: { type: string, format: uuid }
+        scopeLocationId: { type: [string, "null"], format: uuid }
+        startsAt: { type: string, format: date-time }
+        endsAt: { type: string, format: date-time }
+        reason: { type: string, minLength: 1, maxLength: 500 }
     Delegation:
       type: object
       additionalProperties: false
@@ -1772,17 +1839,56 @@ components:
         description: { type: string, maxLength: 500 }
         active: { type: boolean }
         memberIds: { type: array, uniqueItems: true, maxItems: 1000, items: { type: string, format: uuid } }
+        profileIds: { type: array, uniqueItems: true, maxItems: 10, items: { type: string, format: uuid }, description: "Perfis de acesso concedidos aos membros (SPEC 002). Ausente = sem perfis." }
+        plantIds: { type: array, uniqueItems: true, maxItems: 200, items: { type: string, format: uuid }, description: "Plantas de atuação (locais raiz); registradas e exibidas." }
     PersonGroup:
       type: object
       additionalProperties: false
-      required: [id, name, description, active, memberIds, revision]
+      required: [id, name, description, active, memberIds, profileIds, plantIds, revision]
       properties:
         id: { type: string, format: uuid }
         name: { type: string, minLength: 1, maxLength: 80 }
         description: { type: string, maxLength: 500 }
         active: { type: boolean }
         memberIds: { type: array, uniqueItems: true, maxItems: 1000, items: { type: string, format: uuid } }
+        profileIds: { type: array, uniqueItems: true, maxItems: 10, items: { type: string, format: uuid } }
+        plantIds: { type: array, uniqueItems: true, maxItems: 200, items: { type: string, format: uuid } }
         revision: { type: integer, minimum: 1 }
+    Grant: { type: string, enum: [cadastro, modelos, auditoria, exportacao] }
+    AccessProfileInput:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, permissions, active]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: string, maxLength: 500 }
+        permissions: { type: array, uniqueItems: true, minItems: 1, maxItems: 4, items: { $ref: "#/components/schemas/Grant" } }
+        active: { type: boolean }
+    AccessProfile:
+      type: object
+      additionalProperties: false
+      required: [id, name, description, permissions, active, revision, groupIds, peopleCount]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 80 }
+        description: { type: string, maxLength: 500 }
+        permissions: { type: array, uniqueItems: true, minItems: 1, maxItems: 4, items: { $ref: "#/components/schemas/Grant" } }
+        active: { type: boolean }
+        revision: { type: integer, minimum: 1 }
+        groupIds: { type: array, items: { type: string, format: uuid }, description: Grupos que usam o perfil. }
+        peopleCount: { type: integer, minimum: 0, description: "Pessoas que recebem o perfil (membros únicos de grupos ativos)." }
+    GrantSource:
+      type: object
+      additionalProperties: false
+      required: [grant, from]
+      properties:
+        grant: { $ref: "#/components/schemas/Grant" }
+        from: { type: string, enum: [diretorio, grupo] }
+        groupId: { type: string, format: uuid }
+        profileId: { type: string, format: uuid }
+        groupName: { type: string, maxLength: 80, description: "Nome do grupo (só em /people/{id}/access)." }
+        profileName: { type: string, maxLength: 80, description: "Nome do perfil (só em /people/{id}/access)." }
     Brand:
       type: object
       additionalProperties: false
@@ -1878,8 +1984,9 @@ components:
         auth: { $ref: "#/components/schemas/AuthMethod" }
         grants:
           type: array
-          description: "Permissões administrativas conferidas nos grupos LDAP ao entrar e imutáveis nesta sessão. Atos de PT são decididos por cargo no banco."
+          description: "Permissões efetivas: as do diretório (LDAP, ao entrar) mais as dos perfis dos grupos da pessoa, recalculadas em cada chamada (SPEC 002). Atos de PT são decididos por cargo no banco."
           items: { type: string, enum: [cadastro, modelos, auditoria, exportacao] }
+        grantSources: { type: array, items: { $ref: "#/components/schemas/GrantSource" }, description: De onde vem cada permissão. }
         expiresAt: { $ref: "#/components/schemas/Instant" }
         now: { $ref: "#/components/schemas/Instant" }
         csrfToken: { type: string }

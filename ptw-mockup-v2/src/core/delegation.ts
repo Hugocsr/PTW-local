@@ -18,6 +18,8 @@ export interface Delegation {
   revision: number
 }
 export type DelegationInput = Pick<Delegation, "id" | "slotId" | "delegatorId" | "delegateId" | "scopeLocationId" | "startsAt" | "endsAt" | "reason">
+/** SPEC 003: what an agendada delegation may change; the delegator and the id stay. */
+export type DelegationUpdate = Pick<Delegation, "slotId" | "delegateId" | "scopeLocationId" | "startsAt" | "endsAt" | "reason">
 export type DelegationStatus = "agendada" | "ativa" | "expirada" | "revogada"
 
 /** Delegation windows are start-inclusive and end-exclusive; revocation takes precedence. */
@@ -32,4 +34,9 @@ export function delegationMatches(d: Delegation, slot: { id?: string; personId?:
   return slot.delegable === true && (d.slotId === null || d.slotId === slot.id) && d.delegatorId === slot.personId
     && d.delegateId !== d.delegatorId && delegationStatus(d, now) === "ativa"
     && (d.scopeLocationId === null || pathIds?.includes(d.scopeLocationId) === true)
+}
+
+/** Only an agendada (not started, not revoked) delegation is editable; once in force it can only be revoked (SPEC 003). */
+export function canEditDelegation(d: Delegation, now: string): boolean {
+  return delegationStatus(d, now) === "agendada"
 }

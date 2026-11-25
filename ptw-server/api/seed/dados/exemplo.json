@@ -2705,5 +2705,94 @@
         }
       ]
     }
+  ],
+  "accessProfiles": [
+    {
+      "id": "019a0070-0000-7000-8000-000000000001",
+      "name": "Administrador",
+      "description": "Gestão completa do PTW na unidade",
+      "permissions": [
+        "cadastro",
+        "modelos",
+        "auditoria",
+        "exportacao"
+      ],
+      "active": true
+    },
+    {
+      "id": "019a0070-0000-7000-8000-000000000002",
+      "name": "Gestor de cadastros",
+      "description": "Ativos, pessoas, tipos, listas, grupos, perfis e delegações",
+      "permissions": [
+        "cadastro"
+      ],
+      "active": true
+    },
+    {
+      "id": "019a0070-0000-7000-8000-000000000003",
+      "name": "Gestor de modelos",
+      "description": "Modelos de PT e identidade visual",
+      "permissions": [
+        "modelos"
+      ],
+      "active": true
+    },
+    {
+      "id": "019a0070-0000-7000-8000-000000000004",
+      "name": "Gestor SMS",
+      "description": "Segurança, meio ambiente e saúde: auditoria e exportação da trilha",
+      "permissions": [
+        "auditoria",
+        "exportacao"
+      ],
+      "active": true
+    }
+  ],
+  "groups": [
+    {
+      "id": "019a0071-0000-7000-8000-000000000001",
+      "name": "Administradores",
+      "description": "Administração do PTW na unidade",
+      "active": true,
+      "memberIds": [
+        "019a0020-0000-7000-8000-000000000001"
+      ],
+      "profileIds": [
+        "019a0070-0000-7000-8000-000000000001"
+      ],
+      "plantIds": [
+        "019a0010-0000-7000-8000-000000000101",
+        "019a0010-0000-7000-8000-000000000106"
+      ]
+    },
+    {
+      "id": "019a0071-0000-7000-8000-000000000002",
+      "name": "Gestores SMS",
+      "description": "Gestão de segurança, meio ambiente e saúde",
+      "active": true,
+      "memberIds": [
+        "019a0020-0000-7000-8000-000000000007"
+      ],
+      "profileIds": [
+        "019a0070-0000-7000-8000-000000000004"
+      ],
+      "plantIds": [
+        "019a0010-0000-7000-8000-000000000106"
+      ]
+    },
+    {
+      "id": "019a0071-0000-7000-8000-000000000003",
+      "name": "Executantes Norte",
+      "description": "Time de campo da Planta Norte",
+      "active": true,
+      "memberIds": [
+        "019a0020-0000-7000-8000-000000000003",
+        "019a0020-0000-7000-8000-00000000000a"
+      ],
+      "profileIds": [],
+      "plantIds": [
+        "019a0010-0000-7000-8000-000000000101"
+      ]
+    }
   ]
 }

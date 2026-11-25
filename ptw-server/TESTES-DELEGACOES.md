@@ -42,3 +42,39 @@ Entrar como **marina.costa** e abrir **Governança › Delegações**.
 
 Os passos 1 a 13 foram executados automaticamente (Playwright) contra a API e o PostgreSQL com o
 cadastro de exemplo: 13 de 13 passaram. Os passos 14 e 15 estão cobertos por CT-04 e CT-06 da API.
+
+## SPEC 003 (26/11/2026): calendário, edição de agendada, coluna Ações e aprovação pelo delegado
+
+Automatizados novos:
+
+- **Banco:** `db/tests/delegations.sql` (edição de agendada, recusas de ativa, 7 dias, passado, sem cargo, troca de delegante e sobreposição; auditoria `delegacao.alterada`).
+- **API:** `api/test/delegations.test.ts` CT-07 a CT-10.
+- **App:** `delegationView.test.ts` (`rowActions`, `showActions`, `canEditDelegation`).
+
+Roteiro de tela (Playwright, API real; também serve como roteiro manual em https://localhost):
+
+16. **CT-UI-16 calendário:** em Nova delegação, abrir o calendário do Início. Esperado:
+    - ontem aparece bloqueado;
+    - escolher daqui a 2 dias preenche o campo;
+    - no Fim, os dias depois de início + 6 aparecem bloqueados e o intervalo fica destacado;
+    - digitar dd/mm/aaaa continua funcionando.
+17. **CT-UI-17 editar agendada:** Marina → Joana agendada, depois Editar.
+    - Esperado no modal: "Editar delegação", delegante só leitura.
+    - Mudar o fim e a observação e salvar. Esperado: a linha é atualizada e a auditoria registra `delegacao.alterada`.
+18. **CT-UI-18:** delegação ativa. Esperado: sem Editar, com Revogar.
+19. **CT-UI-19 coluna Ações:**
+    - filtro Revogada: a coluna some;
+    - Todos: a coluna aparece;
+    - sem o papel de cadastro: a coluna nunca aparece.
+20. **CT-UI-20 aprovação pelo delegado:**
+    - Joana → Rafael ativa na Planta Norte.
+    - Sérgio cria e envia uma PT de vapor na Caldeiraria (Planta Norte).
+    - Esperado: a PT aparece em "Sua vez" do Rafael ("Assinar: Aprova a soldagem").
+    - Rafael assina pela tela; o diálogo diz "Você assina em nome de Joana Reis". Esperado: a PT mostra "Rafael Nunes · Em nome de Joana Reis".
+21. **CT-UI-21:** PT na Moagem (Planta Sul). Esperado: não aparece para Rafael, e a assinatura é recusada (PTW08).
+22. **CT-UI-22:** revogar a delegação e criar nova PT na Planta Norte. Esperado: ela não vai para Rafael, e a PT já assinada continua "em nome de Joana Reis".
+23. **CT-UI-23:** delegação agendada (começa daqui a 2 dias). Esperado: a pendência não aparece para Rafael e a assinatura é recusada.
+24. **CT-UI-24:** durante a vigência, Joana aprova outra PT. Esperado: a aprovação some da "Sua vez" do Rafael, e a PT segue para a Emissão.
+25. **CT-UI-25:** celular. Esperado: sem rolagem lateral, e o calendário com dias de 44 px.
+
+Resultado em 25/11/2026: 14 de 14 verificações passaram, sem erro de JavaScript.

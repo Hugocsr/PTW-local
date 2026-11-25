@@ -11,6 +11,7 @@ import { createPerson } from "../dist/repo/registry/people.js"
 import { createOptionList } from "../dist/repo/registry/optionLists.js"
 import { insertVersion, activateVersion } from "../dist/repo/templates/write.js"
 import { getVersion } from "../dist/repo/templates/read.js"
+import { saveGroup, saveProfile } from "../dist/repo/groups.js"
 
 const data = JSON.parse(readFileSync(new URL("./dados/exemplo.json", import.meta.url), "utf8"))
 const unit = data.units[0]
@@ -54,6 +55,15 @@ try {
           await activateVersion(tx, model.id, version.id, saved.revision)
         }
       }
+    }
+    // Perfis e grupos (SPEC 002): governança exige uma pessoa no contexto; a carga age como a primeira
+    // administradora do exemplo, como serviço (sem trava de permissões).
+    const adminId = data.groups?.[0]?.memberIds?.[0]
+    if (adminId && data.accessProfiles?.length) {
+      await tx`select ptw.set_context(${unit.id}::uuid, ${adminId}::uuid, null, 'servico', 'carga-demonstracao')`
+      for (const p of data.accessProfiles) await saveProfile(tx, p, null)
+      for (const g of data.groups) await saveGroup(tx, g, null)
+      await tx`select ptw.set_context(${unit.id}::uuid, null, null, 'servico', 'carga-demonstracao')`
     }
     await tx`select ptw.audit_system('sistema.carga.demonstracao', 'Cadastro e modelos de demonstração carregados', '{}'::jsonb)`
     console.log(`Carga concluída: ${data.people.length} pessoas, ${data.assets.length} ativos e ${data.templates.length} modelos. Nenhuma PT antiga importada.`)

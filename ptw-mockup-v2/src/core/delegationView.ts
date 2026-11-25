@@ -91,6 +91,16 @@ export function filterDelegations(list: readonly Delegation[], f: DelegationFilt
 /** Revogar só faz sentido enquanto o mandato ainda vale ou vai valer. */
 export const canRevoke = (d: Delegation, now: string) => { const s = delegationStatus(d, now); return s === "ativa" || s === "agendada" }
 
+/** What a row offers (SPEC 003): Editar only while agendada, Revogar while ativa or agendada; nothing without cadastro. */
+export function rowActions(d: Delegation, now: string, manage: boolean): { edit: boolean; revoke: boolean } {
+  if (!manage) return { edit: false, revoke: false }
+  return { edit: delegationStatus(d, now) === "agendada", revoke: canRevoke(d, now) }
+}
+
+/** The Ações column shows only when at least one of the rows on screen has an action (SPEC 003). */
+export const showActions = (rows: readonly Delegation[], now: string, manage: boolean) =>
+  rows.some((d) => { const a = rowActions(d, now, manage); return a.edit || a.revoke })
+
 /** "AL" para "Ana Lima". */
 export function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)

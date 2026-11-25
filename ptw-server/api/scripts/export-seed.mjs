@@ -16,7 +16,9 @@ registerHooks({ resolve(specifier, context, next) {
   }
   return next(specifier, context)
 } })
-const { sgiSeed: seed } = await import(pathToFileURL(resolve(source, "demo/sgi/registry.ts")).href)
+const { sgiSeed } = await import(pathToFileURL(resolve(source, "demo/sgi/registry.ts")).href)
+const { sgiProfiles, sgiGroups } = await import(pathToFileURL(resolve(source, "demo/sgi/governance.ts")).href)
+const seed = { ...sgiSeed, accessProfiles: sgiProfiles, groups: sgiGroups }
 const dest = resolve(here, "../seed/dados")
 mkdirSync(dest, { recursive: true })
 writeFileSync(resolve(dest, "exemplo.json"), JSON.stringify(seed, null, 2) + "\n")

@@ -377,6 +377,8 @@ begin
     else
       act := 'pt.alterada';
     end if;
+  elsif tbl = 'delegation' and tg_op = 'UPDATE' and r ->> 'revoked_at' is null then
+    act := 'delegacao.alterada'; txt := 'Delegação alterada';
   elsif tbl = 'appearance' then
     act := case when new.brand is null then 'identidade.restaurada' else 'identidade.publicada' end;
     txt := case when new.brand is null then 'Identidade restaurada para o tema da planta' else 'Identidade visual publicada' end;
@@ -417,6 +419,9 @@ begin
     ['delegation',            'delegacao.criada',               'delegacao.revogada',               'delegacao.removida',               'Delegação',            'id'],
     ['person_group',          'cadastro.grupo.criado',           'cadastro.grupo.alterado',           'cadastro.grupo.removido',           'Grupo',                'id'],
     ['person_group_member',   'cadastro.grupo.membro.incluido',  'cadastro.grupo.membro.alterado',    'cadastro.grupo.membro.removido',    'Membro de grupo',      'group_id'],
+    ['access_profile',        'cadastro.perfil.criado',          'cadastro.perfil.alterado',          'cadastro.perfil.removido',          'Perfil de acesso',     'id'],
+    ['person_group_profile',  'cadastro.grupo.perfil.incluido',  'cadastro.grupo.perfil.alterado',    'cadastro.grupo.perfil.removido',    'Perfil do grupo',      'group_id'],
+    ['person_group_scope',    'cadastro.grupo.planta.incluida',  'cadastro.grupo.planta.alterada',    'cadastro.grupo.planta.removida',    'Planta do grupo',      'group_id'],
     ['appearance',            'identidade.publicada',           'identidade.publicada',             'identidade.removida',              'Identidade visual',    'unit_id'],
     ['appearance_asset',      'identidade.imagem.incluida',      'identidade.imagem.alterada',        'identidade.imagem.removida',        'Imagem de identidade', 'id'],
     ['unit',                  'cadastro.unidade.criada',        'cadastro.unidade.alterada',        'cadastro.unidade.removida',        'Unidade',              'id'],

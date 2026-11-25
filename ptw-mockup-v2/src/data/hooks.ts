@@ -24,7 +24,7 @@ import type { AuditFacets, AuditQuery, EquipmentHold, ListLocal, ListView, Page,
 
 export { useData, useDataMode } from "./context"
 export { useAppearance } from "./useAppearance"
-export { useGroups } from "./useGroups"
+export { useGroups, useProfiles, usePersonAccess } from "./useGroups"
 export { useDelegations } from "./useDelegations"
 
 /* ---------- acts that can be awaited ---------- */

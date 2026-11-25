@@ -24,6 +24,7 @@ import { navigate } from "@/components/work/nav"
 import { DataTable } from "./DataTable"
 import { FormDialog, SelectField, STATUS_OPTIONS, TextField } from "./forms"
 import { Validity } from "./HierarchyView"
+import { PersonAccessSection } from "./Groups/PersonAccess"
 
 const NONE = "__none"
 
@@ -223,6 +224,8 @@ function PersonDetail({ p, today, now, down, scopeName, onBack, backLabel, onEdi
           </ul>
         )}
       </PageSection>
+
+      {p.login && <PersonAccessSection personId={p.id} />}
     </div>
   )
 }

@@ -25,6 +25,8 @@ export interface Ctx {
   requestId?: string | null
   reason?: string | null
   undo?: boolean
+  /** Permissões efetivas de quem age (ptw.grants): as travas do banco não deixam conceder o que não tem. */
+  grants?: readonly string[] | null
 }
 
 export interface Driver {
@@ -60,6 +62,7 @@ export class Db {
         return await timedTransaction(this.driver, async (tx) => {
           await tx`select ptw.set_context(${ctx.unitId}::uuid, ${ctx.personId}::uuid, ${ctx.roleId ?? null}::uuid, ${ctx.auth}::text,
             ${ctx.client ?? null}::text, ${ctx.requestId ?? null}::text, ${ctx.reason ?? null}::text, ${ctx.undo === true}::boolean)`
+          if (ctx.grants) await tx`select set_config('ptw.grants', ${ctx.grants.join(",")}, true)`
           if (opts.statementTimeoutMs !== undefined) {
             await tx`select set_config('statement_timeout', ${String(Math.trunc(opts.statementTimeoutMs))}, true)`
           }
@@ -113,6 +116,7 @@ export function ctxOf(req: FastifyRequest, over: CtxOverrides = {}): Ctx {
     // set_context aceita até 500; motivo maior (exportação: até 1500) vai só no argumento da função.
     reason: reason !== null && reason !== undefined && reason.length <= 500 ? reason : null,
     undo: s.undo,
+    grants: s.session?.grants ?? null,
   }
 }
 
