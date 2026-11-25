@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react"
-import { ChevronRightIcon, CircleAlertIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, ShieldCheckIcon } from "lucide-react"
+import { ChevronRightIcon, CircleAlertIcon, LoaderCircleIcon, LogInIcon, RefreshCwIcon, SearchIcon, ShieldCheckIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -73,7 +73,7 @@ export function LoginView() {
   const ready = (state.passwordLogin || state.devLogin) && state.status === "ausente"
   return (
     <main className="app-login relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-4 py-10">
-      {/* SGI Forces Design System · Tela de login: fundo da marca, cartão branco central com logo, nome e subtítulo. */}
+      {/* SPEC 010 · protótipo SGI (Backoffice): fundo da marca com a ilustração industrial, cartão branco central com logo, nome e subtítulo. */}
       <div className="relative flex w-full max-w-[26.25rem] flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500 ease-out motion-reduce:animate-none">
         <div className="flex flex-col gap-6 rounded-2xl bg-card p-6 text-card-foreground shadow-[0_24px_70px_rgb(7_20_50/0.45)] sm:p-9">
         <div className={cn("flex items-center justify-center", brand.logoUrl ? "flex-col gap-3" : "gap-3")}>
@@ -143,7 +143,7 @@ export function LoginView() {
                     <Input id="entry-password" name="password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} disabled={!!busy || state.serverDown} required className="h-11 text-base md:text-sm" />
                   </Field>
                 </FieldGroup>
-                <Button type="submit" disabled={!login.trim() || !password || !!busy || state.serverDown} className="h-11 w-full text-[0.9375rem]">{busy === "senha" && <LoaderCircleIcon className="animate-spin" data-icon="inline-start" />}{busy === "senha" ? "Entrando…" : "Entrar"}</Button>
+                <Button type="submit" disabled={!login.trim() || !password || !!busy || state.serverDown} className="h-12 w-full rounded-[0.625rem] text-[0.9375rem] font-semibold">{busy === "senha" ? <LoaderCircleIcon className="animate-spin" data-icon="inline-start" /> : <LogInIcon data-icon="inline-start" />}{busy === "senha" ? "Entrando…" : "Entrar"}</Button>
               </form>
             )}
 
@@ -153,14 +153,17 @@ export function LoginView() {
         <div className="flex flex-col items-center gap-4">
           <p className="flex items-center gap-1.5 type-meta"><ShieldCheckIcon aria-hidden className="size-3.5" />Cada entrada abre uma sessão auditada pelo servidor</p>
           <div className="h-px w-full bg-border" />
-          <p className="type-data text-muted-foreground">{location.host}</p>
+          {/* SPEC 010: o estado do servidor só aparece quando ele não responde, junto do domínio. */}
+          <div className="flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <p className="type-data text-muted-foreground">{location.host}</p>
+            {state.serverDown && (
+              <p className="flex items-center gap-1.5 type-meta text-st-stop-fg" role="status">
+                <span aria-hidden className="size-2 rounded-full bg-st-stop-solid" />Servidor sem resposta
+              </p>
+            )}
+          </div>
         </div>
         </div>
-
-        <p className="flex items-center justify-center gap-2 text-xs text-white/85" role="status">
-          <span aria-hidden className={`size-2 rounded-full ${state.serverDown ? "bg-st-stop-solid" : loading ? "bg-st-neutral-solid" : "bg-st-ok-solid"}`} />
-          {state.serverDown ? "Servidor sem resposta" : "Servidor no ar"}
-        </p>
       </div>
     </main>
   )

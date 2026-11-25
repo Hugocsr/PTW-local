@@ -32,13 +32,18 @@
   .app-shell [data-slot="alert-dialog-content"] { border-color: var(--border); }
   .work-column { scroll-margin-top: 5rem; }
   .app-sidebar [data-slot="sidebar-menu-button"]:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-  /* Login (SGI · Identidade visual, preview "Tela de login"): fundo da marca em degradê, cartão branco. */
+  /*
+   * Login (SPEC 010, protótipo SGI · Backoffice): ilustração industrial em tons de cinza misturada por
+   * luminosidade sobre o degradê da marca, então acompanha a Identidade visual. O degradê aparece antes da
+   * imagem (≈55 KB) carregar.
+   */
   .app-login {
     background-color: var(--brand-navy);
-    background-image:
-      radial-gradient(60rem 40rem at 85% -10%, color-mix(in srgb, var(--primary) 55%, transparent), transparent 70%),
-      radial-gradient(40rem 30rem at 0% 110%, color-mix(in srgb, var(--primary) 35%, transparent), transparent 70%),
-      linear-gradient(135deg, var(--brand-navy), color-mix(in srgb, var(--primary) 70%, var(--brand-navy)));
+    background-image: url("./assets/login-bg.webp"), linear-gradient(135deg, var(--brand-navy), var(--primary));
+    background-size: cover, cover;
+    background-position: center bottom, center;
+    background-repeat: no-repeat;
+    background-blend-mode: luminosity, normal;
   }
   @media (max-width: 767px) {
     .app-list-panel { padding: 0.75rem; }
