@@ -147,7 +147,7 @@ export function CommandPalette() {
       places: cut(state.locations.filter((l) => matches(`${l.code} ${l.name} ${l.aliases.join(" ")}`, q))),
       people: cut(state.people.filter((p) => matches(`${p.name} ${p.company} ${p.employeeId} ${p.login ?? ""}`, q))),
       models: cut(state.templates.filter((t) => matches(t.name, q))),
-      screens: cut(screens.filter((k) => matches(NAV[k].title, q))),
+      screens: cut(screens.filter((k) => matches(`${NAV[k].title} ${"keywords" in NAV[k] ? NAV[k].keywords : ""}`, q))),
     }
   }, [searching, q, state.locations, state.people, state.templates, screens])
   const local = hits ? hits.places.length + hits.people.length + hits.models.length + hits.screens.length : 0

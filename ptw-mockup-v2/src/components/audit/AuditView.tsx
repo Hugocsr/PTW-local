@@ -47,8 +47,8 @@ const link = (tables: string[], href: string, label: string) => tables.forEach((
 link(["location"], "#locais", "Abrir Locais")
 link(["asset", "asset_location", "asset_relation"], "#ativos", "Abrir Ativos")
 link(["person", "person_role"], "#pessoas", "Abrir Pessoas")
-link(["type_def"], "#tipos", "Abrir Tipos")
-link(["option_list", "option_item"], "#listas", "Abrir Listas")
+link(["type_def"], "#catalogos/tipos-local", "Abrir Catálogos")
+link(["option_list", "option_item"], "#catalogos", "Abrir Catálogos")
 link(["template", "template_version", "version_location_type", "version_asset_type", "stage", "sign_slot", "separation"], "#modelos", "Abrir Modelos de PT")
 
 const AUTH_LABEL: Record<AuthMethod, string> = { senha: "Senha", ldap: "LDAP", pin: "PIN", sessao: "Sessão", emergencia: "Emergência", servico: "Serviço", sistema: "Sistema" }

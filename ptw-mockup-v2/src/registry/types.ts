@@ -28,7 +28,7 @@ export interface Unit {
 }
 
 /**
- * Site-configurable type (Configuração › Tipos). The family is the list it lives in
+ * Site-configurable type (Configuração › Catálogos). The family is the list it lives in
  * (locationTypes = local, assetTypes = ativo, roleTypes = cargo, relationKinds = relacao).
  */
 export interface TypeDef {

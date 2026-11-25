@@ -87,7 +87,7 @@ export function ItemEditor({ item, sources, onChange, onDuplicate, setTpl, colum
               <p className="type-meta">
                 {(lists.find((l) => l.id === item.listId)?.items ?? []).filter((x) => x.active).map((x) => x.label).join(" · ") || "Lista vazia"}
               </p>
-              <a href="#listas" className="type-meta w-fit underline underline-offset-2">Editar em Configuração › Listas</a>
+              <a href={item.listId ? `#catalogos/lista/${item.listId}` : "#catalogos"} className="type-meta w-fit underline underline-offset-2">Editar em Configuração › Catálogos</a>
               {/* Options that stop the stage, like a "Não" on a checklist line (e.g. "Classe 5", não forçável). */}
               <div className="flex flex-col gap-1.5">
                 <span className="type-field" id={id("blk")}>Opções que impedem a etapa</span>
@@ -137,7 +137,7 @@ export function ItemEditor({ item, sources, onChange, onDuplicate, setTpl, colum
                 <SelectContent><SelectGroup>{lists.map((l) => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}</SelectGroup></SelectContent>
               </Select>
               <p className="type-meta">{lineChoices(item, lists).map((c) => c.label).join(" · ") || "Lista vazia"}</p>
-              <a href="#listas" className="type-meta w-fit underline underline-offset-2">Editar em Configuração › Listas</a>
+              <a href={item.answerListId ? `#catalogos/lista/${item.answerListId}` : "#catalogos"} className="type-meta w-fit underline underline-offset-2">Editar em Configuração › Catálogos</a>
             </div>
           )}
           <ListEditor

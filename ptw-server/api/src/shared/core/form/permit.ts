@@ -19,7 +19,7 @@ export function stageGate(form: FormSpec | undefined, stageId: string, answers: 
 
 /**
  * The form as a permit keeps it: list-backed questions get the list's active items copied in, so a
- * later rename or deactivation in Configuração › Listas never changes what a sent permit asked.
+ * later rename or deactivation in Configuração › Catálogos never changes what a sent permit asked.
  */
 export function freezeForm(form: FormSpec | undefined, lists: OptionList[]): FormSpec {
   return {

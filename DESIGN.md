@@ -517,7 +517,7 @@ Login conserva os modos anunciados pelo servidor, erros, inatividade e autentica
 
 Extensão SGI-11A/07/08: `Identidade visual` em Configuração (`modelos`), `Grupos SGI` e `Perfis de acesso` na seção Acesso (SPEC 002; Grupos só com `cadastro`, Perfis em Consultas para quem não o tem) e `Delegações` em Governança para consulta própria (gestão só `cadastro`). As telas usam Page/PageHeader, estados de erro/carregamento e confirmação do servidor. Identidade tem prévia local, paletas, PNG e restauração confirmada; grupos têm editor de membros; delegações mostram representação e vigência, criam e revogam por formulário. Assinatura, histórico visual e folha impressa identificam o representado preservando o ator real. A cor do estado da PT não é personalizada pelo editor.
 
-`core/navigation.ts` é a política única de destinos: Operação sempre disponível à conta autenticada; Locais/Ativos/Pessoas em Cadastros com `cadastro`; Modelos em Configuração com `modelos`; Tipos/Listas em Configuração com `cadastro`; Auditoria em Governança e sistema com `auditoria`. Cada referência sem grant de gestão permanece em Consultas, conforme sua leitura já autorizada. Nenhum grupo vazio, duplicação ou link para módulo não implementado.
+`core/navigation.ts` é a política única de destinos: Operação sempre disponível à conta autenticada; Locais/Ativos/Pessoas em Cadastros com `cadastro`; Modelos em Configuração com `modelos`; Catálogos (tipos e listas, SPEC 005) em Configuração com `cadastro`; Auditoria em Governança e sistema com `auditoria`. Cada referência sem grant de gestão permanece em Consultas, conforme sua leitura já autorizada. Nenhum grupo vazio, duplicação ou link para módulo não implementado.
 
 Sidebar, busca Ctrl+K e breadcrumbs usam a mesma classificação; a busca identifica o grupo de cada destino. A rota consulta a mesma política de leitura, além da autorização efetiva do servidor. Se houver perda de leitura enquanto uma tela está aberta, a pessoa volta à Minha área com aviso. Nenhum estado de área é salvo no navegador. Drawer mantém foco contido, Escape e retorno ao botão; mudar de tela o fecha.
 
@@ -629,4 +629,30 @@ Substitui as telas "Minha área" e "Desabilitados agora" (as seções acima desc
   - `rangeFrom` pinta o intervalo em índigo suave;
   - dias de 44 px no celular e 36 px a partir de `md`.
 - Escolher um dia preenche e fecha; Esc fecha sem mudar; setas, PageUp/PageDown e Enter navegam. A digitação, as mensagens de data incompleta e o "Hoje" continuam como antes.
+
+### Catálogos (SPEC 005, 25/11/2026)
+
+Tipos e Listas viram uma tela só: **Configuração › Catálogos** (`#catalogos`). Para quem não tem Gestão de cadastros, ela fica em Consultas, só leitura. `#tipos` e `#listas` são apelidos. Banco e API não mudaram: `type_def` e `option_list`/`option_item` continuam separados.
+
+- **Layout:** duas colunas, no molde de Grupos SGI.
+  - **À esquerda:**
+    - busca em todos os catálogos, por nome do catálogo ou do item, sem acento;
+    - **TIPOS:** Tipos de local, Tipos de ativo, Cargos e Relações, em quadrado navy;
+    - **LISTAS DE OPÇÕES:** uma linha por lista, em quadrado índigo suave, com "+ Nova lista";
+    - a contagem de itens ativos em pílula.
+  - **À direita:** o catálogo, com cabeçalho (ícone, título 20/600, para que serve e uso), filtro Ativos/Inativos e os itens.
+- **Padrão de item:** igual em todos os catálogos (`Catalogs/shared.tsx` › `ItemRow`).
+  - Mídia: ícone escolhível nos tipos de local/ativo, ícone fixo nos cargos e relações, nº e subir/descer nas listas.
+  - Nome editável no campo, salvo ao parar de digitar.
+  - Uso em palavras.
+  - Chave **Ativo** com pílula Ativo/Inativo.
+  - Lixeira, só nos tipos sem uso.
+  - Item inativo aparece riscado.
+- **Regras por grupo:**
+  - **Tipos:** ordem alfabética. Os do sistema (Planta, Área, "é parte de") têm cadeado e só podem ser renomeados. Remover tem "Desfazer".
+  - **Listas:** a ordem é a das perguntas, com subir/descer. Itens nunca são removidos. A lista tem "Renomear" e "Remover", este só sem uso e com confirmação.
+- **Uso dos tipos de ativo:** com o servidor, vem de `GET /assets?typeId=` (um total por tipo), porque a lista de ativos não fica em memória.
+- **Busca:** o resultado abre o catálogo com o item em destaque (`st-attention-surface`) e rolado até ele.
+- **Celular:** lista de catálogos → itens, com "← Catálogos".
+- **Busca Ctrl+K:** "tipos", "listas", "cargos" e "relações" também acham Catálogos.
 

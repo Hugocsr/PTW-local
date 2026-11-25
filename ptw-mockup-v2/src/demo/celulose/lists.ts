@@ -1,4 +1,4 @@
-/** The plant's option lists (Configuração › Listas); item ids follow the position. */
+/** The plant's option lists (Configuração › Catálogos); item ids follow the position. */
 import type { OptionList } from "@/registry/types"
 import { C } from "./ids"
 

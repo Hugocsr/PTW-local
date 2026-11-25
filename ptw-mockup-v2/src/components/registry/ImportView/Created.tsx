@@ -148,7 +148,7 @@ export function Created({ r, p, state, byAlvo, showAll, setShowAll }: {
                     <span className="flex flex-wrap items-center gap-2"><span className="type-body font-medium">{l.name}</span><Novo novo={newList.has(id)} /></span>
                     {l.items.some((x) => x.active)
                       ? <span className="type-meta break-words">{l.items.filter((x) => x.active).map((x) => x.label).join(" · ")}</span>
-                      : <span className={cn("flex items-center gap-1.5 type-meta", TONE_TEXT.attention)}><TriangleAlertIcon className="size-3.5 shrink-0" aria-hidden />Sem itens: inclua em Configuração › Listas antes de ativar</span>}
+                      : <span className={cn("flex items-center gap-1.5 type-meta", TONE_TEXT.attention)}><TriangleAlertIcon className="size-3.5 shrink-0" aria-hidden />Sem itens: inclua em Configuração › Catálogos antes de ativar</span>}
                     <Flag id={`lista:${normalizar(l.name)}`} byAlvo={byAlvo} />
                     <SourceDisclosure id={id} />
                   </li>

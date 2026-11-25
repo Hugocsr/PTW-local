@@ -135,7 +135,7 @@ export function importarModelo(entrada: unknown, cadastro: Cadastro, opcoes: Opc
     }
     const dup = l.itens.filter((x, j) => l.itens.findIndex((y) => normalizar(y) === normalizar(x)) !== j)
     if (dup.length) erro(onde, `Itens repetidos: ${dup.join(", ")}`, key)
-    if (l.itens.length === 0) aviso(onde, "Lista sem itens: inclua os itens em Configuração › Listas antes de ativar a versão", key)
+    if (l.itens.length === 0) aviso(onde, "Lista sem itens: inclua os itens em Configuração › Catálogos antes de ativar a versão", key)
     const m = matchByName(l.nome, cadastro.optionLists, (x) => x.name)
     if (m) {
       const missing = l.itens.filter((x) => !m.hit.items.some((y) => normalizar(y.label) === normalizar(x)))

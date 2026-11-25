@@ -161,7 +161,7 @@ export function NodeDialog({ mode, onClose, onSaved }: { mode: NodeDialogMode; o
             options={areaTypes.filter((t) => t.active || t.id === typeId).map((t) => ({ value: t.id, label: t.label }))} />
         )}
         {mode.level === "equip" && (
-          <SelectField label="Tipo" value={typeId} onChange={setTypeId} placeholder={state.assetTypes.some((t) => t.active) ? "Selecione…" : "Cadastre tipos em Configuração › Tipos"}
+          <SelectField label="Tipo" value={typeId} onChange={setTypeId} placeholder={state.assetTypes.some((t) => t.active) ? "Selecione…" : "Cadastre tipos em Configuração › Catálogos"}
             options={state.assetTypes.filter((t) => t.active || t.id === typeId).map((t) => ({ value: t.id, label: t.label }))} />
         )}
         {fields.map((f) => <SheetField key={f.key} field={f} value={values[f.key] ?? ""} onChange={set(f.key)} error={problems[f.key]} />)}

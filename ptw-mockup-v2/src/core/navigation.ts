@@ -1,8 +1,9 @@
 /** Canonical destinations; navigation never grants permission to write or sign. */
 /** "dashboard" joins Minha área and Desabilitados agora (SPEC 001); old routes are aliases in App. */
+/** "catalogos" (SPEC 005) joins Tipos and Listas; `#tipos` and `#listas` are aliases in App. */
 /** "grupos" and "perfis" (SPEC 002) form the SGI "Acesso" section: groups grant access profiles to their members. */
 /** "ativos" is Gestão de Ativos (SGI): plants, areas and equipment on one screen; the old "locais" route opens it. */
-export const NAVIGATION_VIEWS = ["dashboard", "quadro", "ativos", "pessoas", "grupos", "perfis", "modelos", "tipos", "listas", "identidade", "delegacoes", "auditoria"] as const
+export const NAVIGATION_VIEWS = ["dashboard", "quadro", "ativos", "pessoas", "grupos", "perfis", "modelos", "catalogos", "identidade", "delegacoes", "auditoria"] as const
 export type NavigationView = typeof NAVIGATION_VIEWS[number]
 export interface NavigationAccess { canEditRegistry: boolean; canEditModels: boolean; canAudit: boolean; canExport: boolean }
 export const NAVIGATION_GROUPS = ["operation", "registry", "access", "configuration", "governance", "reference"] as const
@@ -13,7 +14,7 @@ export interface NavigationSection { group: NavigationGroup; views: NavigationVi
 export function canReadView(view: NavigationView, access: NavigationAccess): boolean {
   switch (view) {
     case "dashboard": case "quadro":
-    case "ativos": case "pessoas": case "perfis": case "modelos": case "tipos": case "listas": return true
+    case "ativos": case "pessoas": case "perfis": case "modelos": case "catalogos": return true
     case "auditoria": return access.canAudit
     case "identidade": return access.canEditModels
     case "grupos": return access.canEditRegistry
@@ -30,7 +31,7 @@ export function navigationGroup(view: NavigationView, access: NavigationAccess):
     case "ativos": case "pessoas": return access.canEditRegistry ? "registry" : "reference"
     case "perfis": return access.canEditRegistry ? "access" : "reference"
     case "modelos": return access.canEditModels ? "configuration" : "reference"
-    case "tipos": case "listas": return access.canEditRegistry ? "configuration" : "reference"
+    case "catalogos": return access.canEditRegistry ? "configuration" : "reference"
     case "auditoria": return "governance"
     case "identidade": return "configuration"
     case "grupos": return "access"

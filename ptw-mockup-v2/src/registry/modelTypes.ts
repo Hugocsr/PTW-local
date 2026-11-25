@@ -87,7 +87,7 @@ interface ItemBase { id: string; label: string; required: boolean; showWhen?: Co
 
 export type TextoItem = ItemBase & { kind: "texto"; long: boolean }
 /**
- * With `listId` (uuid of a list), the options come from Configuração › Listas and `options` is unused;
+ * With `listId` (uuid of a list), the options come from Configuração › Catálogos and `options` is unused;
  * then `blockOptionIds` (ids of items of that list) are the options that stop the stage. Own options
  * say it with `blocks`.
  */

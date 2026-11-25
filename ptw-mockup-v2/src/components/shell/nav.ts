@@ -1,4 +1,4 @@
-import { BoxIcon, LayoutGridIcon, ListTreeIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, ListIcon, PaletteIcon, SettingsIcon, ShieldCheckIcon, UsersIcon, UsersRoundIcon } from "lucide-react"
+import { BoxIcon, LayoutGridIcon, ListTreeIcon, ScrollTextIcon, ClipboardListIcon, FileTextIcon, LibraryBigIcon, PaletteIcon, ShieldCheckIcon, UsersIcon, UsersRoundIcon } from "lucide-react"
 import type { NavigationGroup, NavigationView } from "@/core/navigation"
 
 /**
@@ -11,14 +11,13 @@ export const NAV = {
   ativos: { title: "Gestão de Ativos", icon: ListTreeIcon },
   pessoas: { title: "Pessoas", icon: UsersIcon },
   modelos: { title: "Modelos de PT", icon: FileTextIcon },
-  tipos: { title: "Tipos", icon: SettingsIcon },
-  listas: { title: "Listas", icon: ListIcon },
+  catalogos: { title: "Catálogos", icon: LibraryBigIcon, keywords: "tipos listas cargos relações opções" },
   auditoria: { title: "Auditoria", icon: ScrollTextIcon },
   identidade: { title: "Identidade visual", icon: PaletteIcon },
   grupos: { title: "Grupos SGI", icon: UsersRoundIcon },
   perfis: { title: "Perfis de acesso", icon: ShieldCheckIcon },
   delegacoes: { title: "Delegações", icon: UsersIcon },
-} as const satisfies Record<NavigationView, { title: string; icon: typeof BoxIcon }>
+} as const satisfies Record<NavigationView, { title: string; icon: typeof BoxIcon; keywords?: string }>
 
 export type ViewKey = NavigationView
 export const NAV_GROUP_LABELS = {

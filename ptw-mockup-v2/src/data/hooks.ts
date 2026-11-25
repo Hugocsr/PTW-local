@@ -155,6 +155,20 @@ export function useLocationAssetCounts(ids: string[]) {
   return { ...remote, counts: new Map(remote.data?.map(x => [x.locationId, x.count]) ?? []) }
 }
 
+/**
+ * How many assets each asset type has (Catálogos, SPEC 005). In memory the registry answers; with the
+ * server the asset list is not cached, so it asks `GET /assets?typeId=…` with one-row pages (only the total).
+ */
+export function useAssetTypeCounts(typeIds: string[]): { counts: Map<string, number> | null } & Loading {
+  const port = useData()
+  const { assets } = useRegistry().state
+  const ids = useStable([...new Set(typeIds)].sort())
+  const remote = useRemote(!port.whole && ids.length > 0, ids.join(","),
+    () => Promise.all(ids.map(async (typeId) => [typeId, (await port.queries.assets({ q: "", filters: { typeId }, sort: null, page: 0, pageSize: 1 })).total] as const)), "assets")
+  const here = useMemo(() => (port.whole ? new Map(ids.map((id) => [id, assets.filter((a) => a.typeId === id).length])) : null), [port.whole, ids, assets])
+  return here ? { counts: here, loading: false, error: null } : { counts: remote.data ? new Map(remote.data) : null, loading: remote.loading, error: remote.error }
+}
+
 /** The most assets of one place the server gives at once (the contract's largest page). */
 const LOCATION_ASSETS_MAX = 1000
 
