@@ -44,7 +44,7 @@ import { DownBanner, EstadoAutorizacao } from "./state"
 import { StageRail } from "./StageRail"
 import { PermitSheet } from "./PermitSheet"
 import { useData } from "@/data/context"
-import { usePermitHistory } from "@/data/hooks"
+import { usePermitHistory, usePlaceProblem } from "@/data/hooks"
 import { NewPermitView } from "./NewPermitView"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner"
@@ -397,7 +397,8 @@ function ActionPanel({ permit, rail, ver, next, nextMine }: { permit: Permit; ra
   const me = state.people.find((p) => p.id === sim.personId)
 
   // Assinar / Enviar / Entregar…
-  const plan = me && !isFinalState(permit.state) ? planSign({ permit, ver, rail, permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists }) : null
+  const placeProblem = usePlaceProblem(permit, ver)
+  const plan = me && !isFinalState(permit.state) ? planSign({ permit, ver, rail, placeProblem, permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists }) : null
   const mine = !!me && !!plan?.slot && plan.slot.eligible.some((e) => e.person.id === me.id) && !plan.slot.signed.some((g) => g.personId === me.id)
   const signFail = mine && plan && !plan.fillOnly ? plan.checks.find((c) => !c.ok) : undefined
   const pending = mine && plan ? plan.checks.filter((c) => c.fill && !c.ok) : []

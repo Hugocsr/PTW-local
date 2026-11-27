@@ -293,6 +293,8 @@ export interface QueryPort {
   changed: Cell<number>
   changes?: Partial<Record<"assets" | "permits" | "audit" | "appearance" | "groups" | "delegations", Cell<number>>>
   locationAssetCounts?(ids: string[]): Promise<{ locationId: string; count: number }[]>
+  /** `GET /locations/with-assets`: the places with at least one active asset (of these types; none = any), below included (SPEC 017). Memory computes it from the registry. */
+  locationsWithAssets?(assetTypeIds: string[]): Promise<{ locationId: string; count: number }[]>
   /** `GET /permits` (+ `/permits/counts` for `all`). Another person's draft never appears. */
   permitBoard(view: ListView): Promise<Page<BoardRow>>
   /** `GET /assets` (filters `typeId`, `locationId` = this place or below). */

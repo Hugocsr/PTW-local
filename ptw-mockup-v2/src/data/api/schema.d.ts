@@ -431,6 +431,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/locations/with-assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Locais que têm ao menos um ativo ativo (contando os descendentes), com a contagem.
+         * @description Serve ao seletor de local da solicitação (SPEC 017). Só entram ativos em situação `ativo`; com `assetTypeIds`, só desses tipos (os que o modelo aceita). Uma linha por local com contagem maior que zero: locais sem ativo não aparecem.
+         */
+        get: operations["locationsWithAssets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/locations/{id}": {
         parameters: {
             query?: never;
@@ -3500,6 +3520,35 @@ export interface operations {
                 };
             };
             404: components["responses"]["Error"];
+            "4XX": components["responses"]["Error"];
+        };
+    };
+    locationsWithAssets: {
+        parameters: {
+            query?: {
+                /** @description Só ativos destes tipos. Sem o parâmetro, todos os tipos. */
+                assetTypeIds?: components["schemas"]["Uuid"][];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Uma contagem distinta por local, ordenada pelo caminho do local. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: {
+                            locationId: components["schemas"]["Uuid"];
+                            count: number;
+                        }[];
+                    };
+                };
+            };
             "4XX": components["responses"]["Error"];
         };
     };

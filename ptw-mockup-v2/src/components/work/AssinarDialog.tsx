@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { pathIds, railOf } from "@/core/permitView"
 import { actionLabel, actionVerb, canReturn as mayReturn, planSign } from "@/core/signing"
-import { usePermitActs } from "@/data/hooks"
+import { usePermitActs, usePlaceProblem } from "@/data/hooks"
 import { equipmentOf } from "./useMyWork"
 import { usePermits } from "@/permit/store"
 import { label, useRegistry } from "@/registry/store"
@@ -45,11 +45,12 @@ function Form({ permitId, startReturning, onClose }: { permitId: string; startRe
   const permit = store.permits.find((p) => p.id === permitId)
   const ver = state.templates.find((t) => t.id === permit?.templateId)?.versions.find((v) => v.id === permit?.versionId)
   const me = state.people.find((p) => p.id === sim.personId)
+  const placeProblem = usePlaceProblem(permit, ver)
   const plan = useMemo(() => {
     if (!permit || !ver || !me) return null
     const rail = railOf(permit, ver, store.signatures, state.people, state.locations, sim.today, sim.now, state.delegations)
-    return planSign({ permit, ver, rail, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: store.formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists })
-  }, [permit, ver, me, store, state, sim.now, sim.today, sim.serverDown])
+    return planSign({ permit, ver, rail, placeProblem, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form: store.formOf(permit, ver), pathIds: pathIds(state.locations, permit.locationId), lists: state.optionLists })
+  }, [permit, ver, me, store, state, sim.now, sim.today, sim.serverDown, placeProblem])
 
   if (!permit || !ver || !me || !plan) return <PermitActDialog busy={feedback.busy} onClose={onClose}><DialogHeader><DialogTitle>PT não encontrada</DialogTitle></DialogHeader></PermitActDialog>
 

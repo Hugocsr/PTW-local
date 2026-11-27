@@ -10,7 +10,8 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useAssetPage } from "@/data/hooks"
+import { useAssetPage, useLocationsWithAssets } from "@/data/hooks"
+import { choosable, PLACE_LOST } from "@/core/locationPicker"
 import { addMinutes, instant, wallOf } from "@/core/time"
 import { eligibilityHint, eligiblePeople, NOBODY_ELIGIBLE, personIneligible } from "@/core/eligibility"
 import { pathIds } from "@/core/permitView"
@@ -22,6 +23,7 @@ import { useSim } from "@/sim/SimProvider"
 import { Page, PageHeader } from "../shell/Page"
 import { TONE_BLOCK } from "../shell/Status"
 import { DownBanner } from "./state"
+import { PlacePicker } from "./PlacePicker"
 import { dmHms } from "@/core/time"
 import { navigate } from "./nav"
 import { useDraftAutosave } from "./useDraftAutosave"
@@ -48,7 +50,10 @@ export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: ()
   const templates = state.templates.filter((t) => t.versions.some((v) => v.status === "ativa"))
   const template = state.templates.find((t) => t.id === templateId)
   const version = template?.versions.find((v) => permit ? v.id === permit.versionId : v.status === "ativa")
-  const locations = state.locations.filter((l) => l.status === "ativo" && (!version?.locationTypeIds.length || version.locationTypeIds.includes(l.typeId)))
+  // SPEC 017: only places with active assets the model accepts; a draft whose place stopped qualifying says so and waits.
+  const places = useLocationsWithAssets(version?.assetTypeIds ?? [])
+  const chosenPlace = state.locations.find((l) => l.id === locationId)
+  const placeLost = !!locationId && !!version && !places.loading && !places.error && !(chosenPlace && choosable(chosenPlace, state.locationTypes, version.locationTypeIds, places.counts))
   const assets = useAssetPage({ q: query, filters: { locationId }, sort: { id: "code", dir: "asc" }, page: 0, pageSize: 25 })
   const allowedAssets = assets.items.filter((a) => a.status === "ativo" && (!version?.assetTypeIds.length || version.assetTypeIds.includes(a.typeId)))
   const roleIds = [...new Set(version?.stages.flatMap((stage) => stage.slots.flatMap((slot) => slot.roleIds)) ?? [])]
@@ -91,7 +96,7 @@ export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: ()
     back()
   }
   // The disabled button says what is missing, in the order of the form.
-  const why = !version ? "Escolha o modelo." : !locationId ? "Escolha o local." : !scope.trim() ? "Descreva o serviço." : windowProblem || teamProblem
+  const why = !version ? "Escolha o modelo." : !locationId ? "Escolha o local." : placeLost ? PLACE_LOST : !scope.trim() ? "Descreva o serviço." : windowProblem || teamProblem
   return <Page>
     <PageHeader title={permit ? "Editar rascunho" : "Nova PT"} back={{ label: permit ? "PT" : "Solicitações de PT", onClick: () => void leave() }}
       meta={<span role="status" aria-live="polite" className={autosave.state.kind === "error" || autosave.state.kind === "offline" || autosave.state.kind === "blocked" ? "text-st-stop-fg" : undefined}>{saveLabel(autosave.state, missing)}</span>} />
@@ -102,7 +107,9 @@ export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: ()
         <fieldset disabled={busy || sim.serverDown} className="min-w-0">
           <FieldGroup>
             <Choice id="draft-model" label="Modelo" value={templateId} onChange={(v) => { setTemplateId(v); setLocationId(""); setAssetIds([]); setTeam({}) }} options={templates.map((t) => ({ id: t.id, name: t.name }))} disabled={!!permit} />
-            <Choice id="draft-location" label="Local" value={locationId} onChange={(v) => { setLocationId(v); setAssetIds([]) }} options={locations.map((l) => ({ id: l.id, name: `${l.code} · ${l.name}` }))} disabled={!version} />
+            <PlacePicker id="draft-location" value={locationId} places={places} locationTypeIds={version?.locationTypeIds ?? []} assetTypeIds={version?.assetTypeIds ?? []} disabled={!version}
+              onChange={(v) => { setLocationId(v); setAssetIds([]) }}
+              onPickAsset={(asset, placeId) => { setLocationId(placeId); setAssetIds([asset.id]) }} />
             <Field><FieldLabel htmlFor="draft-scope">Serviço</FieldLabel><Textarea id="draft-scope" value={scope} onChange={(e) => setScope(e.target.value)} maxLength={500} required rows={3} /></Field>
             <div className="grid min-w-0 gap-4 lg:grid-cols-2">
               <Field><FieldLabel htmlFor="draft-start">Início da janela</FieldLabel><Input id="draft-start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required className="min-h-11 md:min-h-9" /></Field>

@@ -13,10 +13,12 @@ import type { AuditEvent } from "@/core/audit"
 import { boardRows, createBoardCache, type BoardRow } from "@/core/board"
 import { accountEpoch } from "@/core/indexes"
 import type { RuleError } from "@/core/ptwErrors"
+import { assetCountsByLocation, placeProblem } from "@/core/locationPicker"
 import { useAudit } from "@/audit/store"
 import { usePermits } from "@/permit/store"
 import { useRegistry } from "@/registry/store"
-import type { Asset } from "@/registry/types"
+import type { Permit } from "@/permit/types"
+import type { Asset, TemplateVersion } from "@/registry/types"
 import { useSim } from "@/sim/SimProvider"
 import { useCell, useData } from "./context"
 import { assetLocal, assetsUnder, auditFacetsOf, auditPageOf, auditRows, boardLocal, pageOf } from "./memory/query"
@@ -153,6 +155,32 @@ export function useLocationAssetCounts(ids: string[]) {
   const key = ordered.join(",")
   const remote = useRemote(!port.whole && ordered.length > 0, key, () => port.queries.locationAssetCounts!(ordered), "assets")
   return { ...remote, counts: new Map(remote.data?.map(x => [x.locationId, x.count]) ?? []) }
+}
+
+/**
+ * The places that have at least one active asset of these types (none = any), with the count (SPEC 017).
+ * Memory counts from the registry; the server answers in one request (no per-place calls, no cap on places).
+ */
+export function useLocationsWithAssets(assetTypeIds: readonly string[], enabled = true): { counts: ReadonlyMap<string, number> } & Loading {
+  const port = useData()
+  const { assets, locations } = useRegistry().state
+  const ids = useStable([...new Set(assetTypeIds)].sort())
+  const here = useMemo(() => (port.whole ? assetCountsByLocation(assets, locations, ids) : null), [port.whole, assets, locations, ids])
+  const remote = useRemote(!port.whole && enabled, ids.join(","), () => port.queries.locationsWithAssets!(ids), "assets")
+  const there = useMemo(() => new Map(remote.data?.map((x) => [x.locationId, x.count]) ?? []), [remote.data])
+  return here ? { counts: here, loading: false, error: null } : { counts: there, loading: remote.loading, error: remote.error }
+}
+
+/**
+ * SPEC 017: for a PT still being written (rascunho, devolvida), why its place no longer qualifies — "" when it
+ * does, while the places load, and always for a PT past that. Enviar / Reenviar waits on it.
+ */
+export function usePlaceProblem(permit: Permit | undefined, ver: TemplateVersion | undefined): string {
+  const { state } = useRegistry()
+  const writing = !!permit && !!ver && (permit.state === "rascunho" || permit.state === "devolvida")
+  const places = useLocationsWithAssets(ver?.assetTypeIds ?? [], writing)
+  if (!writing || !permit || !ver || places.loading || places.error) return ""
+  return placeProblem(permit.locationId, state.locations, state.locationTypes, ver.locationTypeIds, places.counts)
 }
 
 /**

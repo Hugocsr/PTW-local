@@ -86,6 +86,8 @@ interface PlanInput {
   pathIds?: string[]
   /** Option lists: names of list answers and list options in the form's messages. */
   lists?: OptionList[]
+  /** SPEC 017: why the PT's place no longer qualifies ("" or absent = fine). Stops Enviar / Reenviar on the screen; the server does not check it. */
+  placeProblem?: string
   /** Sign this slot (the store's check of a given act); otherwise the slot the signer would pick. */
   slotId?: string
 }
@@ -188,6 +190,7 @@ function planSubmit(input: PlanInput): SignPlan {
   const checks: SignCheck[] = [serverCheck(serverDown)]
   const author = signer.id === permit.authorId
   checks.push({ id: "autor", ok: author, text: author ? "Você é o solicitante" : "Só o solicitante envia esta PT", ...(author ? {} : { deny: deny(G7.soAutorEnvia, "Só o solicitante envia esta PT") }) })
+  if (input.placeProblem) checks.push({ id: "local", ok: false, text: input.placeProblem })
   if (permit.assetIds.length === 0) checks.push({ id: "ativos", ok: false, text: "A PT precisa de ao menos um ativo", deny: deny("PTW04", "A PT precisa de ao menos um ativo") })
   // PTW31: the window within the version's limit.
   const limit = windowLimitDenied(ver, permit.windowStart, permit.windowEnd)

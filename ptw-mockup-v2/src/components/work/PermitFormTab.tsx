@@ -13,6 +13,7 @@ import type { SlotView, StageView } from "@/core/permitView"
 import { cn } from "@/lib/utils"
 import { TONE_TEXT, type StatusTone } from "../shell/Status"
 import { actionLabel, actionVerb, planSign } from "@/core/signing"
+import { usePlaceProblem } from "@/data/hooks"
 import type { Permit } from "@/permit/types"
 import { usePermits } from "@/permit/store"
 import { label, useRegistry } from "@/registry/store"
@@ -36,7 +37,8 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
   const me = state.people.find((p) => p.id === sim.personId)
   const form = store.formOf(permit, ver)
   const path = useMemo(() => pathIds(state.locations, permit.locationId), [state.locations, permit.locationId])
-  const plan = me ? planSign({ permit, ver, rail, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form, pathIds: path, lists: state.optionLists }) : null
+  const placeProblem = usePlaceProblem(permit, ver)
+  const plan = me ? planSign({ permit, ver, rail, placeProblem, permits: store.permits, signer: me, roleLabel: (id) => label(state.roleTypes, id), now: sim.now, today: sim.today, timezone: state.units[0]?.timezone, serverDown: sim.serverDown, equipment: equipmentOf(state), people: state.people, form, pathIds: path, lists: state.optionLists }) : null
   // The PT's files: answers keep attachment ids; a capture is stored (SHA-256 of its bytes) before it is answered.
   const files = useMemo<FormFiles>(() => ({
     attachments: store.attachments.filter((a) => a.permitId === permit.id),
@@ -64,6 +66,8 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
   const verb = actionVerb(permit, plan)
   // Enviar on equipment another open PT holds: filling stays possible, sending does not.
   const held = plan.checks.filter((c) => !c.ok && c.holder)
+  // SPEC 017: the place stopped qualifying (no active assets the model accepts): filling stays possible, sending does not.
+  const placeBlock = plan.checks.find((c) => c.id === "local" && !c.ok)
   const statusOf = (stageId: string) => rail.find((r) => r.stage.id === stageId)?.status ?? "futura"
 
   return (
@@ -91,6 +95,7 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
               footer={isMine ? ({ done, missing, blocked }) => (
                 <div className="flex flex-col gap-1.5">
                   {sim.serverDown && <p id="pf-down" className={cn("flex items-center gap-2 type-meta", TONE_TEXT.attention)}><EyeOffIcon className="size-4 shrink-0" aria-hidden />Sem servidor: preencher e {verb.toLowerCase()} voltam com o servidor.</p>}
+                  {placeBlock && <p id="pf-place" className={cn("flex items-start gap-1.5 type-meta font-medium", TONE_TEXT.stop)}><CircleAlertIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden /><span>Não dá para {verb.toLowerCase()}: {placeBlock.text} Abra “Continuar editando” no menu da PT.</span></p>}
                   {held.map((c, i) => (
                     <p key={c.id} id={i === 0 ? "pf-held" : undefined} className={cn("flex items-start gap-1.5 type-meta font-medium", TONE_TEXT.stop)}>
                       <LockIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />
@@ -99,7 +104,7 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
                   ))}
                   {/* The disabled button says why, beside it: what blocks (stop, naming the item) or how many answers are missing. */}
                   <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-3">
-                    <Button variant="outline" className="h-auto min-h-11 w-full whitespace-normal py-2 text-left md:w-fit" disabled={(editing && !done) || sim.serverDown || held.length > 0} aria-describedby={sim.serverDown ? "pf-down" : held.length ? "pf-held" : editing && !done ? "pf-why" : undefined} onClick={() => setOpen(permit.id)}>
+                    <Button variant="outline" className="h-auto min-h-11 w-full whitespace-normal py-2 text-left md:w-fit" disabled={(editing && !done) || sim.serverDown || held.length > 0 || !!placeBlock} aria-describedby={sim.serverDown ? "pf-down" : held.length ? "pf-held" : editing && !done ? "pf-why" : undefined} onClick={() => setOpen(permit.id)}>
                       {actionLabel(permit, plan)}
                     </Button>
                     {editing && !done && (blocked.length

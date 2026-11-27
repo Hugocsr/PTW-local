@@ -705,3 +705,11 @@ A tela **Pessoas** vira **Acesso › Usuários**, no formato da tela Usuários d
 - **Quem deixou de ser elegível depois** continua na lista, em vermelho com o motivo e "Troque esta pessoa". Na Nova PT isso bloqueia o botão e o salvamento automático (o servidor fica com o último valor válido).
 - **API:** `createPermit`, `updatePermit` (equipe ou local) e `submitPermit` recusam com 422 `PTW08` "Equipe: Nome não elegível (motivo)" (`assertTeamEligible`, usa `ptw.person_ineligible`; sem mudança de banco). No modo memória, o Enviar recusa igual (`teamIneligible`).
 
+### Local da solicitação em lista que desce (SPEC 017, 27/11/2026)
+
+- **Referência:** a tela "Nova solicitação" do protótipo SGI Front-Office: busca no alto e, sem busca, uma lista que desce **Planta › Área**, com "N equip." em cada linha, "‹ nome" para subir e, depois de escolher, um cartão com o caminho e "Trocar". É o componente `PlacePicker` (`components/work/PlacePicker.tsx`), no lugar do seletor plano de Local.
+- **Só entra o que serve:** local com ao menos um **ativo ativo de tipo aceito pelo modelo**, do local ou de qualquer descendente (`assetCountsByLocation` em memória; `GET /locations/with-assets` no servidor, uma consulta, sem teto de locais). Escolhe-se **área** (nível abaixo da planta) de **tipo de local aceito pelo modelo**; a planta e tipos não aceitos só aparecem como caminho até um local escolhível, e sem caminho nenhum, somem. Nenhum local serve: "Nenhum local tem ativos ativos aceitos por este modelo. Cadastre ou ative ativos em Gestão de Ativos."
+- **Busca:** por nome, código, planta ou nome de ativo (EQUNR, tag, nome, só ativos ativos do modelo). Escolher um **ativo** no resultado escolhe o local dele e já marca o ativo. Escolhido o local, a lista de **Ativos** logo abaixo mostra os dele.
+- **Regras puras:** `core/locationPicker.ts` (`choosable`, `browseRows`, `reachablePlaces`, `searchPlaces`, `placeOfAsset`, `placeProblem`).
+- **Rascunho cujo local deixou de servir** (os ativos saíram ou foram desativados): na edição, o cartão fica vermelho com "Este local não tem mais ativos ativos aceitos por este modelo. Escolha outro local." e o botão fica desabilitado; na página da PT (Rascunho e Devolvida), "Enviar/Reenviar" fica bloqueado com a mesma frase (`placeProblem` em `planSign`). O servidor **não** recusa (decisão: só a tela).
+

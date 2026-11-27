@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | **Rascunho, aguardando decisão** |
+| Status | **Executada (27/11/2026)** |
 | Autor | Claude (Cowork), a partir do requisito de Hugo Silva |
 | Data | 26/11/2026 |
 | Onde aparece | Nova PT / Editar rascunho (`NewPermitView`: campos Local e Ativos), componente de árvore de Gestão de Ativos, API de locais |
@@ -57,16 +57,13 @@
 
 **Rascunho com local que deixou de servir** (os ativos saíram depois): o campo mostra o local com o aviso "sem ativos aceitos agora", o salvamento não é bloqueado, mas a PT não avança sem trocar (ver decisão 6).
 
-## 6. Pontos para decisão
+## 6. Decisões (27/11/2026)
 
-1. **O que é escolhível na árvore.** Recomendo **só áreas** (nível abaixo da planta) e níveis mais profundos; a **planta é só agrupador**. Alternativa: qualquer local que o modelo aceite e que tenha ativo embaixo (inclui a planta, com todos os ativos dela).
-2. **O que conta como "ter ativos".** Recomendo ativo **ativo e de tipo aceito pelo modelo** (o mesmo filtro da lista de Ativos). Alternativa: qualquer ativo (a contagem que já existe), aceitando que alguns locais ainda mostrem a lista vazia.
-3. **Como a API entrega o filtro.** Recomendo um **endpoint novo** (`GET /locations/with-assets?assetTypeIds=…`) que devolve, numa consulta, os ids dos locais com ativo elegível (com descendentes): não tem o teto de 100 locais e não faz uma chamada por nó. Alternativa: reaproveitar `asset-counts` em lotes de 100 (mais chamadas, conta ativos de qualquer situação).
-4. **Onde fica a árvore.** Recomendo um **seletor aberto pelo campo** (janela no computador, painel no celular): a coluna do formulário tem 38 rem e a árvore é alta. Alternativa: árvore fixa dentro do formulário.
-5. **A árvore mostra equipamentos?** Recomendo **não**: ela termina na área; os equipamentos aparecem na lista de Ativos logo abaixo, como hoje (menos risco, mesma regra de limite de 25). Alternativa: mostrar os equipamentos como na Gestão de Ativos e marcar o ativo direto na árvore (escolhe o local e já marca o ativo).
-6. **Rascunho cujo local deixou de servir.** Recomendo **manter selecionado com aviso** e bloquear o envio até trocar. Alternativa: limpar o local sozinho (a pessoa perde o contexto).
-7. **A API também recusa criar PT em local sem ativo elegível?** Recomendo **não, só a tela**: ativo é "opcional agora" na criação, ativos podem entrar depois e vários testes e importações criam PT sem ativo. Alternativa: recusar com um código novo (quebra esses casos).
-8. **Tipos de local do modelo.** Recomendo manter: se o modelo restringe os tipos de local, os agrupadores de outros tipos aparecem **apagados** (só expandem), como as plantas. Alternativa: esconder tudo que não for dos tipos aceitos (a hierarquia some).
+- **Componente:** analisar o Front-Office do protótipo e copiar. O Front-Office **não usa árvore expansível**: usa busca + lista que desce Planta › Área › Equipamento (com "N equip." e "Trocar"). Foi isso que se copiou (a árvore expansível é a do Backoffice, na Gestão de Ativos, que não mudou).
+- **Só locais com equipamentos ativos** (decisão 2: ativo ativo de tipo aceito pelo modelo).
+- **Rascunho com local que deixou de valer:** aviso e **não avança** (decisão 6).
+- **Só dados restritos à configuração do modelo** (decisão 8): tipos de local e de ativo do modelo valem; o que não é aceito não é oferecido.
+- **Assumidas por mim** (não respondidas, seguiram a recomendação ou o protótipo): só **áreas** se escolhem, a planta só agrupa (1); endpoint novo na API (3); lista no próprio formulário, como no protótipo (4); a lista de ativos continua abaixo do local, e a busca também acha ativos (5); a API **não** recusa PT em local sem ativo, só a tela (7).
 
 ## 7. Plano de testes
 
@@ -79,3 +76,28 @@
 ## 8. Como entregar
 
 Sem mudança de banco (Supabase sem script). A API ganha um endpoint (reconstruir o `ptw-server`); o app, Ctrl+F5. Docker e git como nas entregas anteriores.
+
+## 9. Resultado da execução
+
+**Como ficou:**
+- **API:** `GET /locations/with-assets?assetTypeIds=…` (`locationsWithAssets`): locais com ao menos um ativo `ativo` (dos tipos pedidos), descendentes contados, uma consulta, sem teto de locais, sem cache. Contrato 101 operações; `schema.d.ts` regenerado nos dois lados.
+- **App:** `core/locationPicker.ts` (regras puras e testes), `useLocationsWithAssets` e `usePlaceProblem` (`data/hooks.ts`; memória conta do cadastro, servidor chama o endpoint), `components/work/PlacePicker.tsx` (busca, lista que desce, cartão "Trocar", busca de ativo que já marca o ativo) e a Nova PT / Editar rascunho usando-o.
+- **Rascunho com local que deixou de servir:** a edição mostra o aviso e desabilita o botão; a página da PT bloqueia Enviar/Reenviar (`placeProblem` em `planSign`) com a mesma frase.
+- Banco e Supabase: sem mudança. A API precisa ser reconstruída.
+
+**Diferenças e limites:**
+- A árvore expansível da Amanda (Backoffice) **não** foi usada: o Front-Office, que é o fluxo do solicitante, desce em níveis. Se quiser a árvore, o `PlacePicker` é o único ponto a trocar.
+- No demo do banco hospedado, o modelo "Intervenção desenergizada em painel" aceita só o tipo de ativo "Painel / CCM" e **não há ativo desse tipo** na carga de exemplo: com ele nenhum local aparece (é o comportamento pedido; cadastre um ativo Painel / CCM para testar).
+- A API aceita criar PT em qualquer local (decisão 7); quem usa a API direto não é barrado.
+- Não testei o celular com o painel de busca preenchido; conferi a tela em 390 px sem rolagem horizontal.
+
+| Caso | Resultado |
+|---|---|
+| Só locais com ativo ativo do tipo do modelo; planta só agrupa; ativo inativo e área vazia somem | Passou (função pura, API com banco real, navegador) |
+| Lista desce Planta › Área com "N equip."; subir; "Trocar" | Passou (navegador) |
+| Busca por local, por ativo (escolhe o local e marca o ativo), sem resultado | Passou (navegador) |
+| Modelo sem nenhum local: mensagem "Nenhum local tem ativos…" | Passou (navegador) |
+| Rascunho cujo ativo foi desativado: aviso na edição, botão desabilitado, Enviar bloqueado na PT | Passou (navegador) |
+| API: contagem distinta, filtro de tipos, 400 em parâmetro inválido, 401 sem sessão | Passou (fake e banco real) |
+| `npm run check` (474 testes), API (230 passaram, 8 pulados), `sync-shared`, lint | Passou |
+

@@ -29,10 +29,11 @@ export function createQueries(s: Shared): QueryPort {
   const { http } = s
   const assetTotals = readCache<number>()
   const localCounts = readCache<{ locationId: string; count: number }[]>()
+  const withAssets = readCache<{ locationId: string; count: number }[]>()
   let identity = ""
   s.session.subscribe(() => {
     const session = s.session.get(), next = `${session.status}:${session.personId}`
-    if (identity !== next) { identity = next; assetTotals.clear(); localCounts.clear() }
+    if (identity !== next) { identity = next; assetTotals.clear(); localCounts.clear(); withAssets.clear() }
   })
   const generation = () => `${s.registry.get().units[0]?.id}:${s.session.get().status}:${s.session.get().personId}:${s.changed.get()}:${s.changes.assets.get()}`
   // The header counts (rows with no filter) are asked once per change of the data.
@@ -47,6 +48,14 @@ export function createQueries(s: Shared): QueryPort {
       if (!ordered.length) return Promise.resolve([])
       return localCounts(generation(), ordered.join(","), async () => {
         const r = await must(http.request<{ items: { locationId: string; count: number }[] }>({ method: "GET", path: "/locations/asset-counts", query: { locationIds: ordered } }))
+        return r.items
+      })
+    },
+
+    locationsWithAssets(typeIds) {
+      const ordered = [...new Set(typeIds)].sort()
+      return withAssets(generation(), ordered.join(","), async () => {
+        const r = await must(http.request<{ items: { locationId: string; count: number }[] }>({ method: "GET", path: "/locations/with-assets", query: ordered.length ? { assetTypeIds: ordered } : {} }))
         return r.items
       })
     },

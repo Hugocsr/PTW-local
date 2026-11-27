@@ -82,10 +82,10 @@ const call = async (method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", url: st
 const sql = (d: FakeDriver, re: RegExp) => d.find(re).map((x) => x.statement)
 const denied = (d: FakeDriver) => sql(d, /select ptw\.audit_denied\(/)
 
-describe("contrato: as 32 operações do cadastro têm rota (28 + perfis de acesso, SPEC 002)", () => {
+describe("contrato: as 33 operações do cadastro têm rota (28 + perfis de acesso, SPEC 002 + locais com ativos, SPEC 017)", () => {
   it("lista as operações e confere a cobertura", async () => {
     t = await start()
-    expect(CADASTRO).toHaveLength(32)
+    expect(CADASTRO).toHaveLength(33)
     const { withoutRoute } = coverage(t.app)
     expect(CADASTRO.filter((o) => withoutRoute.includes(o))).toEqual([])
   })
@@ -106,6 +106,23 @@ describe("leitura: página, busca, filtros e ordem são SQL", () => {
       expect((await call("GET", "/locations/asset-counts" + query, s.headers)).statusCode).toBe(400)
     }
     expect((await call("GET", `/locations/asset-counts?locationIds=${LOC}`, {})).statusCode).toBe(401)
+  })
+  it("locais com ativos (SPEC 017): uma consulta de conjunto, só ativo ativo, tipos opcionais, sem cache", async () => {
+    t = await start(); const s = await t.login()
+    t.driver.on(/select root.id, count\(distinct a.id\)/, [{ id: LOC, count: 3 }, { id: LOC2, count: 1 }])
+    const res = await call("GET", `/locations/with-assets?assetTypeIds=${TYPE}`, s.headers)
+    expect(res.statusCode, res.body).toBe(200)
+    expect(res.headers["cache-control"]).toBe("no-store")
+    expect(res.json()).toEqual({ items: [{ locationId: LOC, count: 3 }, { locationId: LOC2, count: 1 }] })
+    const [q] = sql(t.driver, /select root.id, count\(distinct a.id\)/)
+    expect(q!.text).toMatch(/a\.status = 'ativo'/)
+    expect(q!.text).toMatch(/a\.type_id = any/)
+    t.driver.reset()
+    t.driver.on(/select root.id, count\(distinct a.id\)/, [])
+    expect((await call("GET", "/locations/with-assets", s.headers)).json()).toEqual({ items: [] })
+    expect(sql(t.driver, /select root.id, count\(distinct a.id\)/)[0]!.text).not.toMatch(/type_id = any/)
+    expect((await call("GET", "/locations/with-assets?assetTypeIds=bad", s.headers)).statusCode).toBe(400)
+    expect((await call("GET", "/locations/with-assets", {})).statusCode).toBe(401)
   })
   it("locais: filtros, busca sem acento, ordem e página vão ao banco; a resposta segue o contrato", async () => {
     t = await start()
