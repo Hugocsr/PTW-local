@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { canReadView, navigationGroup, navigationSections, visibleViews, type NavigationAccess } from "./navigation"
 
 const operator: NavigationAccess = { canEditRegistry: false, canEditModels: false, canAudit: false, canExport: false }
-const operation = ["dashboard", "quadro"]
+const operation = ["dashboard", "solicitacoes"]
 const registry = ["ativos"]
 const access = ["grupos", "pessoas", "perfis"]
 const references = [...registry, "pessoas", "perfis", "modelos", "catalogos"]

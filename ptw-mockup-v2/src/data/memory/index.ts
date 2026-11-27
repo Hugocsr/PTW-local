@@ -63,7 +63,7 @@ export function createMemoryPort(scenario: Scenario, { tz = DEFAULT_TZ, onReset 
   /* ----- who, when, server ----- */
   // The scenario says where the simulation starts: its person and its clock.
   const sessionOf = (personId: string, now: string, serverDown: boolean): SessionState =>
-    ({ status: "aberta", personId, now, today: dayOf(now, tz), tz, serverDown, isAuditor: scenario.auditors.includes(personId), devLogin: true, passwordLogin: false, grants: ["cadastro", "modelos", "auditoria", "exportacao"] })
+    ({ status: "aberta", personId, now, today: dayOf(now, tz), tz, serverDown, isAuditor: scenario.auditors.includes(personId), devLogin: true, passwordLogin: false, draftAutosaveMs: 5000, grants: ["cadastro", "modelos", "auditoria", "exportacao"] })
   const session = box(sessionOf(scenario.defaultPerson, scenario.start, false))
   const setSession = (patch: Partial<Pick<SessionState, "personId" | "now" | "serverDown">>) => {
     const s = { ...session.get(), ...patch }

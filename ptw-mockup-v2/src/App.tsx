@@ -45,12 +45,12 @@ const DelegationsView = lazy(() => import("@/components/registry/DelegationsView
 
 /** Screen per route; titles, groups and icons live in the menu table (`shell/nav.ts`). */
 const VIEWS = {
-  dashboard: DashboardView, quadro: QuadroView, ativos: AssetManagementView,
+  dashboard: DashboardView, solicitacoes: QuadroView, ativos: AssetManagementView,
   pessoas: UsersView, modelos: TemplatesView, catalogos: CatalogsView, auditoria: AuditView, identidade: AppearanceView, grupos: GroupsView, perfis: ProfilesView, delegacoes: DelegationsView,
 } satisfies Record<ViewKey, unknown>
 
 /**
- * `#quadro`, … `#pt/<permitId>/<tab>`, `#ativos/<id>` (Gestão de Ativos with a plant, area or equipment
+ * `#solicitacoes`, … `#pt/<permitId>/<tab>`, `#ativos/<id>` (Gestão de Ativos with a plant, area or equipment
  * open), `#pessoas/<id>`; `#ativo/<id>` and `#local/<id>` are the full page of one asset or place
  * (relations, people, history), opened from Gestão de Ativos.
  */
@@ -59,8 +59,11 @@ type Route = { view: ViewKey; permitId?: string; tab?: string; recordId?: string
 const ALIAS: Record<string, string> = { locais: "ativos", usuarios: "pessoas" }
 const fromHash = (): Route => {
   const [head, id, tab] = window.location.hash.slice(1).split("/")
-  if (head === "nova-pt") return { view: "quadro", newPermit: true }
-  if (head === "pt" && id) return { view: "quadro", permitId: id, tab: tab ?? "etapas" }
+  // SPEC 014: the form names the draft it created (`#nova-pt/<id>`); opening that address (reload, link) goes to the draft.
+  if (head === "nova-pt") return id ? { view: "solicitacoes", permitId: id, tab: "etapas" } : { view: "solicitacoes", newPermit: true }
+  if (head === "pt" && id) return { view: "solicitacoes", permitId: id, tab: tab ?? "etapas" }
+  // SPEC 014: "#solicitacoes/rascunhos" opens the list on the person's drafts.
+  if (head === "solicitacoes") return id === "rascunhos" ? { view: "solicitacoes", tab: "rascunhos" } : { view: "solicitacoes" }
   const legacy = legacyDashboardHash(head, id)
   if (legacy) { const [, t] = legacy.split("/"); return { view: "dashboard", tab: t } }
   if (head === "dashboard") return { view: "dashboard", tab: dashboardTab(id) }
@@ -80,7 +83,7 @@ const fromHash = (): Route => {
   return { view: key in VIEWS ? (key as ViewKey) : "dashboard" }
 }
 /** The one spelling of a route; unknown, aliased or over-long hashes are rewritten to it. */
-const canonical = (r: Route) => r.newPermit ? "nova-pt" : r.page && r.recordId ? `${r.page}/${r.recordId}` : r.recordId ? `${r.view}/${r.recordId}` : r.permitId ? `pt/${r.permitId}/${r.tab ?? "etapas"}` : r.view === "dashboard" && r.tab ? `dashboard/${r.tab}` : (r.view === "auditoria" || r.view === "grupos" || r.view === "perfis" || r.view === "catalogos") && r.tab ? `${r.view}/${r.tab}` : r.view
+const canonical = (r: Route) => r.newPermit ? "nova-pt" : r.page && r.recordId ? `${r.page}/${r.recordId}` : r.recordId ? `${r.view}/${r.recordId}` : r.permitId ? `pt/${r.permitId}/${r.tab ?? "etapas"}` : r.view === "dashboard" && r.tab ? `dashboard/${r.tab}` : (r.view === "auditoria" || r.view === "grupos" || r.view === "perfis" || r.view === "catalogos" || r.view === "solicitacoes") && r.tab ? `${r.view}/${r.tab}` : r.view
 const normalize = (): Route => {
   const r = fromHash()
   const want = `#${canonical(r)}`
@@ -159,7 +162,7 @@ function Shell() {
         {/* Padding only: each screen owns its frame through <Page> (72rem, shell/Page.tsx). */}
         <main id="workspace-content" tabIndex={-1} className="flex w-full min-w-0 flex-col gap-4 px-4 pt-5 pb-8 outline-none md:px-6 md:pt-6 lg:px-8">
           <Suspense fallback={<p className="type-meta" role="status">Carregando…</p>}>
-            {!routeAllowed ? <Page><PageHeader title="Acesso não disponível" /><p className="type-body">Sua conta não tem acesso a esta tela.</p><a href="#dashboard" className="type-body underline underline-offset-2">Voltar para o Dashboard</a></Page> : route.newPermit ? <NewPermitView /> : route.permitId ? <PermitDetailView id={route.permitId} tab={route.tab ?? "etapas"} /> : route.recordId ? (route.page === "ativo" ? <AssetDetailView id={route.recordId} /> : route.page === "local" ? <LocationDetailView id={route.recordId} /> : route.view === "pessoas" ? <PersonDetailView id={route.recordId} /> : <AssetManagementView recordId={route.recordId} />) : route.view === "dashboard" ? <DashboardView tab={route.tab} /> : route.view === "auditoria" ? <AuditView key={route.tab ?? ""} permitFilter={route.tab?.slice(3)} /> : route.view === "grupos" ? <GroupsView tab={route.tab} /> : route.view === "perfis" ? <ProfilesView tab={route.tab} /> : route.view === "catalogos" ? <CatalogsView tab={route.tab} /> : <View />}
+            {!routeAllowed ? <Page><PageHeader title="Acesso não disponível" /><p className="type-body">Sua conta não tem acesso a esta tela.</p><a href="#dashboard" className="type-body underline underline-offset-2">Voltar para o Dashboard</a></Page> : route.newPermit ? <NewPermitView /> : route.permitId ? <PermitDetailView id={route.permitId} tab={route.tab ?? "etapas"} /> : route.recordId ? (route.page === "ativo" ? <AssetDetailView id={route.recordId} /> : route.page === "local" ? <LocationDetailView id={route.recordId} /> : route.view === "pessoas" ? <PersonDetailView id={route.recordId} /> : <AssetManagementView recordId={route.recordId} />) : route.view === "dashboard" ? <DashboardView tab={route.tab} /> : route.view === "solicitacoes" ? <QuadroView segment={route.tab} /> : route.view === "auditoria" ? <AuditView key={route.tab ?? ""} permitFilter={route.tab?.slice(3)} /> : route.view === "grupos" ? <GroupsView tab={route.tab} /> : route.view === "perfis" ? <ProfilesView tab={route.tab} /> : route.view === "catalogos" ? <CatalogsView tab={route.tab} /> : <View />}
           </Suspense>
         </main>
         {!demo && <ResourceFooter />}

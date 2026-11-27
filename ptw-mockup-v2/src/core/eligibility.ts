@@ -59,6 +59,34 @@ export function personIneligible(p: Person | undefined, roleId: RoleReq, pathIds
   return null
 }
 
+/**
+ * Who may be offered to take part (SPEC 015): exactly the people `personIneligible` accepts, in the
+ * register's order. A participant (team, "Pessoa" field) may be a contact without login.
+ */
+export function eligiblePeople(people: readonly Person[], roleId: RoleReq, pathIds: string[] | null, today: string, now: string): Person[] {
+  return people.filter((p) => personIneligible(p, roleId, pathIds, today, now) === null)
+}
+
+/** The first team member the rule refuses (SPEC 015), in the database's words (PTW08); null = the whole team qualifies. */
+export function teamIneligible(team: Record<string, readonly string[]>, people: readonly Person[], pathIds: string[] | null, today: string, now: string): string | null {
+  for (const [roleId, ids] of Object.entries(team)) {
+    for (const id of ids) {
+      const person = people.find((x) => x.id === id), why = personIneligible(person, roleId, pathIds, today, now)
+      if (why) return `Equipe: ${person?.name ?? "pessoa"} não elegível (${why})`
+    }
+  }
+  return null
+}
+
+/** One sentence telling why the list is short: the rule people are filtered by (SPEC 015). */
+export function eligibilityHint(roleName: string | null, placeName: string | null): string {
+  const cargo = roleName ? `o cargo ${roleName} válido hoje${placeName ? ` para ${placeName}` : ""}, ` : ""
+  return `Aparecem só pessoas com ${cargo}cadastro ativo e conta em dia.`
+}
+
+/** The text when nobody qualifies. */
+export const NOBODY_ELIGIBLE = "Ninguém atende aos critérios. Peça ao administrador para conferir o cargo, a validade e o escopo."
+
 /** Signer reasons: no login first (as the database checks it), then the eligibility rule. */
 function signerReasons(p: Person, roleId: RoleReq, pathIds: string[] | null, today: string, now: string, signer: boolean): string[] {
   if (signer && !p.login) return [NO_LOGIN_REASON]

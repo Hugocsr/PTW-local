@@ -29,7 +29,7 @@ import { createGroupPort } from "./groups"
 import { createDelegationPort } from "./delegations"
 
 interface Session { person: Person; unit: { timezone: string }; auth: AuditCtx["auth"]; csrfToken: string; devLogin?: boolean; grants: SessionGrant[]; now: string }
-interface Health { now: string; devLogin: boolean; passwordLogin: boolean }
+interface Health { now: string; devLogin: boolean; passwordLogin: boolean; draftAutosaveSeconds?: number }
 
 export interface ApiOptions extends Pick<HttpOptions, "fetch" | "base"> {
   /** Reading and event-stream intervals (ms); tests make them long. */
@@ -66,7 +66,7 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
 
   const stateOf = (p: Partial<SessionState> & Pick<SessionState, "status">): SessionState => {
     const now = nowIso()
-    return { personId: "", now, today: dayOf(now, tz), tz, serverDown: false, isAuditor: false, devLogin: false, passwordLogin: false, grants: [], ...p }
+    return { personId: "", now, today: dayOf(now, tz), tz, serverDown: false, isAuditor: false, devLogin: false, passwordLogin: false, draftAutosaveMs: 5000, grants: [], ...p }
   }
   const session = box<SessionState>(stateOf({ status: "carregando" }))
   const patch = (p: Partial<SessionState>) => { const c = session.get(); session.set({ ...c, ...p }) }
@@ -134,7 +134,8 @@ export async function createApiPort(opts: ApiOptions = {}): Promise<DataPort> {
     const r = await http.request<Health>({ method: "GET", path: "/health" })
     if (!r.ok) return r.error
     offset = msOf(r.data.now, tz) - Date.now()
-    patch({ devLogin: r.data.devLogin === true, passwordLogin: r.data.passwordLogin === true })
+    const secs = r.data.draftAutosaveSeconds
+    patch({ devLogin: r.data.devLogin === true, passwordLogin: r.data.passwordLogin === true, ...(typeof secs === "number" && secs >= 1 && secs <= 60 ? { draftAutosaveMs: secs * 1000 } : {}) })
     return null
   }
 

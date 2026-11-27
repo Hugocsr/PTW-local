@@ -609,7 +609,7 @@ describe("sistema", () => {
     t.driver.down = true
     const res = await t.app.inject({ url: `${V1}/health` })
     expect(res.statusCode).toBe(200)
-    expect(res.json()).toEqual({ ok: true, now: expect.any(String), devLogin:true, passwordLogin:false })
+    expect(res.json()).toEqual({ ok: true, now: expect.any(String), devLogin:true, passwordLogin:false, draftAutosaveSeconds: 5 })
     expect(t.driver.transactions).toHaveLength(0)
   })
 

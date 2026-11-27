@@ -47,26 +47,26 @@ import { useData } from "@/data/context"
 import { usePermitHistory } from "@/data/hooks"
 import { NewPermitView } from "./NewPermitView"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 
 export const PERMIT_TABS = ["etapas", "equipe", "historico"] as const
 export type PermitTab = (typeof PERMIT_TABS)[number]
 const TAB_TITLE: Record<PermitTab, string> = { etapas: "Formulário", equipe: "Equipe", historico: "Histórico" }
 
+const DISCARD_REASON = "Rascunho excluído pelo solicitante"
+
 /** Back to the screen the permit was opened from (Dashboard, Quadro…); the Quadro when opened directly. */
-const back = () => goBack("quadro")
+const back = () => goBack("solicitacoes")
 /** The back link's text: the real name of where "Voltar" goes (DESIGN.md), never just "Voltar". */
 function useBackLabel(): string {
   const { permits } = usePermits()
-  const from = backTarget("quadro")
+  const from = backTarget("solicitacoes")
   const [head, id] = from.split("/")
   if (head === "pt") { const p = permits.find((x) => x.id === id); return p ? permitName(p) : "PT" }
   if (from === "dashboard/eu") return "Seus cargos e conta"
   const block = head === "dashboard" ? dashboardTab(id) : undefined
   if (isBlock(block)) return BLOCK_TITLE[block]
-  return (NAV as Record<string, { title: string }>)[head]?.title ?? NAV.quadro.title
+  return (NAV as Record<string, { title: string }>)[head]?.title ?? NAV.solicitacoes.title
 }
 /** Tabs replace the history entry: "Voltar" leaves the PT in one step. */
 const toTab = (id: string, tab: string) => navigate(`pt/${id}/${tab}`, { replace: true })
@@ -79,8 +79,7 @@ export function PermitDetailView({ id, tab }: { id: string; tab: string }) {
   const [editing, setEditing] = useState(false)
   const [blank, setBlank] = useState(false)
   const [discarding, setDiscarding] = useState(false)
-  const [reason, setReason] = useState("")
-  const [discardBusy, setDiscardBusy] = useState(false)
+    const [discardBusy, setDiscardBusy] = useState(false)
   const [discardError, setDiscardError] = useState("")
   const sim = useSim()
   const backLabel = useBackLabel()
@@ -133,13 +132,14 @@ export function PermitDetailView({ id, tab }: { id: string; tab: string }) {
   const tplName = `${tpl.name} v${ver.number}`
   const canEdit = permit.authorId === sim.personId && (permit.state === "rascunho" || permit.state === "devolvida")
   if (editing && canEdit) return <NewPermitView permit={permit} onBack={() => setEditing(false)} />
+  // SPEC 014: "Excluir rascunho" is the discard (the draft is cancelled, nothing is erased): no free text, a fixed reason.
   const discard = async () => {
-    if (discardBusy || !reason.trim()) return
+    if (discardBusy) return
     setDiscardBusy(true); setDiscardError("")
-    const e = await port.permits.discard?.(permit.id, reason.trim())
+    const e = await port.permits.discard?.(permit.id, DISCARD_REASON)
     setDiscardBusy(false)
     if (e) { setDiscardError(e.message); return }
-    setDiscarding(false); toast.success("Rascunho descartado")
+    setDiscarding(false); toast.success("Rascunho excluído"); back()
   }
 
   // The PT header reads in one order: identity (number, then the service) → state, once, in the
@@ -167,10 +167,10 @@ export function PermitDetailView({ id, tab }: { id: string; tab: string }) {
       <PageHeader back={{ label: backLabel, onClick: back }} title={permit.scope || permitName(permit)}
         meta={<span className="flex w-full flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-foreground"><span className={permit.number ? "type-data-title" : "type-section"}>{permit.number ?? "Rascunho"}</span><span className="type-label">Permissão de trabalho · Revisão {permit.revision}</span></span>}
         actions={{ secondary: [{ label: "Imprimir", icon: PrinterIcon, onClick: () => print() }], menu: [{ label: "Imprimir em branco", onClick: () => print(true) }, ...(canEdit ? [
-          { label: "Editar rascunho", disabled: sim.serverDown, onClick: () => setEditing(true) },
-          ...(permit.state === "rascunho" ? [{ label: "Descartar rascunho", destructive: true, disabled: sim.serverDown, onClick: () => { setReason(""); setDiscardError(""); setDiscarding(true) } }] : []),
+          { label: permit.state === "rascunho" ? "Continuar editando" : "Editar rascunho", disabled: sim.serverDown, onClick: () => setEditing(true) },
+          ...(permit.state === "rascunho" ? [{ label: "Excluir rascunho", destructive: true, disabled: sim.serverDown, onClick: () => { setDiscardError(""); setDiscarding(true) } }] : []),
         ] : [])] }} />
-      <Dialog open={discarding} onOpenChange={(o) => { if (!discardBusy) setDiscarding(o) }}><DialogContent><DialogHeader><DialogTitle>Descartar rascunho</DialogTitle><DialogDescription>O rascunho será cancelado. O registro e seu histórico continuam na auditoria.</DialogDescription></DialogHeader><Field><FieldLabel htmlFor="discard-reason">Motivo</FieldLabel><Textarea id="discard-reason" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} disabled={discardBusy} /></Field>{discardError && <p role="alert" className={TONE_TEXT.stop}>{discardError}</p>}<DialogFooter><Button variant="outline" className="min-h-11 md:min-h-9" onClick={() => setDiscarding(false)} disabled={discardBusy}>Voltar</Button><Button variant="destructive" className="min-h-11 md:min-h-9" disabled={discardBusy || sim.serverDown || !reason.trim()} onClick={() => void discard()}>{discardBusy ? "Descartando…" : "Descartar rascunho"}</Button></DialogFooter></DialogContent></Dialog>
+      <Dialog open={discarding} onOpenChange={(o) => { if (!discardBusy) setDiscarding(o) }}><DialogContent><DialogHeader className="pr-10"><DialogTitle>Excluir rascunho</DialogTitle><DialogDescription>O rascunho sai da sua lista e de todas as outras. O registro e o histórico continuam na auditoria.</DialogDescription></DialogHeader>{discardError && <p role="alert" className={TONE_TEXT.stop}>{discardError}</p>}<DialogFooter><Button variant="outline" className="min-h-11 md:min-h-9" onClick={() => setDiscarding(false)} disabled={discardBusy}>Voltar</Button><Button variant="destructive" className="min-h-11 md:min-h-9" disabled={discardBusy || sim.serverDown} onClick={() => void discard()}>{discardBusy ? "Excluindo…" : "Excluir rascunho"}</Button></DialogFooter></DialogContent></Dialog>
       {sim.serverDown && <DownBanner now={sim.now} note="Preencher, assinar, devolver e retomar voltam com o servidor. Parar continua disponível." />}
       {/* The PT header band: state and actions on the left, the facts beside them from lg (stacked
           below it). The form below gets the full width of the frame (no side column). */}

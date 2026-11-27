@@ -4,7 +4,7 @@
 /** "grupos" and "perfis" (SPEC 002) form the SGI "Acesso" section: groups grant access profiles to their members. */
 /** "pessoas" is "Usuários" in Acesso (SPEC 007, SGI): the key stays, `#usuarios` is an alias in App. */
 /** "ativos" is Gestão de Ativos (SGI): plants, areas and equipment on one screen; the old "locais" route opens it. */
-export const NAVIGATION_VIEWS = ["dashboard", "quadro", "ativos", "grupos", "pessoas", "perfis", "modelos", "catalogos", "identidade", "delegacoes", "auditoria"] as const
+export const NAVIGATION_VIEWS = ["dashboard", "solicitacoes", "ativos", "grupos", "pessoas", "perfis", "modelos", "catalogos", "identidade", "delegacoes", "auditoria"] as const
 export type NavigationView = typeof NAVIGATION_VIEWS[number]
 export interface NavigationAccess { canEditRegistry: boolean; canEditModels: boolean; canAudit: boolean; canExport: boolean }
 export const NAVIGATION_GROUPS = ["operation", "registry", "access", "configuration", "governance", "reference"] as const
@@ -14,7 +14,7 @@ export interface NavigationSection { group: NavigationGroup; views: NavigationVi
 /** Reference reads remain available to signed-in people; restricted views keep their own grant. */
 export function canReadView(view: NavigationView, access: NavigationAccess): boolean {
   switch (view) {
-    case "dashboard": case "quadro":
+    case "dashboard": case "solicitacoes":
     case "ativos": case "pessoas": case "perfis": case "modelos": case "catalogos": return true
     case "auditoria": return access.canAudit
     case "identidade": return access.canEditModels
@@ -28,7 +28,7 @@ export function canReadView(view: NavigationView, access: NavigationAccess): boo
 export function navigationGroup(view: NavigationView, access: NavigationAccess): NavigationGroup | null {
   if (!canReadView(view, access)) return null
   switch (view) {
-    case "dashboard": case "quadro": return "operation"
+    case "dashboard": case "solicitacoes": return "operation"
     case "ativos": return access.canEditRegistry ? "registry" : "reference"
     case "pessoas": case "perfis": return access.canEditRegistry ? "access" : "reference"
     case "modelos": return access.canEditModels ? "configuration" : "reference"

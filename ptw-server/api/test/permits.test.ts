@@ -433,7 +433,7 @@ describe("Quadro, totais, Minha área e Histórico", () => {
     expect(res.statusCode, res.body).toBe(200)
     expect(res.json()).toEqual({
       total: 10, byState: { ativa: 3, em_analise: 2, encerrada: 5 },
-      bySegment: { minhas: 3, andamento: 5, preparacao: 2, campo: 3, finalizadas: 5 },
+      bySegment: { minhas: 3, andamento: 5, preparacao: 2, campo: 3, finalizadas: 5, rascunhos: 0 },
     })
   })
 
@@ -762,7 +762,10 @@ describe.skipIf(!HAS_DB)("com banco: o ciclo da PT pela API (PostgreSQL de verda
     const n0 = await count()
     expect((await call("ana", "GET", `/permits/${d.permit.id}`)).status).toBe(200)
     expect((await call("ana", "GET", `/permits/${d.permit.id}`)).status).toBe(200)
-    expect((await call("carla", "POST", `/permits/${d.permit.id}/access`)).status).toBe(204)
+    expect((await call("ana", "POST", `/permits/${d.permit.id}/access`)).status).toBe(204)
+    // SPEC 014: o rascunho é só do solicitante; para Carla a PT não existe e nada é gravado.
+    expect((await call("carla", "POST", `/permits/${d.permit.id}/access`)).status).toBe(404)
+    expect((await call("carla", "GET", `/permits/${d.permit.id}`)).status).toBe(404)
     expect(await count()).toBe(n0 + 3)
     const history = await call("ana", "GET", `/permits/${d.permit.id}/history?limit=100`)
     expect(history.status, history.body).toBe(200)

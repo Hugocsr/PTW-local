@@ -72,7 +72,7 @@ export default defineRoutes((api) => {
   const { state, fastify } = api
   const streams = new Set<ServerResponse>()
 
-  api.op("getHealth", () => ({ ok: true as const, now: state.now().toISOString(), devLogin:state.config.devLogin, passwordLogin:state.config.ldap !== null }), { standalone: true })
+  api.op("getHealth", () => ({ ok: true as const, now: state.now().toISOString(), devLogin:state.config.devLogin, passwordLogin:state.config.ldap !== null, draftAutosaveSeconds:state.config.draftAutosaveSeconds }), { standalone: true })
 
   api.op("getStatus", async (req): Promise<StatusBody> => {
     // Banco fora: a transação falha e a resposta é 503 PTA01 (o app trava o que salva; Parar continua).

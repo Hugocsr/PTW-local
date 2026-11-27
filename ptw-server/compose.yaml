@@ -61,6 +61,7 @@ services:
     environment:
       PTW_UNIT: ${PTW_UNIT:-UN-01}
       PTW_DEV_LOGIN: ${PTW_DEV_LOGIN:-0}
+      PTW_DRAFT_AUTOSAVE_SECONDS: ${PTW_DRAFT_AUTOSAVE_SECONDS:-5}
       PTW_CHECK_RESPONSES: "1"
       PTW_DB_POOL: "4"
     secrets: [db_api, s3_api_key, s3_api_secret]

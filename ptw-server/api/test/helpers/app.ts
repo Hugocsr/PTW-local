@@ -31,6 +31,7 @@ export function testConfig(over: Partial<Config> = {}): Config {
     devLogin: true,
     ldap: null,
     sessionIdleMs: 30 * 60_000,
+    draftAutosaveSeconds: 5,
     db: { host: "db", port: 5432, database: "ptw", user: "ptw_api", password: "x", max: 4 },
     storageUrl: "http://storage:8333",
     sessionTtlMs: 12 * 3_600_000,

@@ -4386,7 +4386,7 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Os segmentos do Quadro (`QuadroView`). */
-                segment?: "minhas" | "andamento" | "preparacao" | "campo" | "finalizadas";
+                segment?: "minhas" | "andamento" | "preparacao" | "campo" | "finalizadas" | "rascunhos";
                 state?: components["schemas"]["PermitState"][];
                 /** @description Trecho do número, do escopo, do código de ativo, do modelo ou do local. */
                 q?: string;
@@ -5320,6 +5320,8 @@ export interface operations {
                         ok: true;
                         devLogin: boolean;
                         passwordLogin: boolean;
+                        /** @description Espera do salvamento automático do rascunho, em segundos (`PTW_DRAFT_AUTOSAVE_SECONDS`; padrão 5). */
+                        draftAutosaveSeconds?: number;
                         /** Format: date-time */
                         now: string;
                     };

@@ -9,9 +9,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useData } from "@/data/context"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useAssetPage } from "@/data/hooks"
 import { addMinutes, instant, wallOf } from "@/core/time"
+import { eligibilityHint, eligiblePeople, NOBODY_ELIGIBLE, personIneligible } from "@/core/eligibility"
+import { pathIds } from "@/core/permitView"
+import { saveLabel, type DraftFields } from "@/core/draftSave"
 import { uuidv7 } from "@/lib/id"
 import type { Permit } from "@/permit/types"
 import { label, useRegistry } from "@/registry/store"
@@ -20,7 +23,8 @@ import { Page, PageHeader } from "../shell/Page"
 import { TONE_BLOCK } from "../shell/Status"
 import { DownBanner } from "./state"
 import { dmHms } from "@/core/time"
-import { navigate, openPermit } from "./nav"
+import { navigate } from "./nav"
+import { useDraftAutosave } from "./useDraftAutosave"
 
 function Choice({ id, label: title, value, onChange, options, disabled }: { id: string; label: string; value: string; onChange: (v: string) => void; options: { id: string; name: string }[]; disabled?: boolean }) {
   return <Field><FieldLabel htmlFor={id}>{title}</FieldLabel><Select value={value} onValueChange={onChange} disabled={disabled} required><SelectTrigger id={id} className="min-h-11 w-full md:min-h-9"><SelectValue placeholder="Escolha" /></SelectTrigger><SelectContent><SelectGroup>{options.map((x) => <SelectItem key={x.id} value={x.id}>{x.name}</SelectItem>)}</SelectGroup></SelectContent></Select></Field>
@@ -30,7 +34,6 @@ function Choice({ id, label: title, value, onChange, options, disabled }: { id: 
 export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: () => void }) {
   const { state } = useRegistry()
   const sim = useSim()
-  const port = useData()
   const [id] = useState(uuidv7)
   const [templateId, setTemplateId] = useState(permit?.templateId ?? "")
   const [locationId, setLocationId] = useState(permit?.locationId ?? "")
@@ -49,22 +52,49 @@ export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: ()
   const assets = useAssetPage({ q: query, filters: { locationId }, sort: { id: "code", dir: "asc" }, page: 0, pageSize: 25 })
   const allowedAssets = assets.items.filter((a) => a.status === "ativo" && (!version?.assetTypeIds.length || version.assetTypeIds.includes(a.typeId)))
   const roleIds = [...new Set(version?.stages.flatMap((stage) => stage.slots.flatMap((slot) => slot.roleIds)) ?? [])]
-  const back = onBack ?? (() => navigate("quadro"))
+  const placePath = locationId ? pathIds(state.locations, locationId) : null
+  const locationName = state.locations.find((l) => l.id === locationId)?.name ?? null
+  // Everyone already chosen who no longer qualifies: sending waits until they are replaced (SPEC 015).
+  const teamProblem = !placePath ? "" : Object.entries(team).flatMap(([roleId, ids]) => ids.map((id) => ({ roleId, id }))).map(({ roleId, id }) => {
+    const person = state.people.find((p) => p.id === id), bad = personIneligible(person, roleId, placePath, sim.today, sim.now)
+    return bad ? `Troque ${person?.name ?? "a pessoa"} na equipe: ${bad}.` : ""
+  }).find(Boolean) ?? ""
+  const back = onBack ?? (() => navigate("solicitacoes"))
+  // SPEC 014: the form saves by itself once the model, the location and the scope exist.
+  const inst = (v: string) => (v ? instant(v, sim.tz) : "")
+  const windowProblem = !start || !end ? "Informe o início e o fim da janela." : Date.parse(inst(end)) <= Date.parse(inst(start)) ? "O fim da janela precisa ser depois do início." : ""
+  const fields: DraftFields = { templateId, locationId, scope, windowStart: inst(start), windowEnd: inst(end), assetIds, team }
+  const autosave = useDraftAutosave({
+    id, existing: !!permit, fields, versionId: version?.id, blocked: windowProblem || teamProblem,
+    // The address now names the draft: reloading the page opens it (the form stays where it is).
+    onCreated: permit ? undefined : (draftId) => window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}#nova-pt/${draftId}`),
+  })
+  const missing = autosave.missing
+  const [leaving, setLeaving] = useState(false)
   const save = async (event: FormEvent) => {
     event.preventDefault()
     if (busy || !templateId || !locationId || !version || sim.serverDown) return
-    if (Date.parse(instant(end, sim.tz)) <= Date.parse(instant(start, sim.tz))) { setError("O fim da janela precisa ser depois do início."); return }
+    if (windowProblem) { setError(windowProblem); return }
     setBusy(true); setError("")
-    const input = { locationId, assetIds, team, windowStart: instant(start, sim.tz), windowEnd: instant(end, sim.tz), scope: scope.trim() }
-    const result = permit ? await port.permits.updateDraft?.(permit.id, input) : await port.permits.create?.({ ...input, id, templateId, versionId: version.id })
-    if (!result || "code" in result) { setError(result && "message" in result ? result.message : "Não foi possível salvar a PT."); setBusy(false); return }
-    toast.success(permit ? "Rascunho atualizado" : "Rascunho criado")
-    if (permit && onBack) onBack(); else openPermit(result.id)
+    const ok = await autosave.flush()
+    const draftId = autosave.draftId()
+    if (!ok || !draftId) { setError("Não foi possível salvar o rascunho. Confira a conexão e tente de novo."); setBusy(false); return }
+    toast.success(permit ? "Rascunho atualizado" : "Rascunho salvo")
+    // The form was this entry of the history: the PT replaces it, so Voltar does not come back to the form.
+    if (permit && onBack) onBack(); else navigate(`pt/${draftId}/etapas`, { replace: true })
+  }
+  // Leaving saves what is pending; if it cannot, or nothing was ever saved, the person decides.
+  const leave = async () => {
+    if (busy) return
+    if (!autosave.unsaved) { back(); return }
+    if (autosave.state.kind === "incomplete" || !(await autosave.flush())) { setLeaving(true); return }
+    back()
   }
   // The disabled button says what is missing, in the order of the form.
-  const why = !version ? "Escolha o modelo." : !locationId ? "Escolha o local." : !scope.trim() ? "Descreva o serviço." : Date.parse(instant(end, sim.tz)) <= Date.parse(instant(start, sim.tz)) ? "O fim da janela precisa ser depois do início." : ""
+  const why = !version ? "Escolha o modelo." : !locationId ? "Escolha o local." : !scope.trim() ? "Descreva o serviço." : windowProblem || teamProblem
   return <Page>
-    <PageHeader title={permit ? "Editar rascunho" : "Nova PT"} back={{ label: permit ? "PT" : "Quadro de PTs", onClick: back }} />
+    <PageHeader title={permit ? "Editar rascunho" : "Nova PT"} back={{ label: permit ? "PT" : "Solicitações de PT", onClick: () => void leave() }}
+      meta={<span role="status" aria-live="polite" className={autosave.state.kind === "error" || autosave.state.kind === "offline" || autosave.state.kind === "blocked" ? "text-st-stop-fg" : undefined}>{saveLabel(autosave.state, missing)}</span>} />
     {sim.serverDown && <DownBanner now={sim.now} />}
     <div className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,38rem)_minmax(0,1fr)] xl:items-start">
     <div className="min-w-0">
@@ -87,16 +117,22 @@ export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: ()
             </Field>}
             {roleIds.length > 0 && <FieldGroup><h2 className="type-heading">Equipe</h2>{roleIds.map((roleId) => {
               const chosen = team[roleId] ?? []
-              const eligible = state.people.filter((p) => p.status === "ativo" && p.roles.some((r) => r.roleId === roleId))
-              return <Field key={roleId}><FieldLabel htmlFor={`team-${roleId}`}>{label(state.roleTypes, roleId)} <span className="type-meta font-normal">opcional</span></FieldLabel><Select value="" onValueChange={(personId) => setTeam((t) => ({ ...t, [roleId]: [...chosen, personId] }))}><SelectTrigger id={`team-${roleId}`} className="min-h-11 w-full md:min-h-9"><SelectValue placeholder="Adicionar pessoa" /></SelectTrigger><SelectContent><SelectGroup>{eligible.filter((p) => !chosen.includes(p.id)).map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectGroup></SelectContent></Select>{chosen.map((personId) => <div key={personId} className="flex items-center gap-2 type-body"><span className="min-w-0 flex-1 break-words">{state.people.find((p) => p.id === personId)?.name ?? "Pessoa"}</span><Button type="button" variant="ghost" size="icon" className="size-11 md:size-9" aria-label="Remover pessoa da equipe" onClick={() => setTeam((t) => ({ ...t, [roleId]: chosen.filter((x) => x !== personId) }))}><XIcon /></Button></div>)}</Field>
+              const roleName = label(state.roleTypes, roleId)
+              // SPEC 015: only who the rule accepts for this cargo at this place; a chosen person who stopped qualifying stays, in red.
+              const offer = placePath ? eligiblePeople(state.people, roleId, placePath, sim.today, sim.now).filter((p) => !chosen.includes(p.id)) : []
+              return <Field key={roleId}><FieldLabel htmlFor={`team-${roleId}`}>{roleName} <span className="type-meta font-normal">opcional</span></FieldLabel>
+                <Select value="" disabled={!placePath} onValueChange={(personId) => setTeam((t) => ({ ...t, [roleId]: [...chosen, personId] }))}><SelectTrigger id={`team-${roleId}`} className="min-h-11 w-full md:min-h-9"><SelectValue placeholder={placePath ? "Adicionar pessoa" : "Escolha o local primeiro"} /></SelectTrigger><SelectContent><SelectGroup>{offer.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectGroup></SelectContent></Select>
+                <FieldDescription>{!placePath ? "A lista depende do local: escolha o local primeiro." : offer.length === 0 && chosen.length === 0 ? NOBODY_ELIGIBLE : eligibilityHint(roleName, locationName)}</FieldDescription>
+                {chosen.map((personId) => { const person = state.people.find((p) => p.id === personId); const bad = placePath ? personIneligible(person, roleId, placePath, sim.today, sim.now) : null; return <div key={personId} className="flex items-center gap-2 type-body"><span className="min-w-0 flex-1 break-words">{person?.name ?? "Pessoa"}{bad && <span role="alert" className="text-st-stop-fg"> · não elegível: {bad}. Troque esta pessoa.</span>}</span><Button type="button" variant="ghost" size="icon" className="size-11 md:size-9" aria-label={`Remover ${person?.name ?? "pessoa"} da equipe`} onClick={() => setTeam((t) => ({ ...t, [roleId]: chosen.filter((x) => x !== personId) }))}><XIcon /></Button></div> })}
+              </Field>
             })}</FieldGroup>}
           </FieldGroup>
         </fieldset>
         {error && <Alert className={TONE_BLOCK.stop}><CircleAlertIcon /><AlertDescription>{error}</AlertDescription></Alert>}
         {why && <p id="draft-why" className="type-meta">{why}</p>}
         <div className="sticky bottom-0 z-10 flex flex-wrap justify-between gap-2 border-t bg-card py-3">
-          <Button type="button" variant="outline" className="min-h-11 md:min-h-9" onClick={back} disabled={busy}>Cancelar</Button>
-          <Button type="submit" className="min-h-11 md:min-h-9" aria-describedby={why ? "draft-why" : undefined} disabled={busy || sim.serverDown || !!why}>{busy && <LoaderCircleIcon data-icon="inline-start" className="animate-spin" />}{busy ? "Salvando…" : permit ? "Salvar rascunho" : "Criar rascunho"}</Button>
+          <Button type="button" variant="outline" className="min-h-11 md:min-h-9" onClick={() => void leave()} disabled={busy}>Cancelar</Button>
+          <Button type="submit" className="min-h-11 md:min-h-9" aria-describedby={why ? "draft-why" : undefined} disabled={busy || sim.serverDown || !!why}>{busy && <LoaderCircleIcon data-icon="inline-start" className="animate-spin" />}{busy ? "Salvando…" : permit ? "Salvar e voltar" : "Salvar e continuar"}</Button>
         </div>
       </form>}
     </div>
@@ -123,5 +159,19 @@ export function NewPermitView({ permit, onBack }: { permit?: Permit; onBack?: ()
       )}
     </aside>
     </div>
+    <Dialog open={leaving} onOpenChange={setLeaving}>
+      <DialogContent>
+        <DialogHeader className="pr-10">
+          <DialogTitle>Sair sem salvar?</DialogTitle>
+          <DialogDescription>{autosave.state.kind === "incomplete"
+            ? `O rascunho ainda não foi salvo: escolha ${missing || "os dados do serviço"} para ele começar a ser salvo. O que você preencheu será perdido.`
+            : "Não foi possível salvar as últimas alterações. Elas serão perdidas."}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" className="min-h-11 md:min-h-9" onClick={() => setLeaving(false)}>Continuar preenchendo</Button>
+          <Button variant="destructive" className="min-h-11 md:min-h-9" onClick={() => { setLeaving(false); back() }}>Sair sem salvar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </Page>
 }

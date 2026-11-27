@@ -90,6 +90,8 @@ export interface SessionState {
   devLogin: boolean
   /** Entry modes and administrative permissions are supplied by the server, never inferred from cargos. */
   passwordLogin: boolean
+  /** Wait, in ms, between the last change to a draft and its automatic save (`PTW_DRAFT_AUTOSAVE_SECONDS`, from `GET /health`; 5 s by default). */
+  draftAutosaveMs: number
   grants: SessionGrant[]
   /** A failure while opening the session's reference data; never show an empty cache as a loaded app. */
   error?: RuleError | null

@@ -91,12 +91,13 @@ const DETAIL_FROM = `from ptw.permit p
 
 /**
  * Resolve o `{id}` de `GET /permits/{id}`: o uuid ou o número (`PT-UN01-2026-00012`). Nulo se não
- * existe na unidade (o RLS esconde as outras).
+ * existe na unidade (o RLS esconde as outras) ou se é rascunho de outra pessoa (SPEC 014).
  */
 export async function resolvePermitId(tx: Tx, idOrNumber: string): Promise<string | null> {
   const q = new Q()
   const where = isUuid(idOrNumber) ? `p.id = ${q.p(idOrNumber, "uuid")}` : `p.number = ${q.p(idOrNumber, "text")}`
-  const rows = await run<{ id: string }>(tx, `select p.id from ptw.permit p where p.unit_id = ptw.current_unit() and ${where}`, q.params)
+  // Rascunho (e o rascunho descartado) é só do solicitante (SPEC 014): sem número, para qualquer outra pessoa a PT não existe. A mesma regra do Quadro.
+  const rows = await run<{ id: string }>(tx, `select p.id from ptw.permit p where p.unit_id = ptw.current_unit() and ${where} and (p.number is not null or p.author_id = ptw.current_person())`, q.params)
   return rows[0]?.id ?? null
 }
 
@@ -134,6 +135,8 @@ const SEGMENT_STATES: Record<string, PermitState[] | null> = {
   preparacao: ["rascunho", "em_analise", "devolvida", "emitida"],
   campo: ["ativa", "suspensa", "entregue"],
   finalizadas: ["encerrada", "cancelada"],
+  // SPEC 014: os rascunhos da própria pessoa (o Quadro já esconde os das outras).
+  rascunhos: ["rascunho"],
   minhas: null,
 }
 
@@ -302,7 +305,7 @@ export async function countBoard(tx: Tx, unit: string, person: string, query: Op
     q.params,
   )
   const byState: Record<string, number> = {}
-  const bySegment: Record<string, number> = { minhas: 0, andamento: 0, preparacao: 0, campo: 0, finalizadas: 0 }
+  const bySegment: Record<string, number> = { minhas: 0, andamento: 0, preparacao: 0, campo: 0, finalizadas: 0, rascunhos: 0 }
   let total = 0
   for (const r of rows) {
     const n = Number(r.n)

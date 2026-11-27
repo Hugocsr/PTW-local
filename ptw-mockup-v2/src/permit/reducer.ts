@@ -4,7 +4,7 @@ import { planDenied, planSign, returnDenied, signatureBlocker, STAGE, stageOfKin
 import { canStop, planResume, resumeCandidates, RESUME_VOID_REASON, resendVoidReason, stopEffect } from "@/core/stopResume"
 import { nonHoldingVersionIds, partOfKindIds } from "@/core/equipmentLock"
 import { answerProblem, formSha256, itemStageId, permitBlocker } from "@/core/formRules"
-import { personIneligible } from "@/core/eligibility"
+import { personIneligible, teamIneligible } from "@/core/eligibility"
 import { DEFAULT_TZ, dayOf, instant } from "@/core/time"
 import { endText, extendDenied, planExtend } from "@/core/extension"
 import { windowLimitDenied } from "@/core/windowLimit"
@@ -166,7 +166,9 @@ export function permitReducer(data: PermitData, a: PermitAction, ctx: PermitCtx)
 
       if (submit) {
         const resend = p.state === "devolvida"
+        const teamWhy = teamIneligible(p.team, reg.people, path, today, now)
         const denied = actDenied(p, { kind: "sign", next: "em_analise" }, ctx.serverDown) ?? planDenied(pl)
+          ?? (teamWhy ? deny("PTW08", teamWhy) : null)
           ?? (stage ? signatureBlocker({ ver, permit: p, form, people: reg.people, pathIds: path, now, today, lists: reg.optionLists }, stage.id) : null)
         if (denied) return refuse(denied, { slot: slotId })
         const rev = resend ? p.revision + 1 : p.revision

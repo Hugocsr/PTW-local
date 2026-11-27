@@ -1058,7 +1058,7 @@ paths:
       summary: "Quadro (`v_permit_board`), com filtros, busca, ordem e página no servidor."
       description: "Rascunho de outra pessoa não aparece. `next` e `mine` valem para a pessoa da sessão."
       parameters:
-        - { name: segment, in: query, description: "Os segmentos do Quadro (`QuadroView`).", schema: { type: string, enum: [minhas, andamento, preparacao, campo, finalizadas] } }
+        - { name: segment, in: query, description: "Os segmentos do Quadro (`QuadroView`).", schema: { type: string, enum: [minhas, andamento, preparacao, campo, finalizadas, rascunhos] } }
         - { name: state, in: query, schema: { type: array, items: { $ref: "#/components/schemas/PermitState" } } }
         - { name: q, in: query, description: "Trecho do número, do escopo, do código de ativo, do modelo ou do local.", schema: { type: string, maxLength: 100 } }
         - { name: locationId, in: query, description: PTs neste local ou abaixo dele., schema: { $ref: "#/components/schemas/Uuid" } }
@@ -1626,6 +1626,7 @@ paths:
                   ok: { type: boolean, const: true }
                   devLogin: { type: boolean }
                   passwordLogin: { type: boolean }
+                  draftAutosaveSeconds: { type: integer, minimum: 1, maximum: 60, description: "Espera do salvamento automático do rascunho, em segundos (`PTW_DRAFT_AUTOSAVE_SECONDS`; padrão 5)." }
                   now: { type: string, format: date-time }
         "4XX": { $ref: "#/components/responses/Error" }
   /status:

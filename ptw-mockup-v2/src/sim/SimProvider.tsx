@@ -12,6 +12,8 @@ interface Sim {
   /** The unit's time zone. */
   tz: string
   serverDown: boolean
+  /** Wait before a draft's automatic save (`PTW_DRAFT_AUTOSAVE_SECONDS`, SPEC 014), in ms. */
+  draftAutosaveMs: number
   isAuditor: boolean
   canEditRegistry: boolean
   canEditModels: boolean
@@ -33,7 +35,7 @@ export function SimProvider({ children }: { children: ReactNode }) {
   const { session } = useData()
   const s = useCell(session)
   const value = useMemo<Sim>(() => ({
-    personId: s.personId, now: s.now, today: s.today, tz: s.tz, serverDown: s.serverDown, isAuditor: s.isAuditor,
+    personId: s.personId, now: s.now, today: s.today, tz: s.tz, serverDown: s.serverDown, draftAutosaveMs: s.draftAutosaveMs, isAuditor: s.isAuditor,
     canEditRegistry: s.grants.includes("cadastro"), canEditModels: s.grants.includes("modelos"),
     canAudit: s.grants.includes("auditoria"), canExport: s.grants.includes("exportacao"), grants: s.grants,
     setPerson: (id) => session.setPerson(id),

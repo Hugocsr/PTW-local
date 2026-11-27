@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { AssetIcon, LocationIcon } from "@/components/shell/TypeIcon"
 import { PlusIcon, CircleAlertIcon, LockIcon, PenLineIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -39,6 +39,7 @@ const SEGMENTS: { value: string; label: string }[] = [
   { value: "preparacao", label: "Em preparação" },
   { value: "campo", label: "Em campo" },
   { value: "finalizadas", label: "Finalizadas" },
+  { value: "rascunhos", label: "Meus rascunhos" },
 ]
 
 /** Time left of an ativa: the only part of a row that follows the clock, so only it re-renders on the tick. */
@@ -58,7 +59,7 @@ const PAGE_SIZES = [25, 50, 100]
 const FILTER = { label: "Filtrar por situação", options: SEGMENTS }
 const FILTER_NAMES = { segment: "segment" }
 
-export function QuadroView() {
+export function QuadroView({ segment }: { segment?: string } = {}) {
   const { state } = useRegistry()
   const { permits } = usePermits()
   const sim = useSim()
@@ -66,6 +67,10 @@ export function QuadroView() {
   // The view (search, segment, sort, page) is the table's; the page of PTs comes from the data layer: computed here in memory, asked of the server otherwise.
   const list = useListState({ stateKey: "quadro", defaultSort: DEFAULT_SORT, defaultSegment: "andamento", pageSizes: PAGE_SIZES, filterNames: FILTER_NAMES, debounceMs: whole ? 0 : 300 })
   const board = usePermitBoard(list.view)
+  // `#solicitacoes/rascunhos` (SPEC 014): the list opens on that segment.
+  const setSeg = useRef(list.setSeg)
+  useEffect(() => { setSeg.current = list.setSeg })
+  useEffect(() => { if (segment) setSeg.current(segment) }, [segment])
   const { locations, templates, assets, relations, relationKinds } = state
 
   // My drafts whose equipment another open PT holds: Enviar is impossible until it is free.
@@ -127,7 +132,7 @@ export function QuadroView() {
   return (
     // Model A (Lista): header with the collection total, then the toolbar and the table, full frame width.
     <Page>
-      <PageHeader title="Quadro de PTs" count={board.all} actions={{ secondary: [{ label: "Tela de parede", href: "#parede" }], primary: { label: "Nova PT", icon: PlusIcon, onClick: () => navigate("nova-pt"), disabled: sim.serverDown } }} />
+      <PageHeader title="Solicitações de PT" count={board.all} actions={{ primary: { label: "Nova PT", icon: PlusIcon, onClick: () => navigate("nova-pt"), disabled: sim.serverDown } }} />
       {sim.serverDown && <DownBanner now={sim.now} />}
       {/* Every prop stable (module constants, memos): the table skips the clock's tick. */}
       <PagedTable<Row>

@@ -7,7 +7,7 @@ import type { NavigationGroup, NavigationView } from "@/core/navigation"
  */
 export const NAV = {
   dashboard: { title: "Dashboard", icon: LayoutGridIcon },
-  quadro: { title: "Quadro de PTs", icon: ClipboardListIcon },
+  solicitacoes: { title: "Solicitações de PT", icon: ClipboardListIcon },
   ativos: { title: "Gestão de Ativos", icon: ListTreeIcon },
   pessoas: { title: "Usuários", icon: UserRoundIcon, keywords: "pessoas usuários cargos perfis grupos acesso" },
   modelos: { title: "Modelos de PT", icon: FileTextIcon },

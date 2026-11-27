@@ -7,7 +7,7 @@ import { CargosView } from "../CargosView"
 import { navigate } from "../nav"
 import { DownBanner } from "../state"
 import { ExpandedBlock, MyAreaPanel } from "./MyAreaPanel"
-import { Bloqueios, CargoAvisos, useMyRoles } from "./Notices"
+import { Bloqueios, CargoAvisos, RascunhosAviso, useMyRoles } from "./Notices"
 import { DOWN_ID } from "./PermitCards"
 import { ProtectionsPanel } from "./ProtectionsPanel"
 import { Tile } from "./shared"
@@ -42,6 +42,7 @@ function Dashboard({ scrollTo }: { scrollTo?: string }) {
       {sim.serverDown && <DownBanner id={DOWN_ID} now={sim.now} note="Assinar, entregar e retomar voltam com o servidor. Parar continua disponível." />}
       <Bloqueios />
       <CargoAvisos />
+      <RascunhosAviso />
       <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)] lg:gap-5">
         <MyAreaPanel />
         <div className="min-w-0 lg:order-first"><ProtectionsPanel /></div>

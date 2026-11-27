@@ -18,6 +18,8 @@ export interface Config {
   devLogin: boolean
   ldap: LdapConfig | null
   sessionIdleMs: number
+  /** Espera, em segundos, do salvamento automático do rascunho depois da última alteração (`PTW_DRAFT_AUTOSAVE_SECONDS`, 1 a 60; padrão 5). Chega ao app por `GET /health`. */
+  draftAutosaveSeconds: number
   db: { host: string; port: number; database: string; user: string; password: string; max: number; tls?: boolean; listenPort?: number; prepare?: boolean; idleSeconds?: number }
   /** Endereço do S3 (SeaweedFS) na rede interna; só a situação é conferida aqui. */
   storageUrl: string
@@ -73,6 +75,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     devLogin: env.PTW_DEV_LOGIN === "1",
     ldap: loadLdap(env.PTW_LDAP_CONFIG_FILE),
     sessionIdleMs: positive(env.PTW_SESSION_IDLE_MINUTES, 30) * 60_000,
+    draftAutosaveSeconds: boundedInt(env.PTW_DRAFT_AUTOSAVE_SECONDS, 5, 1, 60, "PTW_DRAFT_AUTOSAVE_SECONDS"),
     db: {
       host: env.PTW_DB_HOST ?? "db",
       port: int(env.PTW_DB_PORT, 5432),
@@ -104,6 +107,12 @@ function sampleRate(value: string | undefined): number {
   const rate = value === undefined ? 0.1 : Number(value)
   if (!Number.isFinite(rate) || rate < 0 || rate > 1) throw new Error("PTW_PERF_SAMPLE_RATE deve estar entre 0 e 1")
   return rate
+}
+
+function boundedInt(v: string | undefined, fallback: number, min: number, max: number, name: string): number {
+  const n = int(v, fallback)
+  if (!Number.isInteger(n) || n < min || n > max) throw new Error(`Configuração: ${name} deve ser inteiro de ${min} a ${max}`)
+  return n
 }
 
 function positive(v: string | undefined, fallback: number): number {

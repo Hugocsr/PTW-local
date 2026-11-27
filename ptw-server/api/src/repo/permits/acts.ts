@@ -8,7 +8,7 @@
  */
 import type { OpBody } from "../../contract/types.js"
 import type { Tx } from "../../db.js"
-import { pta } from "../../errors/apiError.js"
+import { ApiError, pta } from "../../errors/apiError.js"
 import { staleOrMissing } from "../../http/ifMatch.js"
 import { Q, run } from "./sql.js"
 
@@ -65,6 +65,7 @@ export async function createDraft(tx: Tx, person: string, body: OpBody<"createPe
   const id = rows[0]!.id
   if (body.assetIds !== undefined) await syncAssets(tx, id, body.assetIds)
   if (body.team !== undefined) await syncTeam(tx, id, body.team)
+  await assertTeamEligible(tx, id)
   return id
 }
 
@@ -88,6 +89,8 @@ export async function updateDraft(tx: Tx, id: string, rev: number, body: OpBody<
   if (!rows[0]) return staleOrMissing(await currentRowVersion(tx, id))
   if (body.assetIds !== undefined) await syncAssets(tx, id, body.assetIds)
   if (body.team !== undefined) await syncTeam(tx, id, body.team)
+  // Trocar o local também pode tirar a elegibilidade de quem já estava na equipe.
+  if (body.team !== undefined || body.locationId !== undefined) await assertTeamEligible(tx, id)
 }
 
 /** `permit_asset` passa a ser exatamente a lista (o que saiu sai; o que entrou entra; a trava confere). */
@@ -108,6 +111,30 @@ async function syncAssets(tx: Tx, id: string, wanted: readonly string[]): Promis
       order by x`,
     i.params,
   )
+}
+
+/**
+ * SPEC 015: quem está na equipe precisa ser elegível para o cargo, no local da PT, hoje
+ * (`ptw.person_ineligible`, a regra do banco). Confere a equipe já gravada, na mesma transação: se
+ * recusar, nada fica. Contato sem login pode participar (só assinar exige login).
+ */
+export async function assertTeamEligible(tx: Tx, id: string): Promise<void> {
+  const q = new Q()
+  const rows = await run<{ name: string; why: string }>(
+    tx,
+    `select pe.name, ptw.person_ineligible(t.unit_id, t.person_id, t.role_id, (now() at time zone u.timezone)::date, l.path) as why
+       from ptw.permit_team t
+       join ptw.permit p on p.unit_id = t.unit_id and p.id = t.permit_id
+       join ptw.unit u on u.id = p.unit_id
+       join ptw.location l on l.unit_id = p.unit_id and l.id = p.location_id
+       left join ptw.person pe on pe.unit_id = t.unit_id and pe.id = t.person_id
+      where t.unit_id = ptw.current_unit() and t.permit_id = ${q.p(id, "uuid")}
+        and ptw.person_ineligible(t.unit_id, t.person_id, t.role_id, (now() at time zone u.timezone)::date, l.path) is not null
+      order by pe.name limit 1`,
+    q.params,
+  )
+  const bad = rows[0]
+  if (bad) throw new ApiError(422, "PTW08", `Equipe: ${bad.name ?? "pessoa"} não elegível (${bad.why})`)
 }
 
 /** `permit_team` passa a ser exatamente cargo → pessoas. */
@@ -166,6 +193,7 @@ export async function removeAnswer(tx: Tx, id: string, itemId: string): Promise<
 
 /** Enviar / Reenviar, com a assinatura da Solicitação na mesma chamada. */
 export async function submit(tx: Tx, id: string): Promise<void> {
+  await assertTeamEligible(tx, id)
   const q = new Q()
   await run(tx, `select ptw.permit_submit(ptw.current_unit(), ${q.p(id, "uuid")}, true) as number`, q.params)
 }

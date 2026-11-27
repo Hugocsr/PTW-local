@@ -63,7 +63,7 @@ export function WallView() {
             </div>
           ))}
         </dl>
-        <a href="#quadro" aria-label="Sair da tela de parede" className="absolute top-3 right-3 grid size-11 place-items-center rounded-md text-muted-foreground hover:text-foreground"><XIcon className="size-5" aria-hidden /></a>
+        <a href="#solicitacoes" aria-label="Sair da tela de parede" className="absolute top-3 right-3 grid size-11 place-items-center rounded-md text-muted-foreground hover:text-foreground"><XIcon className="size-5" aria-hidden /></a>
       </header>
 
       {sim.serverDown && <p role="alert" className="bg-st-attention-solid px-6 py-3 text-lg font-bold tracking-[0.04em] text-black uppercase lg:px-10">Sem servidor · dados de {hms(sim.now)} · não verificável</p>}

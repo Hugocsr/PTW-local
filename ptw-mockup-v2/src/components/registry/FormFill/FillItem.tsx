@@ -14,8 +14,8 @@ import { PickList } from "../PickList"
 import { SearchSelect } from "../SearchSelect"
 import { MAX_CHIPS, noticeForChoice, noticeParts } from "@/core/formLayout"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { personIneligible } from "@/core/eligibility"
-import { useRegistry } from "@/registry/store"
+import { eligibilityHint, eligiblePeople, NOBODY_ELIGIBLE, personIneligible } from "@/core/eligibility"
+import { label, useRegistry } from "@/registry/store"
 import { codeMatches, lineChoices, dateRuleLabel, dateRuleProblem, ENERGY_LABEL, itemProblems, optionsOf, rangeLabel, rangeProblem, validIso, type GroupRow, type IsolationRow, type ItemAnswer } from "@/core/form"
 import type { EnergyKind, FormItem } from "@/registry/types"
 import { TONE_SOLID, TONE_TEXT } from "@/components/shell/Status"
@@ -241,16 +241,19 @@ export function FillItem({ item, answer, onChange, actor, scope = "", notices = 
 
   if (item.kind === "pessoa") {
     const ids = answer?.t === "pessoa" ? answer.ids : []
-    const pool = state.people.filter((p) => p.status !== "inativo" && (!item.roleId || p.roles.some((r) => r.roleId === item.roleId)))
-    // Same rule as the database (refused when saved, PTW08): the cargo held, then eligible at the place now.
+    // SPEC 015: only who the rule accepts (cargo valid today and covering the place, record and account in order);
+    // a person already chosen who no longer qualifies stays on the list, in red, until replaced.
+    const nowIso = ctx.now ?? simNow, todayIso = ctx.today ?? ""
+    const offered = eligiblePeople(state.people, item.roleId ?? null, ctx.pathIds ?? null, todayIso, nowIso)
+    const pool = [...offered, ...ids.filter((id) => !offered.some((p) => p.id === id)).map((id) => state.people.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => !!p)]
     const why = (id: string) => {
-      if (!item.mustBeEligible) return ""
       const p = state.people.find((x) => x.id === id)
       const r = !p ? "pessoa inexistente"
         : item.roleId && !p.roles.some((x) => x.roleId === item.roleId) ? "não tem o cargo"
-        : personIneligible(p, item.roleId ?? null, ctx.pathIds ?? null, ctx.today ?? "", ctx.now ?? simNow)
+        : personIneligible(p, item.roleId ?? null, ctx.pathIds ?? null, todayIso, nowIso)
       return r ? `não elegível: ${r}` : ""
     }
+    const roleName = item.roleId ? label(state.roleTypes, item.roleId) : null
     const set = (next: string[]) => onChange(next.length ? { t: "pessoa", ids: next } : null)
     const blocked = ids.map((id) => ({ id, w: why(id) })).filter((x) => x.w)
     return (
@@ -268,7 +271,8 @@ export function FillItem({ item, answer, onChange, actor, scope = "", notices = 
             <SelectContent><SelectGroup>{pool.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} · {p.company}{why(p.id) ? ` · ${why(p.id)}` : ""}</SelectItem>)}</SelectGroup></SelectContent>
           </Select>
         )}
-        {blocked.map((x) => <StopLine key={x.id}>{state.people.find((p) => p.id === x.id)?.name}: {x.w}.</StopLine>)}
+        <p className="type-meta">{pool.length === 0 ? NOBODY_ELIGIBLE : eligibilityHint(roleName, null)}</p>
+        {blocked.map((x) => <StopLine key={x.id}>{state.people.find((p) => p.id === x.id)?.name}: {x.w}. Troque esta pessoa.</StopLine>)}
       </fieldset>
     )
   }

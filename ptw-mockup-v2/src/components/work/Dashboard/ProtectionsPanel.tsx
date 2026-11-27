@@ -89,7 +89,7 @@ export function ProtectionsPanel() {
             </CollapsibleContent>
           </Collapsible>
         ))}
-        {board.items.length >= (VIEW.pageSize ?? 100) && <p className="border-t px-4 py-2 type-meta">Primeiras {VIEW.pageSize} PTs em andamento. Veja todas no Quadro de PTs.</p>}
+        {board.items.length >= (VIEW.pageSize ?? 100) && <p className="border-t px-4 py-2 type-meta">Primeiras {VIEW.pageSize} PTs em andamento. Veja todas em Solicitações de PT.</p>}
       </section>
     </Panel>
   )

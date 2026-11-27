@@ -18,7 +18,7 @@ export function navigate(hash: string, { replace = false }: { replace?: boolean 
 
 export const openPermit = (id: string, tab = "etapas") => navigate(`pt/${id}/${tab}`)
 
-export function goBack(fallback = "quadro") {
+export function goBack(fallback = "solicitacoes") {
   if ((window.history.state as NavState)?.app) window.history.back()
   else navigate(fallback, { replace: true })
 }

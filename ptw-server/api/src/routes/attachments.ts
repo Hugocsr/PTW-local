@@ -18,10 +18,12 @@ async function blob(tx: Tx, sha: string): Promise<(Schemas["Blob"] & { key: stri
 function publicBlob(b: Schemas["Blob"]): Schemas["Blob"] { return { sha256: b.sha256, size: b.size, mime: b.mime, storedAt: b.storedAt } }
 async function attachment(tx: Tx, id: string): Promise<Schemas["PermitAttachment"]> {
   const rows = await tx<{ item: Schemas["PermitAttachment"] }[]>`
-    select jsonb_build_object('id', id, 'permitId', permit_id, 'itemId', item_id, 'kind', kind,
-      'sha256', encode(sha256, 'hex'), 'fileName', file_name, 'previewSha256', encode(preview_sha256, 'hex'),
-      'width', width, 'height', height, 'durationMs', duration_ms, 'capturedBy', captured_by, 'capturedAt', captured_at) as item
-    from ptw.attachment where unit_id = ptw.current_unit() and id = ${id}::uuid`
+    select jsonb_build_object('id', a.id, 'permitId', a.permit_id, 'itemId', a.item_id, 'kind', a.kind,
+      'sha256', encode(a.sha256, 'hex'), 'fileName', a.file_name, 'previewSha256', encode(a.preview_sha256, 'hex'),
+      'width', a.width, 'height', a.height, 'durationMs', a.duration_ms, 'capturedBy', a.captured_by, 'capturedAt', a.captured_at) as item
+    from ptw.attachment a where a.unit_id = ptw.current_unit() and a.id = ${id}::uuid
+      and not exists (select 1 from ptw.permit p where p.unit_id = a.unit_id and p.id = a.permit_id
+                       and p.number is null and p.author_id is distinct from ptw.current_person())`
   if (!rows[0]) throw pta.notFound()
   return rows[0].item
 }

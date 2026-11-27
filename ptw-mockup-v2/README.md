@@ -13,7 +13,7 @@ O servidor precisa estar no ar (`../ptw-server`, ver o [README da raiz](../READM
 
 ## Telas
 
-- **Trabalho**: Minha área (Sua vez, Aguardando, Em campo), Quadro de PTs, Desabilitados agora, tela de parede e a PT (Formulário, Equipe, Histórico), com Imprimir e Imprimir em branco.
+- **Trabalho**: Minha área (Sua vez, Aguardando, Em campo), Solicitações de PT, Desabilitados agora, tela de parede e a PT (Formulário, Equipe, Histórico), com Imprimir e Imprimir em branco.
 - **Cadastro**: Locais, Ativos, Pessoas.
 - **Configuração**: Modelos de PT (Escopo, Fluxo, Testar, importação), Tipos, Listas, Auditoria.
 

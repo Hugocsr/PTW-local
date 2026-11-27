@@ -69,6 +69,8 @@ export const BOARD_SEGMENTS: Record<string, (r: BoardRow) => boolean> = {
   preparacao: (r) => ["rascunho", "em_analise", "devolvida", "emitida"].includes(r.p.state),
   campo: (r) => ["ativa", "suspensa", "entregue"].includes(r.p.state),
   finalizadas: (r) => isFinalState(r.p.state),
+  // SPEC 014: the person's own drafts (`core/board` already leaves other people's out).
+  rascunhos: (r) => r.p.state === "rascunho",
 }
 
 const numberOf = (r: BoardRow) => r.p.number ?? "PT sem número"
