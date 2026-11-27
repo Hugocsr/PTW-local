@@ -5,7 +5,7 @@ export type JsonObject = { [k: string]: Json }
 /** A table row as the database's to_jsonb gives it: column names; day "AAAA-MM-DD", instant "…+00:00" in UTC, bytea "\\x…". */
 export type Row = JsonObject
 export type AuthMethod = "senha" | "ldap" | "pin" | "sessao" | "emergencia" | "servico" | "sistema"
-export type AuditTable = "unit" | "type_def" | "location" | "asset" | "asset_location" | "asset_relation" | "person" | "person_role" | "option_list" | "option_item" | "template" | "template_version" | "version_location_type" | "version_asset_type" | "stage" | "sign_slot" | "separation" | "permit" | "permit_asset" | "permit_team" | "permit_answer" | "attachment" | "permit_revision"
+export type AuditTable = "unit" | "type_def" | "location" | "asset" | "asset_location" | "asset_relation" | "person" | "person_role" | "option_list" | "option_item" | "template" | "template_version" | "version_location_type" | "version_asset_type" | "version_work_type" | "stage" | "sign_slot" | "separation" | "permit" | "permit_asset" | "permit_team" | "permit_answer" | "attachment" | "permit_revision"
 
 /** Who acts and how, for every event (ptw.set_context). `reason = "Desfazer"` marks an undo. */
 export interface AuditCtx { at: string; actorId: string | null; roleId?: string | null; auth?: AuthMethod; client?: string | null; requestId?: string | null; reason?: string | null }

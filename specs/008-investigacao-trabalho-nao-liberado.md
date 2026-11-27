@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | **Investigação concluída, aguardando decisão** |
+| Status | **Executada (27/11/2026)** |
 | Autor | Claude (Cowork), a partir do requisito de Hugo Silva |
 | Data | 25/11/2026 |
 | Onde aparece | Página da PT (`#pt/<id>`), no bloco de estado do topo à esquerda, inclusive na solicitação (rascunho) |
@@ -87,9 +87,18 @@ Na tela de **Nova PT** (formulário antes de criar o rascunho), o aviso **não**
 
 **Complemento (com A ou C):** separar a frase visualmente do "Estado: …", em linha própria e com ícone de cadeado, para não ser lida como status. E tirar o "Rascunho" repetido do cabeçalho.
 
-## 7. Para você decidir
+## 7. Decisões (27/11/2026)
 
-1. **Qual proposta?** Recomendo **A**.
-2. **"Entregue à área"** mantém o aviso? Recomendo **sim**: o trabalho acabou, mas a área ainda não aceitou, e ninguém deve voltar ao equipamento.
-3. **A dica neutra no rascunho** ("A liberação acontece no Aceite no campo…")? Recomendo **não**, para deixar a solicitação limpa.
-4. **O complemento visual** (linha própria e "Rascunho" sem repetir)? Recomendo **sim**.
+- **Remover a informação "Trabalho não liberado" do estado Encerrada.** Nos demais estados ela **continua**, inclusive em Rascunho, Em análise, Devolvida e Cancelada (a proposta A, que a tiraria também desses, **não** foi escolhida).
+- **Etiquetas (estilo Trello):** "Encerrada", "Ciclo concluído" e "Trabalho não liberado" viram **etiquetas**, cada uma um estado independente, **com tooltip** explicando o significado.
+- **Fileira de etiquetas de situação** abaixo do título do bloco (o título do bloco continua). "Ciclo concluído" é etiqueta **só da Encerrada**.
+- Assumidas por mim: a etiqueta do estado só aparece quando o título diz outra coisa (ou na Encerrada); "Entregue à área" mantém o aviso; sem dica neutra no rascunho; o complemento visual de "Rascunho" repetido no topo **não foi feito** (não foi respondido).
+
+## 8. Resultado da execução
+
+- **`core/permitTags.ts`** (`permitTags`, com os tooltips) e **`components/shell/StateTag.tsx`**; `EstadoAutorizacao` troca as duas linhas de texto por `<ul aria-label="Situação">` de etiquetas. "Ciclo concluído." saiu do texto de apoio da Encerrada.
+- **Etiquetas por estado:** Encerrada = Encerrada + Ciclo concluído; Rascunho, Em análise, Devolvida, Emitida, Suspensa, Entregue, Expirada e Cancelada = Trabalho não liberado; Ativa liberada = nenhuma; Ativa fora da janela ou com parada = estado (neutra) + Trabalho não liberado; sem servidor = Trabalho não liberado.
+- **Cor:** a etiqueta neutra usa o tom de texto escuro (o cinza sólido ficava pálido com texto branco).
+- Banco, API e regra de liberação **não mudaram**. O espelho `core/form/conditions.ts` foi atualizado em `ptw-server/api/src/shared` (a frase "· opcional" da SPEC 018).
+- **Testes:** app 480 passam (6 novos, de `permitTags`), lint limpo, `sync-shared --check` 41 iguais; conferido no navegador (etiqueta e tooltip no rascunho).
+- **Não verificado no navegador:** o bloco Encerrada e Ativa fora da janela (só pelos testes da função).

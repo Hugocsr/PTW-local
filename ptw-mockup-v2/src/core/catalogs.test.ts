@@ -39,7 +39,7 @@ describe("Catálogos (SPEC 005)", () => {
   it("SPEC 006: busca de catálogos só pelo nome; busca de itens dentro do catálogo, com o filtro de ativos", () => {
     const lists = s.optionLists.map((l) => ({ ...l, title: l.name }))
     expect(filterCatalogs(lists, "epi").map((l) => l.title)).toEqual(["EPI"])
-    expect(filterCatalogs(TYPE_CATALOGS, "tipos").map((c) => c.id)).toEqual(["tipos-local", "tipos-ativo"])
+    expect(filterCatalogs(TYPE_CATALOGS, "tipos").map((c) => c.id)).toEqual(["tipos-local", "tipos-ativo", "tipos-trabalho"])
     expect(filterCatalogs(TYPE_CATALOGS, "relaco").map((c) => c.id)).toEqual(["relacoes"])
     expect(filterCatalogs(lists, "luva")).toEqual([])
     expect(filterCatalogs(lists, "  ").length).toBe(lists.length)

@@ -21,6 +21,7 @@ import type { EnergyKind, FormItem } from "@/registry/types"
 import { TONE_SOLID, TONE_TEXT } from "@/components/shell/Status"
 import type { Actor } from "./attachments"
 import { AttachmentList, CaptureButton } from "./attachments"
+import { RequiredMark } from "@/components/ui/required"
 import { FillContext, rowId, useFormContext } from "./context"
 
 /**
@@ -88,11 +89,10 @@ export function FillItem({ item, answer, onChange, actor, scope = "", notices = 
     // A notice is read, not answered: a grey well with an icon, never a field look.
     return <Notice>{item.text}</Notice>
   }
-  // Question label: one weight everywhere; "opcional" marks the exception (required is the default).
+  // Question label: one weight everywhere; a red asterisk marks what is required (SPEC 018), nothing marks the optional.
   const head = (
     <span className={cn("flex flex-wrap items-baseline gap-x-2", hideLabel && "sr-only")}>
-      <span className={sub ? SUB_LABEL : "type-field text-foreground"}>{item.label}</span>
-      {!item.required && <span className="type-meta">opcional</span>}
+      <span className={sub ? SUB_LABEL : "type-field text-foreground"}>{item.label}{item.required && <RequiredMark className="ml-0.5" />}</span>
     </span>
   )
   // An answer that stops the stage, said once, under this item (kinds that do not already say it themselves).

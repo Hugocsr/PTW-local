@@ -23,13 +23,15 @@ import { msOf } from "@/core/time"
 import { NotRequired, NotRequiredGroup, StageCard } from "./StageCard"
 import { AssinarDialog } from "./AssinarDialog"
 import { HolderText } from "./HolderText"
+import { RequestDataCard } from "./RequestDataCard"
+import { RequiredLegend } from "@/components/ui/required"
 
 /**
  * Etapas: the permit's flow, the same shape as the template's Fluxo. Each stage shows what is filled
  * in and who signs it. The stage where it is this person's turn is filled in right here (answers
  * save as they are given) and ends with the sign button; every other stage reads only.
  */
-export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: TemplateVersion; rail: StageView[] }) {
+export function PermitFormTab({ permit, ver, rail, onEdit }: { permit: Permit; ver: TemplateVersion; rail: StageView[]; onEdit?: () => void }) {
   const { state } = useRegistry()
   const store = usePermits()
   const sim = useSim()
@@ -75,6 +77,7 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
       <FormFilesContext.Provider value={files}>
       <FillContext.Provider value={{ assetIds: permit.assetIds, pathIds: path }}>
       <ol className="flex flex-col gap-4">
+        <RequestDataCard permit={permit} onEdit={onEdit} />
         {ver.stages.map((st, i) => {
           const view = rail.find((r) => r.stage.id === st.id)
           const isMine = st.id === myStage
@@ -84,7 +87,7 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
           const status = submit && st.kind === "solicitacao" ? "atual" : statusOf(st.id)
           const sections = form.sections.filter((s) => s.stageId === st.id)
           return (
-            <StageCard key={st.id} n={i + 1} stage={st} stages={ver.stages} sections={sections} answers={permit.answers}
+            <StageCard key={st.id} n={i + 2} stage={st} stages={ver.stages} sections={sections} answers={permit.answers}
               status={status} turn={isMine ? "Sua vez" : undefined} editing={editing} actor={{ id: me.id, now: sim.now }}
               onAnswer={(itemId, value) => {
                 // Refused on save (e.g. a person not eligible, PTW08): nothing is written and the reason shows.
@@ -116,6 +119,7 @@ export function PermitFormTab({ permit, ver, rail }: { permit: Permit; ver: Temp
           )
         })}
       </ol>
+      <RequiredLegend />
       </FillContext.Provider>
       </FormFilesContext.Provider>
       <AssinarDialog permitId={open} onClose={() => setOpen(null)} />

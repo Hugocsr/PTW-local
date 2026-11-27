@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { PermitStateBadge } from "@/components/work/state"
 import { navigate, openPermit } from "@/components/work/nav"
 import { cn } from "@/lib/utils"
+import { AssetQrSection } from "./AssetLabel"
 import { DataGrid, Datum, KIND, SheetData, StatusDot } from "./shared"
 
 export interface DetailActions {
@@ -136,6 +137,8 @@ function EquipmentDetail({ asset, actions }: { asset: Asset; actions: DetailActi
           <SheetData fields={EQUIPMENT_FIELDS} attrs={asset.attrs} />
           {asset.locationIds.length > 1 && <Datum label="Também em" full>{asset.locationIds.slice(1).map((l) => byId(state.locations, l)?.name ?? "").join(", ")}</Datum>}
         </DataGrid>
+
+        <AssetQrSection asset={asset} />
 
         <section aria-labelledby="prot" className="flex flex-col gap-3 border-t pt-5">
           <h3 id="prot" className="flex items-center gap-2 type-heading">

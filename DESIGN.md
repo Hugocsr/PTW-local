@@ -376,7 +376,7 @@ Trocar entre folha de celular e diálogo de computador preserva os campos, a esc
 **Gramática do formulário (o que é campo, rótulo, instrução e detalhe).**
 - **Campo** (preenchível): fundo branco, borda de 1 px em `input`, 44/36 px de altura, anel de foco; texto curto e seleções até 36rem (`max-w-xl`), texto longo até 42rem, verificações na largura inteira. Botões de escolha em contorno branco; o escolhido fica preto. Sem resposta = campo vazio ou nenhum botão preto; a seção diz "Falta N".
 - **Seleção com busca** (`SearchSelect`, `PickList`): lupa à esquerda, seta para baixo à direita, texto "Buscar na lista…" / "Buscar no cadastro…"; ao abrir, o cursor já está na busca. **Seleção simples** (até 6): só a seta. **Texto**: sem ícone.
-- **Rótulo** (a pergunta): `type-field` em tinta, logo acima do controle (8 px); "opcional" em `type-meta` ao lado. Subcampo (Documento, ponto de isolamento): 12/500 em tinta.
+- **Rótulo** (a pergunta): `type-field` em tinta, logo acima do controle (8 px); **obrigatório leva um asterisco vermelho** (`RequiredMark`, `text-destructive-text`, lido como "obrigatório" por leitor de tela) e **nada marca o opcional** (SPEC 018); a legenda "* Campo obrigatório" (`RequiredLegend`) fica no rodapé da tela. Subcampo (Documento, ponto de isolamento): 12/500 em tinta.
 - **Instrução** ("Permitido: …", "Formato …", dica do anexo, "Mínimo N …"): `type-meta` cinza, **entre o rótulo e o controle**, colada ao rótulo (2 px). Sempre nesse lugar.
 - **Detalhe** (Aviso, detalhe da opção escolhida, tabela "Consultar"): poço cinza com ícone de informação, nunca borda de campo.
 - **Problema**: embaixo do controle, `stop`, ícone + palavras.
@@ -713,3 +713,29 @@ A tela **Pessoas** vira **Acesso › Usuários**, no formato da tela Usuários d
 - **Regras puras:** `core/locationPicker.ts` (`choosable`, `browseRows`, `reachablePlaces`, `searchPlaces`, `placeOfAsset`, `placeProblem`).
 - **Rascunho cujo local deixou de servir** (os ativos saíram ou foram desativados): na edição, o cartão fica vermelho com "Este local não tem mais ativos ativos aceitos por este modelo. Escolha outro local." e o botão fica desabilitado; na página da PT (Rascunho e Devolvida), "Enviar/Reenviar" fica bloqueado com a mesma frase (`placeProblem` em `planSign`). O servidor **não** recusa (decisão: só a tela).
 
+### Obrigatório e etapa inicial da solicitação (SPEC 018, 27/11/2026)
+
+- **Obrigatório:** asterisco vermelho depois do rótulo (`components/ui/required.tsx`) em Modelo, Local, Serviço, Início e Fim da Nova PT e nos itens `required` do formulário da PT (`FillItem`); o texto "opcional" saiu dessas telas (e a frase " · opcional" das assinaturas). A legenda "* Campo obrigatório" fica no rodapé fixo da Nova PT, ao lado dos botões, e no fim da aba Formulário. A tela não pinta de erro antes da tentativa; o asterisco basta. Os cadastros e o editor de modelos mantêm o que têm (ficam para outra spec).
+- **Nova PT / Editar rascunho:** quatro blocos numerados em cartões separados (`FormSection`): 1 O serviço (Modelo, Serviço), 2 Local e ativos, 3 Janela de execução, 4 Equipe (só quando o modelo tem cargos). Rodapé fixo com **Cancelar** (o nome fica; o rascunho continua salvo pela SPEC 014), a legenda e "Salvar e continuar". Sem a seta de voltar: a migalha do topo e o menu lateral levam a Solicitações de PT.
+- **Página da PT:** sem seta de voltar. A trilha ganhou o passo **1 · Dados da solicitação**, que reflete o estado real (concluído: a PT já tem seus dados); as etapas do modelo seguem com seu estado de sempre, numeradas a partir de 2. Clicar nele rola até o cartão "Dados da solicitação" (`RequestDataCard`) no alto da aba Formulário: serviço, local, janela, equipe, o estado da PT e "Editar" quando é o solicitante e a PT está em Rascunho ou Devolvida (abre a tela de edição atual; ao salvar volta à PT). Em outro estado diz "Já enviada: para mudar estes dados, a PT precisa ser devolvida." "Faltam N respostas" continua como estava.
+
+### Etiquetas de situação no bloco de estado da PT (SPEC 008, 27/11/2026)
+
+- A linha "Estado: X · Trabalho não liberado." virou uma fileira de **etiquetas** (`StateTag`, estilo Trello: retângulo de 6 px de canto, cor sólida, uma palavra em negrito), cada uma uma situação independente com **tooltip** que explica o que significa (passa o mouse ou foco do teclado). Quem escolhe as etiquetas é `core/permitTags.ts` (`permitTags`), com os textos dos tooltips.
+- Etiquetas, nesta ordem: **o estado** (só quando o título do bloco diz outra coisa, como "Parada registrada", ou quando a PT está **Encerrada**), **Ciclo concluído** (só Encerrada, verde) e **Trabalho não liberado** (neutra escura, em todo estado em que o trabalho não está liberado agora, **menos Encerrada**: o ciclo acabou e ninguém pensaria em trabalhar). Sem servidor, só "Trabalho não liberado".
+- O texto "Ciclo concluído." deixou de ser a linha de apoio da Encerrada; o bloco Encerrada mostra título e as duas etiquetas. O cartão da PT suspensa no Dashboard continua com seu texto.
+
+
+## Tipos de trabalho (SPEC 012, 28/11/2026)
+
+- Catálogo fixo novo em Catálogos › **Tipos de trabalho** (família `trabalho` de `ptw.type_def`, ícone capacete). Valores iniciais copiados da lista de opções "Tipos de trabalho" (que continua existindo como pergunta de formulário).
+- Aba **Escopo** do modelo: seção "Tipos de trabalho" com seletor múltiplo; obrigatório ao menos um para ativar (verificação em `problems()`, como o tipo de ativo). Tabela `version_work_type`, congelada com a versão ativa.
+- **Retenção da trilha** saiu da tela do modelo. Só escondido: coluna `template.retention_class`, campo da API e tabela `ptw.retention_class` continuam, sem uso.
+
+## Leitura de QR Code do ativo (SPEC 019, 27/11/2026)
+
+- Nova PT / Editar rascunho: botão **Ler QR Code do ativo** na seção Local e ativos; abre um painel com a câmera (traseira quando houver). Cada leitura adiciona o ativo e acompanha o local; o painel fica aberto até **Concluir**. Aviso de sucesso ou do motivo da recusa na região `status`.
+- Sempre há saída sem câmera: campo "Ou digite o código", a lista e o seletor de local.
+- Gestão de Ativos › detalhe do equipamento: seção **QR Code do ativo** (QR do código/TAG) e **Imprimir etiqueta** (`body[data-print="label"]` esconde o app e imprime só a etiqueta, `index.css`).
+- Conteúdo do QR: o código do ativo. A leitura também aceita `…#ativo/<código>`; outros links e textos de várias linhas não são de ativo.
+- Ao ler, o painel mostra o ativo (nome, código, tipo e local) para **confirmar** antes de entrar na PT: **Adicionar à PT** ou **Ler outro**. Com mais de um local aceito, a pessoa escolhe o local ali.

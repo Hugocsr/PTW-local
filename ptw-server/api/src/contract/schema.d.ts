@@ -1682,7 +1682,7 @@ export interface components {
         /** @enum {string} */
         RecordStatus: "ativo" | "em_revisao" | "inativo";
         /** @enum {string} */
-        TypeFamily: "local" | "ativo" | "cargo" | "relacao";
+        TypeFamily: "local" | "ativo" | "cargo" | "relacao" | "trabalho";
         /** @enum {string} */
         AuthMethod: "senha" | "ldap" | "pin" | "sessao" | "emergencia" | "servico" | "sistema";
         /** @description Campos do sistema; nunca enviados pelo cliente (`SystemMeta` em `registry/types.ts`). */
@@ -1963,6 +1963,8 @@ export interface components {
         TemplateContent: {
             locationTypeIds: components["schemas"]["Uuid"][];
             assetTypeIds: components["schemas"]["Uuid"][];
+            /** @description Tipos de trabalho do catálogo (família `trabalho`); um ou mais, congelam com a versão. */
+            workTypeIds: components["schemas"]["Uuid"][];
             stages: components["schemas"]["Stage"][];
             separation: components["schemas"]["Separation"][];
             form?: components["schemas"]["FormSpec"];

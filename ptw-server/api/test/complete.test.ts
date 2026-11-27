@@ -34,7 +34,7 @@ describe.skipIf(!HAS_DB)("auditoria, demonstração e arquivos no banco real", (
       id: randomUUID(), form: { sections: [{ id: "sec", title: "Arquivos", items: [{ id: "arquivo", kind: "anexo", label: "Arquivo", accept: ["arquivo", "foto"], min: 0, hint: "", required: false }] }] },
       stages: ["solicitacao", "emissao", "aceite_campo", "entrega", "aceite_area"].map((kind, i) => ({ id: randomUUID(), kind, name: "Etapa " + i,
         slots: [{ id: randomUUID(), kind: "cargo", roleIds: [role.json().id], personId: null, meaning: "Assina", min: 1, required: true }] })),
-      separation: [], locationTypeIds: [], assetTypeIds: [],
+      separation: [], locationTypeIds: [], assetTypeIds: [], workTypeIds: [],
     } })
     expect(tpl.statusCode, tpl.body).toBe(201)
     const t = tpl.json(), v = t.versions[0]

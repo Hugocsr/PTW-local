@@ -90,7 +90,7 @@ export function TemplatesView() {
           const at = now()
           const v: TemplateVersion = {
             id: uuidv7(), number: 1, status: "rascunho", createdAt: at, activatedAt: null, note: "Primeira versão",
-            locationTypeIds: [], assetTypeIds: [], stages: defaultStages(), separation: [], form: { sections: [] },
+            locationTypeIds: [], assetTypeIds: [], workTypeIds: [], stages: defaultStages(), separation: [], form: { sections: [] },
             maxWindowHours: null, holdsEquipment: true, origin: "manual", sourceSha256: null,
           }
           v.separation = [normalizeSeparation(v.stages[1].slots[0].id, v.stages[2].slots[0].id, true)]

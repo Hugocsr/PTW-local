@@ -1,5 +1,6 @@
 /** The plant's option lists (Configuração › Catálogos); item ids follow the position. */
 import type { OptionList } from "@/registry/types"
+import { seedUuid } from "@/registry/seedIds"
 import { C } from "./ids"
 
 export const LIST_LABELS = {
@@ -17,6 +18,9 @@ export function listItemId(list: ListKey, label: string): string {
   if (i < 0) throw new Error(`item desconhecido na lista ${list}: ${label}`)
   return C.listItem(KEYS.indexOf(list), i + 1)
 }
+
+/** Tipo de trabalho do catálogo (SPEC 012): o id segue a posição na lista de mesmo nome. */
+export const workTypeId = (label: (typeof LIST_LABELS.trabalho)[number]) => seedUuid(0x0a06, LIST_LABELS.trabalho.indexOf(label) + 1)
 
 const NAMES: Record<ListKey, string> = { epi: "EPI", perigos: "Perigos", trabalho: "Tipos de trabalho", simna: "SIM / N.A." }
 

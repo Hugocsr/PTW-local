@@ -8,22 +8,26 @@ import type { StageView } from "@/core/permitView"
  * unsigned on a hand-back = grey dash. Never colour alone: every step carries its name and, for
  * screen readers, its situation. A step is a link to its card in the Formulário tab.
  */
-export function StageRail({ rail, onPick }: { rail: StageView[]; onPick?: (stageId: string) => void }) {
+/** SPEC 018: the first step is the request's own data (model, place, service, window, team), before the model's stages. */
+export const DATA_STEP = "dados"
+type Step = { id: string; name: string; status: StageView["status"] }
+export function StageRail({ rail: stages, lead, onPick }: { rail: StageView[]; /** Real situation of the data step: done once the request has its data. */ lead?: Step["status"]; onPick?: (stageId: string) => void }) {
+  const rail: Step[] = [...(lead ? [{ id: DATA_STEP, name: "Dados da solicitação", status: lead }] : []), ...stages.map((r) => ({ id: r.stage.id, name: r.stage.name, status: r.status }))]
   if (rail.length < 2) return null
   const at = rail.findIndex((r) => r.status === "atual")
   const done = rail.filter((r) => r.status === "feita").length
   return (
     <nav aria-label="Etapas da PT" className="min-w-0">
-      <p className="mb-2 type-meta sm:hidden">Etapa {at >= 0 ? at + 1 : Math.min(done + 1, rail.length)} de {rail.length}{at >= 0 ? ` · ${rail[at].stage.name}` : ""}</p>
+      <p className="mb-2 type-meta sm:hidden">Etapa {at >= 0 ? at + 1 : Math.min(done + 1, rail.length)} de {rail.length}{at >= 0 ? ` · ${rail[at].name}` : ""}</p>
       <ol className="flex min-w-0 items-start">
         {rail.map((r, i) => {
           const s = r.status as string
           const isDone = s === "feita", isNow = s === "atual", skipped = s === "pulada"
           const word = isDone ? "concluída" : isNow ? "em andamento" : skipped ? "não feita" : "ainda não chegou"
           return (
-            <li key={r.stage.id} className="relative flex min-w-0 flex-1 flex-col items-center gap-1.5 first:items-start last:items-end sm:first:items-center sm:last:items-center">
+            <li key={r.id} className="relative flex min-w-0 flex-1 flex-col items-center gap-1.5 first:items-start last:items-end sm:first:items-center sm:last:items-center">
               {i > 0 && <span aria-hidden className={cn("absolute top-[13px] right-1/2 left-[-50%] h-0.5 max-sm:hidden", isDone || isNow ? "bg-st-ok-solid" : "bg-border")} />}
-              <button type="button" onClick={() => onPick?.(r.stage.id)} aria-current={isNow ? "step" : undefined}
+              <button type="button" onClick={() => onPick?.(r.id)} aria-current={isNow ? "step" : undefined}
                 className="relative z-10 flex min-h-11 flex-col items-center gap-1.5 rounded-lg px-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:min-h-0">
                 <span className={cn("grid size-7 place-items-center rounded-full text-[0.75rem] font-semibold tabular-nums transition-colors",
                   isDone ? "bg-st-ok-solid text-background"
@@ -31,7 +35,7 @@ export function StageRail({ rail, onPick }: { rail: StageView[]; onPick?: (stage
                     : "border border-border bg-background text-muted-foreground")}>
                   {isDone ? <CheckIcon className="size-4" aria-hidden /> : skipped ? <MinusIcon className="size-4" aria-hidden /> : i + 1}
                 </span>
-                <span className={cn("max-w-28 text-center text-[0.75rem] leading-4 text-balance max-sm:hidden", isNow ? "font-semibold text-foreground" : isDone ? "text-foreground" : "text-muted-foreground")}>{r.stage.name}</span>
+                <span className={cn("max-w-28 text-center text-[0.75rem] leading-4 text-balance max-sm:hidden", isNow ? "font-semibold text-foreground" : isDone ? "text-foreground" : "text-muted-foreground")}>{r.name}</span>
                 <span className="sr-only">: {word}</span>
               </button>
             </li>

@@ -6,13 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { JsonView } from "../JsonView"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Narrow, Page, PageHeader, PageSection, PropertyList, SidePanel } from "@/components/shell/Page"
 import { cn } from "@/lib/utils"
 import { useSim } from "@/sim/SimProvider"
 import { useRegistry } from "@/registry/store"
-import { RETENTION_LABEL, type PermitTemplate, type RetentionClass, type TemplateVersion } from "@/registry/types"
+import type { PermitTemplate, TemplateVersion } from "@/registry/types"
 import { copyVersion } from "@/core/templateVersions"
 import { DeferredText } from "../DeferredText"
 import { DataTable } from "../DataTable"
@@ -50,7 +49,6 @@ export function ModelDetail({ tpl, onBack, onImport, initialVersion = null }: { 
   const base = activeOf(tpl) ?? latestOf(tpl)
 
   const setVersions = (versions: TemplateVersion[]) => upsert("templates", { ...tpl, versions })
-  const setRetention = async (retentionClass: RetentionClass) => { if (await upsert("templates", { ...tpl, retentionClass })) toast.success("Classe de retenção alterada", { description: RETENTION_LABEL[retentionClass] }) }
   const patchVersion = (id: string, patch: Partial<TemplateVersion>) => setVersions(tpl.versions.map((v) => (v.id === id ? { ...v, ...patch } : v)))
   const patchLive = (id: string, fn: (v: TemplateVersion) => Partial<TemplateVersion>) => {
     const t = live.current
@@ -216,16 +214,6 @@ export function ModelDetail({ tpl, onBack, onImport, initialVersion = null }: { 
           ],
         } : undefined} />
       {serverDown && <DownBanner now={simNow} />}
-
-      {/* How long the audit trail of this model's permits is kept (ptw.retention_class; 5 years minimum in all). */}
-      <div className="flex max-w-xl flex-col gap-1.5">
-        <Label htmlFor="tpl-retention">Retenção da trilha</Label>
-        {canEditModels ? <Select value={tpl.retentionClass} disabled={serverDown} onValueChange={(v) => setRetention(v as RetentionClass)}>
-          <SelectTrigger id="tpl-retention" className="min-h-11 w-full min-w-0 bg-surface-row md:min-h-9"><SelectValue /></SelectTrigger>
-          <SelectContent><SelectGroup>{(Object.keys(RETENTION_LABEL) as RetentionClass[]).map((k) => <SelectItem key={k} value={k}>{RETENTION_LABEL[k]}</SelectItem>)}</SelectGroup></SelectContent>
-        </Select> : <p className="type-body">{RETENTION_LABEL[tpl.retentionClass]}</p>}
-        <p className="type-meta">Guardada por no mínimo 5 anos (PET: NR-33).</p>
-      </div>
 
       <DataTable<TemplateVersion>
         rows={tpl.versions}

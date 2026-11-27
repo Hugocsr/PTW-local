@@ -8,7 +8,7 @@ import type { FormItem, FormSection, PermitTemplate, SignSlot, Stage, TemplateVe
 import { seedUuid } from "@/registry/seedIds"
 import { normalizeSeparation } from "@/core/templateVersions"
 import { C } from "./ids"
-import { LIST } from "./lists"
+import { LIST, workTypeId } from "./lists"
 
 const DEMO = ["simples", "media", "complexa"] as const
 type DemoKey = (typeof DEMO)[number]
@@ -82,11 +82,16 @@ const entrega = (m: DemoKey): FormSection => ({
   ],
 })
 
+/** Tipos de trabalho (catálogo) de cada modelo de demonstração. */
+const DEMO_WORK: Record<DemoKey, Parameters<typeof workTypeId>[0][]> = {
+  simples: ["Elétrico"], media: ["Elétrico", "Em altura"], complexa: ["Trabalho a quente", "Espaço confinado", "Em altura", "Elétrico"],
+}
+
 function version(m: DemoKey, maxWindowHours: number, st: Stage[], sections: FormSection[], note: string, separation: [SlotKey, SlotKey, boolean?][]): TemplateVersion {
   return {
     id: ID.version(m), number: 1, status: "ativa", createdAt: at("2026-10-20"), activatedAt: at("2026-10-22"), note,
     origin: "manual", sourceSha256: null, maxWindowHours, holdsEquipment: true,
-    locationTypeIds: CFG.locationTypeIds, assetTypeIds: CFG.assetTypeIds, stages: st,
+    locationTypeIds: CFG.locationTypeIds, assetTypeIds: CFG.assetTypeIds, workTypeIds: DEMO_WORK[m].map(workTypeId), stages: st,
     separation: separation.map(([a, b, fixed]) => normalizeSeparation(ID.slot(m, a), ID.slot(m, b), fixed ?? false)),
     form: { sections },
   }

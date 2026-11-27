@@ -42,6 +42,8 @@ export const ID = {
   assetType: keyed(0x0003, ["painel", "modulo", "alim", "motor", "tubo", "valv", "cald"] as const),
   role: keyed(0x0004, ["lider", "exec", "tec", "sup"] as const),
   relationKind: keyed(0x0005, ["alimenta", "isola", "abastece", "parte"] as const),
+  /** Tipos de trabalho do catálogo: o id segue a posição na lista de mesmo nome (SPEC 012). */
+  workType: (label: (typeof LIST_LABELS.trabalho)[number]) => seedUuid(0x0006, LIST_LABELS.trabalho.indexOf(label) + 1),
   /** n = the old number (loc_0003 → 3). */
   loc: (n: number) => seedUuid(0x0010, n),
   asset: (n: number) => seedUuid(0x0011, n),

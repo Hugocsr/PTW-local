@@ -42,10 +42,11 @@ interface Children {
   separation: Map<string, Schemas["Separation"][]>
   locationTypes: Map<string, string[]>
   assetTypes: Map<string, string[]>
+  workTypes: Map<string, string[]>
 }
 
 async function loadChildren(tx: Tx, versionIds: string[]): Promise<Children> {
-  const out: Children = { stages: new Map(), separation: new Map(), locationTypes: new Map(), assetTypes: new Map() }
+  const out: Children = { stages: new Map(), separation: new Map(), locationTypes: new Map(), assetTypes: new Map(), workTypes: new Map() }
   if (versionIds.length === 0) return out
   const push = <T>(m: Map<string, T[]>, k: string, v: T) => m.set(k, [...(m.get(k) ?? []), v])
 
@@ -85,7 +86,7 @@ async function loadChildren(tx: Tx, versionIds: string[]): Promise<Children> {
   )
   for (const s of seps) push(out.separation, s.version_id, { slotA: s.slot_a, slotB: s.slot_b, locked: s.locked })
 
-  for (const [table, into] of [["version_location_type", out.locationTypes], ["version_asset_type", out.assetTypes]] as const) {
+  for (const [table, into] of [["version_location_type", out.locationTypes], ["version_asset_type", out.assetTypes], ["version_work_type", out.workTypes]] as const) {
     const q = new Q()
     const rows = await run<{ version_id: string; type_id: string }>(
       tx,
@@ -114,12 +115,13 @@ function mapVersion(r: VersionRow, c: Children | null): Version {
   }
   if (c === null) {
     // O contrato pede os quatro campos de conteúdo; versão sem conteúdo vai com eles vazios e marcada.
-    return { ...base, locationTypeIds: [], assetTypeIds: [], stages: [], separation: [], contentOmitted: true }
+    return { ...base, locationTypeIds: [], assetTypeIds: [], workTypeIds: [], stages: [], separation: [], contentOmitted: true }
   }
   return {
     ...base,
     locationTypeIds: c.locationTypes.get(r.id) ?? [],
     assetTypeIds: c.assetTypes.get(r.id) ?? [],
+    workTypeIds: c.workTypes.get(r.id) ?? [],
     stages: c.stages.get(r.id) ?? [],
     separation: c.separation.get(r.id) ?? [],
     form: r.form,

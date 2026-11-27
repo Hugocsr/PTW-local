@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | **Rascunho, aguardando decisão** |
+| Status | **Executada (27/11/2026)** |
 | Autor | Claude (Cowork), a partir do requisito de Hugo Silva |
 | Data | 26/11/2026 |
 | Onde aparece | Nova PT / Editar rascunho (`NewPermitView`), página da PT (`PermitDetailView`, `StageRail`, aba Formulário), formulário da PT (`FillItem`), cabeçalho de página (`PageHeader`) |
@@ -60,16 +60,15 @@ O que já protege os dados (SPEC 014): salvamento automático, salvar ao sair, a
 
 **Voltar.** Sem seta nas duas páginas. Para sair: a migalha do topo ("Solicitações de PT"), o menu lateral e o botão "Sair" (Nova PT). Todos passam pelo mesmo `leave()`: salvam o pendente e só perguntam "Sair sem salvar?" quando não há como salvar. O botão voltar do navegador também salva ao sair (já acontece).
 
-## 6. Pontos para decisão
+## 6. Decisões (27/11/2026)
 
-1. **Onde sai a seta de voltar.** Recomendo **a Nova PT / Editar rascunho e a página da PT** (a migalha do topo continua levando a Solicitações de PT). Alternativa: só na Nova PT; ou o app inteiro (mudaria o padrão do Design System, que hoje a prevê em todas as páginas).
-2. **Padrão de obrigatório.** Recomendo **asterisco nos obrigatórios + legenda "* Obrigatório" e manter a palavra "opcional"** onde já existe (cada leitura fica explícita nos dois sentidos). Alternativa: só asterisco e retirar "opcional" (menos texto; muda a convenção do DESIGN.md).
-3. **Onde vale agora.** Recomendo **o fluxo da PT** (Nova PT, formulário da PT, diálogos de ato com campo obrigatório), com o componente pronto para os cadastros depois. Alternativa: todos os formulários do app já nesta spec.
-4. **Como mostrar a etapa inicial.** Recomendo **passo 1 na trilha de etapas, com cartão na aba Formulário** (o pedido diz "estrutura de etapas"). Alternativa: uma aba "Dados" ao lado de Formulário, Equipe e Histórico, fora da trilha.
-5. **Quando "Editar" aparece.** Recomendo **Rascunho e Devolvida** (como o menu já faz). Alternativa: só Rascunho.
-6. **Editar dentro da página ou na tela atual.** Recomendo **reaproveitar a tela de edição atual**, aberta pelo "Editar" do cartão, e voltar para a PT ao terminar (menos código e risco). Alternativa: editar no próprio cartão, sem sair da página.
-7. **"Cancelar" vira "Sair".** Recomendo **sim** (o rascunho é guardado, "Cancelar" mente). Alternativa: manter "Cancelar" e acrescentar a frase "O rascunho fica salvo".
-8. **Pendências antes de concluir.** Recomendo trocar "Faltam N respostas" por **lista curta do que falta, cada item levando ao campo**. Alternativa: manter só a contagem e marcar os campos vazios em vermelho depois do primeiro clique em assinar.
+- **2 Padrão de obrigatório (mudou):** **retirar o texto "opcional"**; asterisco **vermelho** nos obrigatórios; legenda do asterisco **no rodapé da tela**.
+- **Pedidos novos:** melhorar a visualização da edição da primeira página da criação e a **disposição das seções** (quatro cartões numerados).
+- **Status:** a etapa inicial segue o **status real** (sem inventar "em andamento": concluída porque a PT já tem seus dados; as etapas do modelo mantêm o estado que já têm).
+- **7 "Cancelar":** **mantém o nome**.
+- **6 Edição:** **em outra tela, como hoje** (o "Editar" do cartão abre a tela de edição atual).
+- **8 Lista de pendências:** **não precisa** (fica "Faltam N respostas"); o obrigatório precisa **chamar atenção** (asterisco vermelho).
+- **Assumidas por mim** (não respondidas, seguiram a recomendação): 1 sem seta de voltar na Nova PT/Editar e na página da PT; 3 só o fluxo da PT; 4 passo 1 na trilha + cartão na aba Formulário; 5 "Editar" em Rascunho e Devolvida.
 
 ## 7. Plano de testes
 
@@ -84,3 +83,14 @@ O que já protege os dados (SPEC 014): salvamento automático, salvar ao sair, a
 ## 8. Como entregar
 
 Só o app (sem API nem banco; Supabase sem script). Ctrl+F5 e git como nas entregas anteriores.
+
+## 9. Resultado da execução
+
+- **Obrigatório:** `RequiredMark`/`RequiredLegend` (`components/ui/required.tsx`). Asterisco vermelho em Modelo, Local, Serviço, Início, Fim e nos itens obrigatórios da PT; "opcional" removido (Ativos, cargos da equipe, itens, assinaturas). Legenda no rodapé fixo da Nova PT e no fim da aba Formulário.
+- **Nova PT:** `FormSection` com 4 blocos (O serviço, Local e ativos, Janela de execução, Equipe), rodapé fixo em cartão com Cancelar, legenda e Salvar. Sem seta de voltar.
+- **Página da PT:** sem seta de voltar; passo 1 "Dados da solicitação" na trilha (`StageRail lead`); `RequestDataCard` na aba Formulário com "Editar" (Rascunho/Devolvida, só o solicitante); etapas numeradas de 2 em diante.
+- **Não mudou:** "Faltam N respostas", salvamento automático (SPEC 014), regras, API e banco.
+- **Achado:** `FieldGroup` (`@container`) colapsava a altura dos blocos 1 e 2 no Chrome depois de escolher o modelo; as seções usam `div flex`.
+- **Testes:** `npm run check` (474), lint limpo; navegador (1280 e 390 px): asteriscos, legenda, sem "opcional", trilha com passo 1, cartão e "Editar" abrindo a edição, sem rolagem horizontal.
+- **Limite:** os cadastros e o editor de modelos ainda mostram "obrigatório/opcional" por texto (fora do escopo desta spec).
+

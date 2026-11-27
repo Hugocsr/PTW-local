@@ -47,7 +47,7 @@ export const NETWORK: Answer = { status: -1 }
 const wireTypes = (list: TypeDef[], family: string) => list.map((t) => ({ ...t, family }))
 export const allTypes = () => [
   ...wireTypes(reg.locationTypes, "local"), ...wireTypes(reg.assetTypes, "ativo"),
-  ...wireTypes(reg.roleTypes, "cargo"), ...wireTypes(reg.relationKinds, "relacao"),
+  ...wireTypes(reg.roleTypes, "cargo"), ...wireTypes(reg.relationKinds, "relacao"), ...wireTypes(reg.workTypes, "trabalho"),
 ]
 
 export const person = (name: string) => reg.people.find((p) => p.name === name)!

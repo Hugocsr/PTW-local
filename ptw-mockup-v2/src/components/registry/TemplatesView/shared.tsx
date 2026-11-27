@@ -35,6 +35,7 @@ export function problems(t: TemplateContent, state: RegistryState, today: string
   const out: { text: string; tab: Tab }[] = []
   if (t.locationTypeIds.length === 0) out.push({ text: "Escolha ao menos um tipo de local", tab: "escopo" })
   if (t.assetTypeIds.length === 0) out.push({ text: "Escolha ao menos um tipo de ativo", tab: "escopo" })
+  if (t.workTypeIds.length === 0) out.push({ text: "Escolha ao menos um tipo de trabalho", tab: "escopo" })
   out.push(...signatureProblems(t, state, today).map((text) => ({ text, tab: "fluxo" as const })))
   out.push(...validateForm(t.form, t.stages, state.optionLists).map((p) => ({ text: `Formulário · ${p}`, tab: "fluxo" as const })))
   return out

@@ -23,8 +23,8 @@ async function loadDelegations(s: Shared, r: RegistryState): Promise<RuleError |
 }
 
 /** `TypeDef.family` of the contract → the app's four lists (the only shape conversion of the layer). */
-const FAMILY: Record<TypeList, string> = { locationTypes: "local", assetTypes: "ativo", roleTypes: "cargo", relationKinds: "relacao" }
-const LIST_OF: Record<string, TypeList> = { local: "locationTypes", ativo: "assetTypes", cargo: "roleTypes", relacao: "relationKinds" }
+const FAMILY: Record<TypeList, string> = { locationTypes: "local", assetTypes: "ativo", roleTypes: "cargo", relationKinds: "relacao", workTypes: "trabalho" }
+const LIST_OF: Record<string, TypeList> = { local: "locationTypes", ativo: "assetTypes", cargo: "roleTypes", relacao: "relationKinds", trabalho: "workTypes" }
 type WireType = TypeDef & { family: string }
 const toType = ({ family, ...t }: WireType): { list: TypeList; type: TypeDef } => { void family; return { list: LIST_OF[family], type: t } }
 
@@ -57,7 +57,7 @@ export async function loadReference(s: Shared): Promise<RuleError | null> {
   ])
   if (!unit.ok) return unit.error
   for (const x of [types, locations, people, lists, templates, relations]) if (failed(x)) return x
-  const r: RegistryState = { ...s.registry.get(), units: [unit.data], locationTypes: [], assetTypes: [], roleTypes: [], relationKinds: [], locations: locations as Location[], people: people as Person[], optionLists: lists as OptionList[], templates: templates as PermitTemplate[], relations: relations as AssetRelation[] }
+  const r: RegistryState = { ...s.registry.get(), units: [unit.data], locationTypes: [], assetTypes: [], roleTypes: [], relationKinds: [], workTypes: [], locations: locations as Location[], people: people as Person[], optionLists: lists as OptionList[], templates: templates as PermitTemplate[], relations: relations as AssetRelation[] }
   for (const w of types as WireType[]) { const { list, type } = toType(w); if (list) r[list] = [...r[list], type] }
   const delegationError = await loadDelegations(s, r)
   if (delegationError) return delegationError
@@ -102,7 +102,7 @@ export async function syncReference(s: Shared, since: string, domains: readonly 
   if (failed(relations)) return relations
   const r: RegistryState = { ...s.registry.get(), relations }
   if (types) {
-    r.locationTypes = []; r.assetTypes = []; r.roleTypes = []; r.relationKinds = []
+    r.locationTypes = []; r.assetTypes = []; r.roleTypes = []; r.relationKinds = []; r.workTypes = []
     for (const w of types) { const { list, type } = toType(w); if (list) r[list] = [...r[list], type] }
   }
   const delegationError = domains.includes("delegations") || domains.includes("templates") ? await loadDelegations(s, r) : null
@@ -166,7 +166,7 @@ export function createRegistryWrites(s: Shared) {
 
   /** A model: template fields, then each version that was added, removed, changed or activated; then the model read again. */
   async function saveTemplate(next: PermitTemplate, prev: PermitTemplate | undefined, undo: boolean): Promise<Done> {
-    const content = (v: PermitTemplate["versions"][number]) => ({ id: v.id, locationTypeIds: v.locationTypeIds, assetTypeIds: v.assetTypeIds, stages: v.stages, separation: v.separation, form: v.form, note: v.note, maxWindowHours: v.maxWindowHours, holdsEquipment: v.holdsEquipment })
+    const content = (v: PermitTemplate["versions"][number]) => ({ id: v.id, locationTypeIds: v.locationTypeIds, assetTypeIds: v.assetTypeIds, workTypeIds: v.workTypeIds, stages: v.stages, separation: v.separation, form: v.form, note: v.note, maxWindowHours: v.maxWindowHours, holdsEquipment: v.holdsEquipment })
     if (!prev) {
       const first = next.versions[0]
       const r = await http.request<PermitTemplate>({ method: "POST", path: "/templates", body: { id: next.id, name: next.name, retentionClass: next.retentionClass, ...(first ? { version: content(first) } : {}) }, key: uuidv7(), undo })

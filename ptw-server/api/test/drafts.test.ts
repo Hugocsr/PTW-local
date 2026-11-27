@@ -51,7 +51,7 @@ describe.skipIf(!HAS_DB)("com banco: rascunho só do solicitante (SPEC 014)", ()
       id: randomUUID(), form: { sections: [] },
       stages: ["solicitacao", "emissao", "aceite_campo", "entrega", "aceite_area"].map((kind, i) => ({ id: randomUUID(), kind, name: "Etapa " + i,
         slots: [{ id: randomUUID(), kind: "cargo", roleIds: [role.json().id], personId: null, meaning: "Assina", min: 1, required: true }] })),
-      separation: [], locationTypeIds: [], assetTypeIds: [],
+      separation: [], locationTypeIds: [], assetTypeIds: [], workTypeIds: [],
     } })
     expect(tpl.status, tpl.body).toBe(201)
     const t = tpl.json(), v = t.versions[0]

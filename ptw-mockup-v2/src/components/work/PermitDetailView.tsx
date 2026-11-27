@@ -41,7 +41,7 @@ import { ElectricalPanel } from "./ElectricalPanel"
 import { planExtend } from "@/core/extension"
 import { StopSheet } from "./StopSheet"
 import { DownBanner, EstadoAutorizacao } from "./state"
-import { StageRail } from "./StageRail"
+import { DATA_STEP, StageRail } from "./StageRail"
 import { PermitSheet } from "./PermitSheet"
 import { useData } from "@/data/context"
 import { usePermitHistory, usePlaceProblem } from "@/data/hooks"
@@ -164,7 +164,7 @@ export function PermitDetailView({ id, tab }: { id: string; tab: string }) {
           <span className="type-body">{permit.holdReason ?? "Aguarda Retomada e novo Aceite no campo."}{permit.holdAt ? ` · ${hms(permit.holdAt)}` : ""}</span>
         </div>
       )}
-      <PageHeader back={{ label: backLabel, onClick: back }} title={permit.scope || permitName(permit)}
+      <PageHeader title={permit.scope || permitName(permit)}
         meta={<span className="flex w-full flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-foreground"><span className={permit.number ? "type-data-title" : "type-section"}>{permit.number ?? "Rascunho"}</span><span className="type-label">Permissão de trabalho · Revisão {permit.revision}</span></span>}
         actions={{ secondary: [{ label: "Imprimir", icon: PrinterIcon, onClick: () => print() }], menu: [{ label: "Imprimir em branco", onClick: () => print(true) }, ...(canEdit ? [
           { label: permit.state === "rascunho" ? "Continuar editando" : "Editar rascunho", disabled: sim.serverDown, onClick: () => setEditing(true) },
@@ -179,7 +179,7 @@ export function PermitDetailView({ id, tab }: { id: string; tab: string }) {
         <ActionPanel permit={permit} rail={rail} ver={ver} next={next} nextMine={nextMine} />
         <PermitFacts permit={permit} tplName={tplName} holdsEquipment={ver.holdsEquipment} />
       </section>
-      <StageRail rail={rail} onPick={(stageId) => { if (current !== "etapas") toTab(id, "etapas"); requestAnimationFrame(() => document.getElementById(`pf-${stageId}`)?.scrollIntoView({ behavior: "smooth", block: "start" })) }} />
+      <StageRail rail={rail} lead="feita" onPick={(stageId) => { if (current !== "etapas") toTab(id, "etapas"); requestAnimationFrame(() => document.getElementById(stageId === DATA_STEP ? "pf-dados" : `pf-${stageId}`)?.scrollIntoView({ behavior: "smooth", block: "start" })) }} />
       <div className="flex min-w-0 flex-col gap-4">
         <Tabs value={current} onValueChange={(t) => toTab(id, t)} className="min-w-0 gap-4">
           <TabsList className="w-full lg:w-fit print:hidden">
@@ -188,7 +188,7 @@ export function PermitDetailView({ id, tab }: { id: string; tab: string }) {
           {PERMIT_TABS.map((t) => (
             <TabsContent key={t} value={t} className="flex min-w-0 flex-col gap-3">
               <h2 className="sr-only">{TAB_TITLE[t]}</h2>
-              {t === "etapas" ? <AttachmentOpenContext.Provider value={openedFile}><PermitFormTab permit={permit} ver={ver} rail={rail} /></AttachmentOpenContext.Provider>
+              {t === "etapas" ? <AttachmentOpenContext.Provider value={openedFile}><PermitFormTab permit={permit} ver={ver} rail={rail} onEdit={canEdit ? () => setEditing(true) : undefined} /></AttachmentOpenContext.Provider>
                 : t === "equipe" ? <Team permit={permit} />
                 : <History permit={permit} />}
             </TabsContent>

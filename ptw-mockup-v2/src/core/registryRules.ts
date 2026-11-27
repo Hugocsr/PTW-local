@@ -55,10 +55,10 @@ export function partOfCycle(relations: AssetRelation[], partOf: string[], add: A
   return false
 }
 
-const TYPE_FAMILY: Record<TypeList, "local" | "ativo" | "cargo" | "relacao"> = {
-  locationTypes: "local", assetTypes: "ativo", roleTypes: "cargo", relationKinds: "relacao",
+const TYPE_FAMILY: Record<TypeList, "local" | "ativo" | "cargo" | "relacao" | "trabalho"> = {
+  locationTypes: "local", assetTypes: "ativo", roleTypes: "cargo", relationKinds: "relacao", workTypes: "trabalho",
 }
-const TYPE_NOUN: Record<TypeList, string> = { locationTypes: "tipo de local", assetTypes: "tipo de ativo", roleTypes: "cargo", relationKinds: "tipo de relação" }
+const TYPE_NOUN: Record<TypeList, string> = { locationTypes: "tipo de local", assetTypes: "tipo de ativo", roleTypes: "cargo", relationKinds: "tipo de relação", workTypes: "tipo de trabalho" }
 
 const isTypeList = (l: RecordList | TypeList): l is TypeList => l in TYPE_FAMILY
 
@@ -160,7 +160,7 @@ export function personRoleRow(p: Person, r: RoleAssignment): Row {
   return { id: r.id, person_id: p.id, role_id: r.roleId, scope_location_id: r.scopeLocationId, valid_until: r.validUntil }
 }
 
-export function typeRow(t: TypeDef, family: "local" | "ativo" | "cargo" | "relacao"): Row {
+export function typeRow(t: TypeDef, family: "local" | "ativo" | "cargo" | "relacao" | "trabalho"): Row {
   return { id: t.id, family, label: t.label, icon: t.icon ?? null, system_key: t.systemKey ?? null, active: t.active }
 }
 

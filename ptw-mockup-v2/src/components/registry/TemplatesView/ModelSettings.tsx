@@ -16,7 +16,7 @@ import { PickList } from "../PickList"
 
 export function Scope({ tpl, set, disabled }: { tpl: TemplateContent; set: (patch: Partial<TemplateContent>) => void; disabled: boolean }) {
   const { state } = useRegistry()
-  const { locationTypes, assetTypes } = state
+  const { locationTypes, assetTypes, workTypes } = state
   return (
     <>
       <PageSection title="Tipos de local">
@@ -32,6 +32,14 @@ export function Scope({ tpl, set, disabled }: { tpl: TemplateContent; set: (patc
           options={assetTypes.map((t) => ({ id: t.id, label: t.label, icon: assetIcon(t) }))}
           value={tpl.assetTypeIds} onChange={(v) => set({ assetTypeIds: v })}
         />}
+      </PageSection>
+      <PageSection title="Tipos de trabalho">
+        {disabled ? <ReadList items={workTypes.filter((t) => tpl.workTypeIds.includes(t.id)).map((t) => ({ id: t.id, label: t.label }))} /> : <PickList
+          ariaLabel="Tipos de trabalho do modelo" addLabel="Tipo de trabalho" empty="Escolha ao menos um tipo de trabalho" invalid
+          options={workTypes.filter((t) => t.active || tpl.workTypeIds.includes(t.id)).map((t) => ({ id: t.id, label: t.label }))}
+          value={tpl.workTypeIds} onChange={(v) => set({ workTypeIds: v })}
+        />}
+        <p className="type-meta">O que o modelo cobre (elétrico, altura, espaço confinado…). Escolha um ou mais; a lista vem de Catálogos › Tipos de trabalho.</p>
       </PageSection>
     </>
   )

@@ -86,7 +86,7 @@ function serve(d: FakeDriver, versions: VState[] = [{ id: VER }], tplRev = 3, na
 
 const slot = (n: number, over: Record<string, unknown> = {}) => ({ id: SG[n], meaning: "Assina", kind: "cargo", roleIds: [ROLE], personId: null, min: 1, required: true, ...over })
 const content = (over: Record<string, unknown> = {}) => ({
-  locationTypeIds: [], assetTypeIds: [], separation: [], form: { sections: [] },
+  locationTypeIds: [], assetTypeIds: [], workTypeIds: [], separation: [], form: { sections: [] },
   stages: [
     { id: ST[0], name: "Solicitação", kind: "solicitacao", slots: [slot(0, { meaning: "Solicita a PT" })] },
     { id: ST[1], name: "Emissão", kind: "emissao", locked: true, slots: [slot(1, { meaning: "Emite a PT" })] },
@@ -516,7 +516,7 @@ describe.skipIf(!HAS_DB)("com banco: modelos pela API (PostgreSQL de verdade, co
   const H = { host: HOST, origin: ORIGIN }
   let headers: Record<string, string>
   const x = (n: number) => id(0xa000 + n)
-  const T = { cargo: x(1), cargo2: x(2), local: x(3), ativo: x(4) }
+  const T = { cargo: x(1), cargo2: x(2), local: x(3), ativo: x(4), trabalho: x(5) }
 
   const call = async (method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", url: string, payload?: unknown, extra: Record<string, string> = {}) => {
     const res = await app.inject({ method, url: `${V1}${url}`, headers: { ...headers, ...extra }, ...(payload === undefined ? {} : { payload: payload as object }) })
@@ -530,7 +530,8 @@ describe.skipIf(!HAS_DB)("com banco: modelos pela API (PostgreSQL de verdade, co
       await tx.unsafe(`select ptw.set_context('${T_UNIT}', null, null, 'servico', 'teste', 'semente-modelos')`)
       await tx.unsafe(`insert into ptw.type_def (unit_id, id, family, label) values
         ('${T_UNIT}', '${T.cargo}', 'cargo', 'Solicitante'), ('${T_UNIT}', '${T.cargo2}', 'cargo', 'Emitente'),
-        ('${T_UNIT}', '${T.local}', 'local', 'Área'), ('${T_UNIT}', '${T.ativo}', 'ativo', 'Painel')`)
+        ('${T_UNIT}', '${T.local}', 'local', 'Área'), ('${T_UNIT}', '${T.ativo}', 'ativo', 'Painel'),
+        ('${T_UNIT}', '${T.trabalho}', 'trabalho', 'Elétrico')`)
     })
     const cfg = testConfig({ db: db.config, unit: T_UNIT, checkResponses: true })
     app = await buildApp({ config: cfg, driver: postgresDriver(db.config), autoload: false, routes: [...BASE_ROUTES, templatesRoutes], logger: false })
@@ -560,14 +561,18 @@ describe.skipIf(!HAS_DB)("com banco: modelos pela API (PostgreSQL de verdade, co
     // Edita: cargos nas assinaturas, escopo, separação entre duas assinaturas, prazo e "não prende o equipamento".
     const stages = v1.stages.map((st: any, i: number) => ({ ...st, slots: st.slots.map((sl: any) => ({ ...sl, roleIds: [i % 2 === 0 ? T.cargo : T.cargo2] })) })) // eslint-disable-line @typescript-eslint/no-explicit-any
     const put = await call("PUT", `/templates/${tpl["id"]}/versions/${v1.id}`, {
-      locationTypeIds: [T.local], assetTypeIds: [T.ativo], stages, separation: [{ slotA: stages[1].slots[0].id, slotB: stages[0].slots[0].id, locked: true }],
+      locationTypeIds: [T.local], assetTypeIds: [T.ativo], workTypeIds: [T.trabalho], stages, separation: [{ slotA: stages[1].slots[0].id, slotB: stages[0].slots[0].id, locked: true }],
       form: { sections: [{ id: "s1", title: "Pedido", items: [{ id: "obs", kind: "texto", label: "Observação", required: false }] }] }, maxWindowHours: 8, holdsEquipment: false, note: "revisado",
     }, { "if-match": `"${v1.revision}"` })
     expect(put.status, put.body).toBe(200)
     const edited = put.json()
     expect(edited["revision"]).toBeGreaterThan(v1.revision)
-    expect(edited).toMatchObject({ holdsEquipment: false, maxWindowHours: 8, locationTypeIds: [T.local], assetTypeIds: [T.ativo], note: "revisado" })
+    expect(edited).toMatchObject({ holdsEquipment: false, maxWindowHours: 8, locationTypeIds: [T.local], assetTypeIds: [T.ativo], workTypeIds: [T.trabalho], note: "revisado" })
     expect(edited["separation"]).toHaveLength(1)
+    // SPEC 012: tipo de trabalho só aceita a família "trabalho" (um tipo de ativo é recusado pela chave estrangeira).
+    const wrong = await call("PUT", `/templates/${tpl["id"]}/versions/${v1.id}`, { ...content(), workTypeIds: [T.ativo] }, { "if-match": `"${edited["revision"]}"` })
+    expect(wrong.status).toBeGreaterThanOrEqual(400)
+    expect((await call("GET", `/templates/${tpl["id"]}`)).json()["versions"][0]).toMatchObject({ workTypeIds: [T.trabalho] })
     // Revisão velha: 409 com a atual.
     const old = await call("PUT", `/templates/${tpl["id"]}/versions/${v1.id}`, content(), { "if-match": `"${v1.revision}"` })
     expect(old.status).toBe(409)

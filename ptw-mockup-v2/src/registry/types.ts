@@ -29,7 +29,7 @@ export interface Unit {
 
 /**
  * Site-configurable type (Configuração › Catálogos). The family is the list it lives in
- * (locationTypes = local, assetTypes = ativo, roleTypes = cargo, relationKinds = relacao).
+ * (locationTypes = local, assetTypes = ativo, roleTypes = cargo, relationKinds = relacao, workTypes = trabalho).
  */
 export interface TypeDef {
   id: string
@@ -135,6 +135,8 @@ export interface RegistryState {
   assetTypes: TypeDef[]
   roleTypes: TypeDef[]
   relationKinds: TypeDef[]
+  /** Tipos de trabalho (catálogo, família "trabalho"): o modelo escolhe um ou mais no Escopo (SPEC 012). */
+  workTypes: TypeDef[]
   locations: Location[]
   assets: Asset[]
   relations: AssetRelation[]
@@ -143,5 +145,5 @@ export interface RegistryState {
   optionLists: OptionList[]
 }
 
-export type TypeList = "locationTypes" | "assetTypes" | "roleTypes" | "relationKinds"
+export type TypeList = "locationTypes" | "assetTypes" | "roleTypes" | "relationKinds" | "workTypes"
 export type RecordList = "locations" | "assets" | "people" | "relations" | "templates" | "optionLists"

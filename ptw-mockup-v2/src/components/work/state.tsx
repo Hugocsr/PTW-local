@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 import type { Permit } from "@/permit/types"
 import { dayOf, dmHms, hms } from "@/core/time"
 import { StatusBadge, TONE_BLOCK, type StatusTone } from "@/components/shell/Status"
+import { StateTag } from "@/components/shell/StateTag"
+import { permitTags } from "@/core/permitTags"
 import { WindowMeter } from "@/components/signal/WindowMeter"
 
 const ICON: Record<PermitState, LucideIcon> = {
@@ -42,7 +44,7 @@ const COPY: Record<PermitState, { title: string; sub: (p: Permit) => string }> =
   ativa: { title: "Trabalho liberado", sub: (p) => `Aceite no campo na r${p.revision} · janela até ${dayOf(p.windowStart) === dayOf(p.windowEnd) ? hms(p.windowEnd) : dmHms(p.windowEnd)}` },
   suspensa: { title: "Suspensa", sub: (p) => (p.resumedReason ? `Retomada: ${p.resumedReason}. Aguarda novo aceite no campo.` : "Trabalho parado.") },
   entregue: { title: "Entregue à área", sub: () => "Aguardando o aceite da área." },
-  encerrada: { title: "Encerrada", sub: () => "Ciclo concluído." },
+  encerrada: { title: "Encerrada", sub: () => "" },
   cancelada: { title: "Cancelada", sub: (p) => p.note ?? "Cancelada com motivo." },
   expirada: { title: "Expirada", sub: (p) => `${p.note ? p.note.replace(/[^.!?]$/, "$&.") : "A janela terminou."} Entregue a área para liberar o equipamento.` },
 }
@@ -76,16 +78,15 @@ export function EstadoAutorizacao({ permit, serverDown, now, extra, compact = fa
   const released = !serverDown && release.released
   // On the PT page this block is the only place the state appears: when the title says something else
   // ("Parada registrada", "Trabalho liberado", "Janela encerrada"), the state's own word goes on the last line.
-  const stateWord = !compact && !serverDown && !title.startsWith(PERMIT_STATE_LABEL[permit.state]) ? `Estado: ${PERMIT_STATE_LABEL[permit.state]}` : null
-  const last = [stateWord, !released && !(serverDown && compact) ? "Trabalho não liberado." : null].filter(Boolean).join(" · ")
+  const tags = permitTags(permit.state, { released, serverDown, compact, titleIsState: title.startsWith(PERMIT_STATE_LABEL[permit.state]) })
   return (
     <div className={cn("flex flex-col gap-1 rounded-lg border", compact ? "p-3" : "p-4", TONE_BLOCK[tone])} role="status">
       <div className="flex items-center gap-2 font-medium">
         <Icon className="size-5 shrink-0" aria-hidden />
         <span className={compact ? "type-section" : "type-title"}>{title}</span>
       </div>
-      <span className="type-body text-foreground">{sub}</span>
-      {last && <span className="type-meta text-foreground">{last}</span>}
+      {sub && <span className="type-body text-foreground">{sub}</span>}
+      {tags.length > 0 && <ul aria-label="Situação" className="mt-1 flex flex-wrap gap-1.5">{tags.map((t) => <li key={t.id}><StateTag tone={t.tone} tip={t.tip}>{t.label}</StateTag></li>)}</ul>}
       {released && !compact && <WindowMeter permit={permit} now={now} className="mt-2" />}
       {serverDown && !compact && <span className="type-meta text-foreground">Último estado conhecido: {PERMIT_STATE_LABEL[permit.state]}. Isto não é liberação.</span>}
       {extra}

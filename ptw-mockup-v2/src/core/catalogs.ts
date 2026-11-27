@@ -1,11 +1,11 @@
 /**
  * Catálogos (SPEC 005): one screen for every pre-registered value the system offers. Types stay in
- * `type_def` (four families) and option lists in `option_list`/`option_item`: only the screen is shared.
+ * `type_def` (five families) and option lists in `option_list`/`option_item`: only the screen is shared.
  * Pure: which catalogs exist, their routes, usage in words, what each item allows and the search.
  */
 import type { OptionList, RegistryState, TypeDef, TypeList } from "@/registry/types"
 
-export type TypeCatalogId = "tipos-local" | "tipos-ativo" | "cargos" | "relacoes"
+export type TypeCatalogId = "tipos-local" | "tipos-ativo" | "tipos-trabalho" | "cargos" | "relacoes"
 /** A route tab: a type family, or `lista/<id>`. */
 export type CatalogId = TypeCatalogId | `lista/${string}`
 
@@ -14,6 +14,7 @@ export interface TypeCatalog { id: TypeCatalogId; key: TypeList; title: string; 
 export const TYPE_CATALOGS: readonly TypeCatalog[] = [
   { id: "tipos-local", key: "locationTypes", title: "Tipos de local", hint: "Locais e escopo dos modelos", newLabel: "Novo tipo de local" },
   { id: "tipos-ativo", key: "assetTypes", title: "Tipos de ativo", hint: "Equipamentos e escopo", newLabel: "Novo tipo de ativo" },
+  { id: "tipos-trabalho", key: "workTypes", title: "Tipos de trabalho", hint: "Classificam os modelos", newLabel: "Novo tipo de trabalho" },
   { id: "cargos", key: "roleTypes", title: "Cargos", hint: "Pessoas e assinaturas", newLabel: "Novo cargo" },
   { id: "relacoes", key: "relationKinds", title: "Relações", hint: "Entre equipamentos", newLabel: "Nova relação (ex.: alimenta)" },
 ]
@@ -22,6 +23,7 @@ export const TYPE_CATALOGS: readonly TypeCatalog[] = [
 export const TYPE_CATALOG_ABOUT: Record<TypeCatalogId, string> = {
   "tipos-local": "Usados nos locais da Gestão de Ativos e no Escopo dos modelos de PT",
   "tipos-ativo": "Usados nos equipamentos e no Escopo dos modelos de PT",
+  "tipos-trabalho": "Classificam o serviço de cada modelo de PT (elétrico, altura, espaço confinado…), escolhidos no Escopo",
   cargos: "Atribuídos às pessoas (com validade e escopo) e exigidos nas assinaturas dos modelos",
   relacoes: "Ligam equipamentos; “é parte de” define o aninhamento e a trava de equipamento",
 }
@@ -57,6 +59,8 @@ export function typeUsage(s: RegistryState, key: TypeList, id: string, assetCoun
     case "roleTypes":
       return both(count(s.people.filter((p) => p.roles.some((r) => r.roleId === id)).length, "pessoa", "pessoas"),
         count(s.templates.filter((t) => t.versions.some((v) => v.stages.some((st) => st.slots.some((sl) => (sl.kind ?? "cargo") === "cargo" && sl.roleIds.includes(id))))).length, "modelo", "modelos"))
+    case "workTypes":
+      return count(versions((v) => v.workTypeIds.includes(id)), "modelo", "modelos")
     case "relationKinds":
       return count(s.relations.filter((r) => r.kindId === id).length, "relação", "relações")
   }
@@ -65,6 +69,7 @@ export function typeUsage(s: RegistryState, key: TypeList, id: string, assetCoun
 /** A type counts as used when anything points at it (then it can only be deactivated, never removed). */
 export function typeInUse(s: RegistryState, key: TypeList, id: string, assetCount?: number): boolean {
   if (key === "locationTypes") return s.locations.some((l) => l.typeId === id) || s.templates.some((t) => t.versions.some((v) => v.locationTypeIds.includes(id)))
+  if (key === "workTypes") return s.templates.some((t) => t.versions.some((v) => v.workTypeIds.includes(id)))
   if (key === "assetTypes") return (assetCount ?? s.assets.filter((a) => a.typeId === id).length) > 0 || s.templates.some((t) => t.versions.some((v) => v.assetTypeIds.includes(id)))
   return typeUsage(s, key, id) !== ""
 }

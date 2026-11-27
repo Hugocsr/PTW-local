@@ -58,7 +58,7 @@ export function useEventReader(): EventReader {
     const { permits, attachments, formOf } = store
     const names = idNames({
       people: state.people, locations: state.locations, assets: state.assets, optionLists: state.optionLists, templates: state.templates, permits,
-      types: [...state.locationTypes, ...state.assetTypes, ...state.roleTypes, ...state.relationKinds],
+      types: [...state.locationTypes, ...state.assetTypes, ...state.roleTypes, ...state.relationKinds, ...state.workTypes],
     })
     const who = (id: string | null) => (id ? names(id) ?? "Pessoa removida" : "Sistema")
     const ptName = (id: string) => names(id) ?? "PT removida"

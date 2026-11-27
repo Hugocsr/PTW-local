@@ -2029,7 +2029,7 @@ components:
         total: { type: integer, minimum: 0, description: Total com os filtros aplicados. }
     RecordOrigin: { type: string, enum: [manual, csv, sugerida, ad] }
     RecordStatus: { type: string, enum: [ativo, em_revisao, inativo] }
-    TypeFamily: { type: string, enum: [local, ativo, cargo, relacao] }
+    TypeFamily: { type: string, enum: [local, ativo, cargo, relacao, trabalho] }
     AuthMethod: { type: string, enum: [senha, ldap, pin, sessao, emergencia, servico, sistema] }
     SystemMeta:
       type: object
@@ -2379,10 +2379,11 @@ components:
         electrical: { $ref: "#/components/schemas/ElectricalPolicy" }
     TemplateContent:
       type: object
-      required: [locationTypeIds, assetTypeIds, stages, separation]
+      required: [locationTypeIds, assetTypeIds, workTypeIds, stages, separation]
       properties:
         locationTypeIds: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
         assetTypeIds: { type: array, items: { $ref: "#/components/schemas/Uuid" } }
+        workTypeIds: { type: array, items: { $ref: "#/components/schemas/Uuid" }, description: "Tipos de trabalho do catálogo (família `trabalho`); um ou mais, congelam com a versão." }
         stages: { type: array, items: { $ref: "#/components/schemas/Stage" } }
         separation: { type: array, items: { $ref: "#/components/schemas/Separation" } }
         form: { $ref: "#/components/schemas/FormSpec" }

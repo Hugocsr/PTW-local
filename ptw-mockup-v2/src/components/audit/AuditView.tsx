@@ -49,7 +49,7 @@ link(["asset", "asset_location", "asset_relation"], "#ativos", "Abrir Ativos")
 link(["person", "person_role"], "#pessoas", "Abrir Usuários")
 link(["type_def"], "#catalogos/tipos-local", "Abrir Catálogos")
 link(["option_list", "option_item"], "#catalogos", "Abrir Catálogos")
-link(["template", "template_version", "version_location_type", "version_asset_type", "stage", "sign_slot", "separation"], "#modelos", "Abrir Modelos de PT")
+link(["template", "template_version", "version_location_type", "version_asset_type", "version_work_type", "stage", "sign_slot", "separation"], "#modelos", "Abrir Modelos de PT")
 
 const AUTH_LABEL: Record<AuthMethod, string> = { senha: "Senha", ldap: "LDAP", pin: "PIN", sessao: "Sessão", emergencia: "Emergência", servico: "Serviço", sistema: "Sistema" }
 const shortHash = (h: string) => `${h.slice(0, 10)}…${h.slice(-6)}`

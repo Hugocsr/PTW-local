@@ -62,6 +62,7 @@ function children(v: TemplateVersion) {
   return {
     version_location_type: v.locationTypeIds.map((id) => ({ key: id, row: scopeRow(v, id) })),
     version_asset_type: v.assetTypeIds.map((id) => ({ key: id, row: scopeRow(v, id) })),
+    version_work_type: v.workTypeIds.map((id) => ({ key: id, row: scopeRow(v, id) })),
     stage: stages,
     sign_slot: slots,
     separation: v.separation.map((r) => ({ key: `${r.slotA}|${r.slotB}`, row: separationRow(v, r) })),
@@ -69,7 +70,7 @@ function children(v: TemplateVersion) {
 }
 type ChildTable = keyof ReturnType<typeof children>
 /** Insert order (parents first); removals run the other way, as the cascade does. */
-const CHILD_ORDER: ChildTable[] = ["version_location_type", "version_asset_type", "stage", "sign_slot", "separation"]
+const CHILD_ORDER: ChildTable[] = ["version_location_type", "version_asset_type", "version_work_type", "stage", "sign_slot", "separation"]
 
 function diffRows(table: ChildTable, b: Keyed[], a: Keyed[], ctx: AuditCtx, phase: "upsert" | "delete"): AuditDraft[] {
   const out: AuditDraft[] = []

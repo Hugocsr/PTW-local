@@ -235,6 +235,16 @@ create table ptw.version_asset_type (
   foreign key (unit_id, version_id) references ptw.template_version (unit_id, id) on delete cascade,
   foreign key (unit_id, type_id, type_fam) references ptw.type_def (unit_id, id, family)
 );
+-- Tipos de trabalho do modelo (SPEC 012): um ou mais, do catálogo; congelam com a versão.
+create table ptw.version_work_type (
+  unit_id    uuid not null,
+  version_id uuid not null,
+  type_id    uuid not null,
+  type_fam   ptw.type_family not null default 'trabalho' check (type_fam = 'trabalho'),
+  primary key (unit_id, version_id, type_id),
+  foreign key (unit_id, version_id) references ptw.template_version (unit_id, id) on delete cascade,
+  foreign key (unit_id, type_id, type_fam) references ptw.type_def (unit_id, id, family)
+);
 
 -- Etapas em ordem. Etapa com kind é âncora do ciclo de vida (renomeia, não remove); no máximo uma
 -- de cada kind por versão.
@@ -374,6 +384,8 @@ create index separation_b_ix on ptw.separation (unit_id, slot_b);
 create trigger version_location_type_guard before insert or update or delete on ptw.version_location_type
   for each row execute function ptw.version_child_guard();
 create trigger version_asset_type_guard before insert or update or delete on ptw.version_asset_type
+  for each row execute function ptw.version_child_guard();
+create trigger version_work_type_guard before insert or update or delete on ptw.version_work_type
   for each row execute function ptw.version_child_guard();
 create trigger stage_guard before insert or update or delete on ptw.stage
   for each row execute function ptw.version_child_guard();

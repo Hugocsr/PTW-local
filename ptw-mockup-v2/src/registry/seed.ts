@@ -1,6 +1,6 @@
 import { ID, LIST_LABELS } from "./seedIds.ts"
 import { seedTemplates } from "./seedModelos"
-import { PART_OF_KEY, type OptionList, type Origin, type Person, type RegistryState, type RoleAssignment, type Status } from "./types"
+import { PART_OF_KEY, type OptionList, type Origin, type Person, type RegistryState, type RoleAssignment, type Status, type TypeDef } from "./types"
 
 /** Kept for older imports; the form item ids live with the models (seedModelos). */
 export { itemId } from "./seedModelos"
@@ -65,6 +65,7 @@ export const seed: RegistryState = {
     { id: ID.relationKind.abastece, label: "abastece", active: true },
     { id: ID.relationKind.parte, label: "é parte de", systemKey: PART_OF_KEY, active: true },
   ],
+  workTypes: LIST_LABELS.trabalho.map((label): TypeDef => ({ id: ID.workType(label), label, active: true })),
   locations: [
     { ...base(ID.loc(1)), parentId: null, typeId: ID.locationType.predio, code: "PRD-01", name: "Prédio de Produção", aliases: ["Galpão 1"] },
     { ...base(ID.loc(2)), parentId: ID.loc(1), typeId: ID.locationType.linha, code: "L02", name: "Linha 02", aliases: ["Linha dois"] },

@@ -49,7 +49,7 @@ describe.skipIf(!HAS_DB)("com banco: equipe só com pessoas elegíveis (SPEC 015
       id: randomUUID(), form: { sections: [] },
       stages: ["solicitacao", "emissao", "aceite_campo", "entrega", "aceite_area"].map((kind, i) => ({ id: randomUUID(), kind, name: "Etapa " + i,
         slots: [{ id: randomUUID(), kind: "cargo", roleIds: [role], personId: null, meaning: "Assina", min: 1, required: true }] })),
-      separation: [], locationTypeIds: [], assetTypeIds: [],
+      separation: [], locationTypeIds: [], assetTypeIds: [], workTypeIds: [],
     } })
     const t = tpl.json(), v = t.versions[0]
     template = t.id; version = v.id

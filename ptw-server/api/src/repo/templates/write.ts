@@ -139,7 +139,7 @@ export async function createTemplate(
   if (!input) {
     const ids = await run<{ id: string }>(tx, "select uuidv7()::text as id from generate_series(1, 10)")
     let n = 0
-    input = { locationTypeIds: [], assetTypeIds: [], stages: defaultStages(() => ids[n++]!.id), separation: [], ...{ form: { sections: [] } } } as VersionInput
+    input = { locationTypeIds: [], assetTypeIds: [], workTypeIds: [], stages: defaultStages(() => ids[n++]!.id), separation: [], ...{ form: { sections: [] } } } as VersionInput
   }
   await insertVersion(tx, id, input, { number: 1 })
   return getTemplate(tx, id)
@@ -336,8 +336,8 @@ export async function syncChildren(tx: Tx, versionId: string, c: VersionInput): 
     }
   }
 
-  // 5. Escopo: tipos de local e de ativo aceitos.
-  for (const [table, want] of [["version_location_type", c.locationTypeIds ?? []], ["version_asset_type", c.assetTypeIds ?? []]] as const) {
+  // 5. Escopo: tipos de local e de ativo aceitos e tipos de trabalho do modelo.
+  for (const [table, want] of [["version_location_type", c.locationTypeIds ?? []], ["version_asset_type", c.assetTypeIds ?? []], ["version_work_type", c.workTypeIds ?? []]] as const) {
     const wanted = new Set(want)
     const cq = new Q()
     const cur = await run<{ type_id: string }>(tx, `select type_id from ptw.${table} where unit_id = ptw.current_unit() and version_id = ${cq.p(versionId, "uuid")}`, cq.params)

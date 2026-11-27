@@ -6,7 +6,7 @@
 import type { FormItem, FormSection, PermitTemplate, SignSlot, Stage, TemplateVersion } from "@/registry/types"
 import { normalizeSeparation } from "@/core/templateVersions"
 import { C, type ModelKey } from "./ids"
-import { LIST, listItemId } from "./lists"
+import { LIST, listItemId, workTypeId } from "./lists"
 
 const R = C.role
 const at = (day: string, time = "09:00:00") => `${day}T${time}-03:00`
@@ -80,11 +80,16 @@ const emissao = (m: ModelKey, text: string): FormSection => ({
   ],
 })
 
+/** Tipos de trabalho (catálogo) de cada modelo da planta. */
+const WORK_TYPES: Record<ModelKey, Parameters<typeof workTypeId>[0][]> = {
+  geral: ["Içamento de carga", "Escavação"], quente: ["Trabalho a quente"], confinado: ["Espaço confinado"], altura: ["Em altura"], eletrica: ["Elétrico"],
+}
+
 /** The register's facts of a version (all active since October). */
 function version(m: ModelKey, maxWindowHours: number, locationTypeIds: string[], assetTypeIds: string[], st: Stage[], sections: FormSection[], note: string, extraSep: [SlotKey, SlotKey][] = []): TemplateVersion {
   return {
     id: C.version[m], number: 1, status: "ativa", createdAt: at("2026-10-01"), activatedAt: at("2026-10-05"), note,
-    origin: "manual", sourceSha256: null, maxWindowHours, holdsEquipment: true, locationTypeIds, assetTypeIds, stages: st,
+    origin: "manual", sourceSha256: null, maxWindowHours, holdsEquipment: true, locationTypeIds, assetTypeIds, workTypeIds: WORK_TYPES[m].map(workTypeId), stages: st,
     separation: [
       normalizeSeparation(C.slot(m, "emi"), C.slot(m, "campo"), true),
       normalizeSeparation(C.slot(m, "ent"), C.slot(m, "area"), true),

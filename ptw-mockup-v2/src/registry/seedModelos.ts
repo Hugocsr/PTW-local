@@ -80,7 +80,7 @@ const painel = (v: V, number: number, status: TemplateVersion["status"], created
   id: ID.version[v], number, status, createdAt, activatedAt, note, ...manual,
   // From v2 on, a Painel permit's window is at most 12 hours (one long shift).
   maxWindowHours: v === "painel1" ? null : 12,
-  locationTypeIds: [LT.sala, LT.ponto], assetTypeIds: [AT.painel, AT.modulo],
+  locationTypeIds: [LT.sala, LT.ponto], assetTypeIds: [AT.painel, AT.modulo], workTypeIds: [ID.workType("Elétrico")],
   form, stages: painelStages(v), separation: painelSeparation(v),
 })
 
@@ -109,6 +109,7 @@ export const seedTemplates: PermitTemplate[] = [
         id: ID.version.vapor1, number: 1, status: "ativa", createdAt: at("2026-09-15"), activatedAt: at("2026-09-20"), note: "Primeira versão em uso", ...manual, maxWindowHours: null,
         locationTypeIds: [LT.ponto],
         assetTypeIds: [AT.tubo, AT.valv],
+        workTypeIds: [ID.workType("Trabalho a quente")],
         form: dados("vapor1", ["Método de soldagem", "Controle de faíscas", "Observações do trecho"]),
         stages: [
           sol("vapor1"),
@@ -137,6 +138,7 @@ export const seedTemplates: PermitTemplate[] = [
         maxWindowHours: 72,
         locationTypeIds: [LT.sala, LT.ponto],
         assetTypeIds: [AT.painel, AT.modulo, AT.tubo, AT.valv],
+        workTypeIds: [ID.workType("Elétrico"), ID.workType("Em altura"), ID.workType("Espaço confinado"), ID.workType("Trabalho a quente"), ID.workType("Material perigoso")],
         stages: [
           sol("geral1"),
           // Either the technician or the team leader confirms the precautions (any of the two cargos).

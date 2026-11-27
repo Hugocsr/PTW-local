@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { ArrowLeftIcon, ArrowRightIcon, ShieldCheckIcon, Trash2Icon } from "lucide-react"
+import { ArrowLeftIcon, ArrowRightIcon, HardHatIcon, ShieldCheckIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { runAsUndo } from "@/audit/store"
 import { filterItems, TYPE_CATALOG_ABOUT, typeActions, typeInUse, typeUsage, type ActiveFilter, type TypeCatalog } from "@/core/catalogs"
@@ -60,7 +60,7 @@ export function TypeCatalogPanel({ catalog, onBack }: { catalog: TypeCatalog; on
             const used = counting || typeInUse(state, key, t.id, nAssets(t.id))
             const act = typeActions(t, used)
             const usage = counting ? "Contando o uso…" : typeUsage(state, key, t.id, nAssets(t.id))
-            const Icon = key === "locationTypes" ? locationIcon(t) : key === "assetTypes" ? assetIcon(t) : key === "roleTypes" ? ShieldCheckIcon : ArrowRightIcon
+            const Icon = key === "locationTypes" ? locationIcon(t) : key === "assetTypes" ? assetIcon(t) : key === "roleTypes" ? ShieldCheckIcon : key === "workTypes" ? HardHatIcon : ArrowRightIcon
             const media = (key === "locationTypes" || key === "assetTypes") && edit
               ? <TypeIconPicker type={t} family={key} disabled={down} onPick={(icon) => setTypeIcon(key, t.id, icon)} />
               : <span aria-hidden className="flex size-11 shrink-0 items-center justify-center rounded-md border text-muted-foreground md:size-9"><Icon className="size-4" /></span>

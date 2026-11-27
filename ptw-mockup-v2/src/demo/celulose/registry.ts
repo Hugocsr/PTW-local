@@ -3,9 +3,9 @@
  * their "parte de" hierarchy, people and cargos, lists and the plant's own models. All names and tags
  * are fictional.
  */
-import { PART_OF_KEY, type Asset, type Location, type Origin, type Person, type RegistryState, type RoleAssignment, type Status } from "@/registry/types"
+import { PART_OF_KEY, type Asset, type Location, type Origin, type Person, type RegistryState, type RoleAssignment, type Status, type TypeDef } from "@/registry/types"
 import { C, type PersonKey } from "./ids"
-import { celuloseLists } from "./lists"
+import { celuloseLists, LIST_LABELS, workTypeId } from "./lists"
 import { celuloseTemplates } from "./modelos"
 import { demoTemplates } from "./modelosDemo"
 
@@ -180,6 +180,7 @@ export const celuloseRegistry: RegistryState = {
     { id: AT.evap, label: "Evaporador", icon: "temperatura", active: true },
     { id: AT.precip, label: "Precipitador eletrostático", icon: "antena", active: true },
   ],
+  workTypes: LIST_LABELS.trabalho.map((label): TypeDef => ({ id: workTypeId(label), label, active: true })),
   relationKinds: [
     { id: K.alimenta, label: "alimenta", active: true },
     { id: K.abastece, label: "abastece", active: true },

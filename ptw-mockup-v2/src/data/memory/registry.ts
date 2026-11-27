@@ -108,7 +108,7 @@ function reducer(state: RegistryState, action: Action, at: string): RegistryStat
 
 export interface RegistryStep { state: RegistryState; events: AuditDraft[]; /** Why the write was refused (nothing applied; one denied event recorded). */ denied?: RuleError }
 
-const TYPE_LISTS: TypeList[] = ["locationTypes", "assetTypes", "roleTypes", "relationKinds"]
+const TYPE_LISTS: TypeList[] = ["locationTypes", "assetTypes", "roleTypes", "relationKinds", "workTypes"]
 const RECORD_LISTS: Exclude<RecordList, "templates">[] = ["locations", "assets", "people", "relations", "optionLists"]
 
 /** Items of `after` that are new or were rewritten (the reducer keeps untouched items by reference). */
@@ -121,6 +121,7 @@ export function typeInUse(s: RegistryState, list: TypeList, id: string): boolean
   switch (list) {
     case "locationTypes": return s.locations.some((l) => l.typeId === id) || versions.some((v) => v.locationTypeIds.includes(id))
     case "assetTypes": return s.assets.some((a) => a.typeId === id) || versions.some((v) => v.assetTypeIds.includes(id))
+    case "workTypes": return versions.some((v) => v.workTypeIds.includes(id))
     case "relationKinds": return s.relations.some((r) => r.kindId === id)
     case "roleTypes": return s.people.some((p) => p.roles.some((r) => r.roleId === id))
       || versions.some((v) => v.stages.some((st) => st.slots.some((sl) => sl.roleIds.includes(id)))

@@ -515,3 +515,15 @@
 
   .sheet-foot { margin: 5mm 0 0; padding-top: 1.5mm; border-top: 0.75pt solid #000; font-size: 7.5pt; }
 }
+
+/* SPEC 019: the asset's QR label (registry/AssetManagement/AssetLabel.tsx), printed alone. Paper: black on white. */
+.asset-label-print { display: none; }
+@media print {
+  body[data-print="label"] #root { display: none !important; }
+  body[data-print="label"] .asset-label-print { display: block; color: #000; }
+  .asset-label { display: flex; align-items: center; gap: 4mm; width: 90mm; padding: 4mm; border: 0.75pt solid #000; border-radius: 2mm; break-inside: avoid; }
+  .asset-label-qr { width: 32mm; height: 32mm; flex: none; }
+  .asset-label-text { display: flex; min-width: 0; flex-direction: column; gap: 1mm; font-size: 8.5pt; line-height: 1.25; overflow-wrap: anywhere; }
+  .asset-label-code { font-family: var(--font-mono); font-size: 13pt; }
+  .asset-label-where { font-size: 7pt; color: #333; }
+}

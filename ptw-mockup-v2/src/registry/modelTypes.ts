@@ -171,6 +171,8 @@ export interface Separation {
 export interface TemplateContent {
   locationTypeIds: string[]
   assetTypeIds: string[]
+  /** Tipos de trabalho do catálogo (um ou mais); congelam com a versão (SPEC 012). */
+  workTypeIds: string[]
   stages: Stage[]
   separation: Separation[]
   /** The paper form, as sections tied to stages. Absent on versions made before forms existed. */

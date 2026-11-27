@@ -436,7 +436,7 @@ declare t text;
 begin
   foreach t in array array[
     'type_def', 'location', 'asset', 'asset_location', 'asset_relation', 'asset_part', 'person', 'person_role',
-    'option_list', 'option_item', 'template', 'template_version', 'version_location_type', 'version_asset_type',
+    'option_list', 'option_item', 'template', 'template_version', 'version_location_type', 'version_asset_type', 'version_work_type',
     'stage', 'sign_slot', 'separation', 'form_snapshot', 'permit_counter', 'permit', 'permit_asset', 'permit_team',
     'permit_answer', 'blob', 'attachment', 'permit_revision', 'permit_extension', 'permit_revalidation', 'signature',
     'appearance', 'appearance_asset', 'person_group', 'person_group_member', 'access_profile', 'person_group_profile', 'person_group_scope', 'delegation', 'api_session', 'api_idempotency', 'login_attempt',
@@ -482,7 +482,7 @@ revoke select on ptw.audit_head, ptw.audit_partition from ptw_app;
 grant insert, update, delete on
   ptw.type_def, ptw.location, ptw.asset, ptw.asset_location, ptw.asset_relation, ptw.person, ptw.person_role,
   ptw.option_list, ptw.option_item, ptw.template, ptw.template_version, ptw.version_location_type,
-  ptw.version_asset_type, ptw.stage, ptw.sign_slot, ptw.separation
+  ptw.version_asset_type, ptw.version_work_type, ptw.stage, ptw.sign_slot, ptw.separation
   to ptw_app;
 grant insert, update on ptw.appearance to ptw_app;
 grant insert on ptw.appearance_asset to ptw_app;

@@ -12,7 +12,7 @@ set search_path = ptw, public;
 -- ---------- Tipos ----------
 create type ptw.record_origin  as enum ('manual', 'csv', 'sugerida', 'ad');
 create type ptw.record_status  as enum ('ativo', 'em_revisao', 'inativo');
-create type ptw.type_family    as enum ('local', 'ativo', 'cargo', 'relacao');
+create type ptw.type_family    as enum ('local', 'ativo', 'cargo', 'relacao', 'trabalho');
 create type ptw.version_status as enum ('rascunho', 'ativa', 'arquivada');
 create type ptw.version_origin as enum ('manual', 'sugerida');
 create type ptw.stage_kind     as enum ('solicitacao', 'emissao', 'aceite_campo', 'entrega', 'aceite_area');

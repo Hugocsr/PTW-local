@@ -30,7 +30,7 @@ export interface PermitDetail {
 export interface Page<T> { items: T[]; total: number; page: number; pageSize: number }
 
 export const emptyRegistry = (): RegistryState => ({
-  units: [], locationTypes: [], assetTypes: [], roleTypes: [], relationKinds: [],
+  units: [], locationTypes: [], assetTypes: [], roleTypes: [], relationKinds: [], workTypes: [],
   locations: [], assets: [], relations: [], people: [], templates: [], optionLists: [],
 })
 export const emptyPermits = (): PermitData => ({ permits: [], signatures: [], revisions: [], attachments: [], blobs: {}, formSnapshots: {}, extensions: [] })

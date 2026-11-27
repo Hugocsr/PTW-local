@@ -41,7 +41,7 @@ export function copyVersion(from: TemplateVersion, number: number, now: string):
   return {
     id: uuidv7(), number, status: "rascunho", createdAt: now, activatedAt: null,
     note: `Copiada da versão ${from.number}`,
-    locationTypeIds: [...from.locationTypeIds], assetTypeIds: [...from.assetTypeIds],
+    locationTypeIds: [...from.locationTypeIds], assetTypeIds: [...from.assetTypeIds], workTypeIds: [...from.workTypeIds],
     stages,
     separation: from.separation.map((r) => normalizeSeparation(slotIds.get(r.slotA) ?? r.slotA, slotIds.get(r.slotB) ?? r.slotB, r.locked)),
     ...(form ? { form } : {}),

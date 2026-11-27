@@ -3,6 +3,7 @@ import { ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CogIcon, LoaderCirc
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
+import { RequiredMark } from "@/components/ui/required"
 import { Input } from "@/components/ui/input"
 import { useAssetSearch } from "@/data/hooks"
 import { browseRows, choosable, NO_PLACES, placeOfAsset, placePath, PLACE_LOST, reachablePlaces, searchPlaces, type PlaceCounts } from "@/core/locationPicker"
@@ -42,7 +43,7 @@ export function PlacePicker({ id, value, onChange, onPickAsset, locationTypeIds,
 
   if (value) return (
     <Field>
-      <FieldLabel htmlFor={id}>Local</FieldLabel>
+      <FieldLabel htmlFor={id}>Local<RequiredMark /></FieldLabel>
       <div id={id} className={cn("flex items-center gap-3 rounded-md border px-3 py-2", lost ? TONE_BLOCK.stop : "bg-primary-soft")}>
         {lost ? <CircleAlertIcon aria-hidden className="size-5 shrink-0" /> : <MapPinIcon aria-hidden className="size-5 shrink-0 text-primary" />}
         <span className="flex min-w-0 flex-1 flex-col">
@@ -57,7 +58,7 @@ export function PlacePicker({ id, value, onChange, onPickAsset, locationTypeIds,
 
   return (
     <Field>
-      <FieldLabel htmlFor={id}>Local</FieldLabel>
+      <FieldLabel htmlFor={id}>Local<RequiredMark /></FieldLabel>
       <div className="relative flex items-center">
         <SearchIcon aria-hidden className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
         <Input id={id} value={query} onChange={(e) => setQuery(e.target.value)} disabled={disabled} autoComplete="off" placeholder="Buscar por local, planta, código ou ativo…" className="min-h-11 pl-9 md:min-h-9" />

@@ -74,4 +74,4 @@ export function slotNeed(slot: Pick<SignSlot, "required" | "requiredWhen">, answ
 }
 
 /** The words after a signature's roles: " · opcional", " · exigida por uma resposta", or nothing (not required: its own line says why). */
-export const needSuffix = (n: SlotNeed) => (n.need === "opcional" ? " · opcional" : n.need === "exigida" ? " · exigida por uma resposta" : "")
+export const needSuffix = (n: SlotNeed) => (n.need === "exigida" ? " · exigida por uma resposta" : "")

@@ -60,7 +60,7 @@ export const AREA_LABEL: Record<string, string> = {
 export const ENTITY_LABEL: Record<string, string> = {
   unit: "Unidade", type_def: "Tipo", location: "Local", asset: "Ativo", asset_location: "Local do ativo", asset_relation: "Relação entre ativos",
   person: "Pessoa", person_role: "Cargo da pessoa", option_list: "Lista", option_item: "Item de lista", template: "Modelo", template_version: "Versão de modelo",
-  version_location_type: "Tipo de local aceito", version_asset_type: "Tipo de ativo aceito", stage: "Etapa", sign_slot: "Assinatura do modelo",
+  version_location_type: "Tipo de local aceito", version_asset_type: "Tipo de ativo aceito", version_work_type: "Tipo de trabalho", stage: "Etapa", sign_slot: "Assinatura do modelo",
   separation: "Separação", permit: "PT", permit_asset: "Ativo da PT", permit_team: "Equipe", permit_answer: "Resposta", attachment: "Anexo",
   permit_revision: "Revisão", signature: "Assinatura",
 }

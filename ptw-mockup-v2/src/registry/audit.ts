@@ -13,7 +13,7 @@ import type { RegistryState, TypeList } from "./types"
  * Models and versions are audited by registry/auditModelos (stream B). Pure.
  */
 
-export const TYPE_LIST_NAME: Record<TypeList, string> = { locationTypes: "tipo de local", assetTypes: "tipo de ativo", roleTypes: "cargo", relationKinds: "tipo de relação" }
+export const TYPE_LIST_NAME: Record<TypeList, string> = { locationTypes: "tipo de local", assetTypes: "tipo de ativo", roleTypes: "cargo", relationKinds: "tipo de relação", workTypes: "tipo de trabalho" }
 
 type Rows = Map<string, Row>
 
@@ -25,7 +25,7 @@ export type RegistryTable = (typeof ORDER)[number]
 function rowsOf(s: RegistryState): Record<RegistryTable, Rows> {
   const map = <T>(xs: T[], key: (x: T) => string, row: (x: T) => Row): Rows => new Map(xs.map((x) => [key(x), row(x)]))
   const types: Rows = new Map()
-  for (const list of ["locationTypes", "assetTypes", "roleTypes", "relationKinds"] as TypeList[]) {
+  for (const list of ["locationTypes", "assetTypes", "roleTypes", "relationKinds", "workTypes"] as TypeList[]) {
     for (const t of s[list]) types.set(t.id, typeRow(t, typeFamily(list)))
   }
   return {

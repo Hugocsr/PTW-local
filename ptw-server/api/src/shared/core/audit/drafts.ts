@@ -58,6 +58,7 @@ export const ROW_SPEC: Record<AuditTable, [string, string, string, string, strin
   template_version: ["modelo.versao.criada", "modelo.versao.alterada", "modelo.versao.removida", "Versão", "id"],
   version_location_type: ["modelo.versao.escopo.incluido", "modelo.versao.escopo.alterado", "modelo.versao.escopo.removido", "Tipo de local aceito", "version_id"],
   version_asset_type: ["modelo.versao.escopo.incluido", "modelo.versao.escopo.alterado", "modelo.versao.escopo.removido", "Tipo de ativo aceito", "version_id"],
+  version_work_type: ["modelo.versao.escopo.incluido", "modelo.versao.escopo.alterado", "modelo.versao.escopo.removido", "Tipo de trabalho", "version_id"],
   stage: ["modelo.etapa.criada", "modelo.etapa.alterada", "modelo.etapa.removida", "Etapa", "id"],
   sign_slot: ["modelo.assinatura.criada", "modelo.assinatura.alterada", "modelo.assinatura.removida", "Assinatura do modelo", "id"],
   separation: ["modelo.separacao.criada", "modelo.separacao.alterada", "modelo.separacao.removida", "Separação", "version_id"],

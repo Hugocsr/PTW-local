@@ -33,7 +33,7 @@ try {
       console.log("Unidade já carregada; nenhum cadastro foi alterado.")
       return
     }
-    for (const [key, family] of [["locationTypes", "local"], ["assetTypes", "ativo"], ["roleTypes", "cargo"], ["relationKinds", "relacao"]]) {
+    for (const [key, family] of [["locationTypes", "local"], ["assetTypes", "ativo"], ["roleTypes", "cargo"], ["relationKinds", "relacao"], ["workTypes", "trabalho"]]) {
       for (const item of data[key]) {
         if (item.systemKey) await tx`insert into ptw.type_def (unit_id, id, family, label, icon, active, system_key)
           values (ptw.current_unit(), ${item.id}, ${family}, ${item.label}, ${item.icon ?? null}, ${item.active ?? true}, ${item.systemKey})`

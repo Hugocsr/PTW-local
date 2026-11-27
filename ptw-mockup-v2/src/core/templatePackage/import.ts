@@ -453,7 +453,7 @@ export function importarModelo(entrada: unknown, cadastro: Cadastro, opcoes: Opc
   // signature still without cargo, and anything that depends on the plant's people today (nobody
   // eligible, a rule nobody can satisfy), is a warning: the reviewer fixes it before activating.
   // Without a registry (CLI), cargos are not checked: their placeholder ids count as chosen.
-  const draftForChecks = { locationTypeIds, assetTypeIds, stages, separation, form: { sections } }
+  const draftForChecks = { locationTypeIds, assetTypeIds, workTypeIds: [] as string[], stages, separation, form: { sections } }
   const roleTypes = conferirCargos ? [...cadastro.roleTypes, ...cargosNovos] : [...cadastro.roleTypes, ...resolucao.cargos.filter((c) => c.id).map((c): TypeDef => ({ id: c.id!, label: c.nome, active: true }))]
   const checksReg = { people: cadastro.people ?? [], locations: cadastro.locations ?? [], roleTypes }
   for (const issue of signatureIssues(draftForChecks, checksReg, opcoes.agora.slice(0, 10))) {
@@ -482,7 +482,7 @@ export function importarModelo(entrada: unknown, cadastro: Cadastro, opcoes: Opc
   const versao: TemplateVersion = {
     id: novoId("ver"), number, status: "rascunho", createdAt: opcoes.agora, activatedAt: null,
     note,
-    locationTypeIds, assetTypeIds, stages, separation, form,
+    locationTypeIds, assetTypeIds, workTypeIds: [], stages, separation, form,
     maxWindowHours: pkg.modelo.prazo_maximo_horas ?? null,
     holdsEquipment: pkg.modelo.prende_equipamento ?? true,
     origin: "sugerida",

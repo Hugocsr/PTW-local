@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { ArrowRightIcon, BoxIcon, ListIcon, MapPinIcon, PlusIcon, SearchIcon, ShieldCheckIcon, type LucideIcon } from "lucide-react"
+import { ArrowRightIcon, BoxIcon, HardHatIcon, ListIcon, MapPinIcon, PlusIcon, SearchIcon, ShieldCheckIcon, type LucideIcon } from "lucide-react"
 import { toast } from "sonner"
 import { catalogOf, filterCatalogs, isListCatalog, listCatalogId, listIdOf, TYPE_CATALOGS, typeCatalog, type CatalogId, type TypeCatalogId } from "@/core/catalogs"
 import { cn } from "@/lib/utils"
@@ -15,7 +15,7 @@ import { ListCatalogPanel } from "./ListCatalogPanel"
 import { ListNameDialog } from "./ListNameDialog"
 import { TypeCatalogPanel } from "./TypeCatalogPanel"
 
-const TYPE_ICON: Record<TypeCatalogId, LucideIcon> = { "tipos-local": MapPinIcon, "tipos-ativo": BoxIcon, cargos: ShieldCheckIcon, relacoes: ArrowRightIcon }
+const TYPE_ICON: Record<TypeCatalogId, LucideIcon> = { "tipos-local": MapPinIcon, "tipos-ativo": BoxIcon, "tipos-trabalho": HardHatIcon, cargos: ShieldCheckIcon, relacoes: ArrowRightIcon }
 
 /** The square icon of a catalog: navy for type families, soft indigo for option lists. */
 export function CatalogIcon({ id }: { id: CatalogId }) {
@@ -60,7 +60,7 @@ export function CatalogsView({ tab }: { tab?: string }) {
 
   return (
     <Page className="max-w-[80rem]">
-      <PageHeader title="Catálogos" meta="Valores pré-cadastrados que o sistema oferece: tipos de local e de ativo, cargos, relações e listas de opções dos formulários" />
+      <PageHeader title="Catálogos" meta="Valores pré-cadastrados que o sistema oferece: tipos de local, de ativo e de trabalho, cargos, relações e listas de opções dos formulários" />
       {sim.serverDown && <DownBanner now={sim.now} />}
       <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[21rem_minmax(0,1fr)]">
         <nav aria-label="Catálogos" className={cn("flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card shadow-(--shadow-elev-2) lg:sticky lg:top-20", opened && "max-lg:hidden")}>
